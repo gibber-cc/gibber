@@ -13465,6 +13465,7 @@ const Graphics = {
   animate: true,
   camera: null,
   initialized: false,
+  mode: 3,
   __ruleIdx: null,
   __doNotExport: ['export', 'init', 'run', 'make'],
   __running: false,
@@ -13478,6 +13479,7 @@ const Graphics = {
   __storepos: null,
   __storedir: null,
   __postprocessing: [],
+  __marchingInitialized: false,
   camera: {
     pos: {
       x: 0,
@@ -13586,7 +13588,16 @@ const Graphics = {
     Marching.export(this.__native);
 
     this.clear = () => {
-      Marching.clear();
+      if (this.mode === 3) {
+        Marching.clear();
+        this.background();
+        this.fog(0, Marching.vectors.Vec3(0), false);
+      } else {
+        if (this.ctx !== null) {
+          canvas.width = canvas.width;
+        }
+      }
+
       const sheet = window.document.styleSheets[window.document.styleSheets.length - 1];
 
       if (sheet.cssRules.length > 0 && Graphics.__ruleIdx !== null) {
@@ -13597,13 +13608,19 @@ const Graphics = {
       if (typeof window.onframe === 'function') {
         window.onframe = function () {};
       }
-
-      this.background();
-      this.fog(0, Marching.vectors.Vec3(0), false);
     };
 
     Gibber.subscribe('clear', this.clear);
     return Promise.resolve([Graphics, 'Graphics']);
+  },
+
+  two(width = window.innerWidth, height = window.innerHeight) {
+    this.ctx = this.canvas.getContext('2d');
+    this.canvas.width = width;
+    this.canvas.height = height;
+    this.mode = 2;
+    console.log(`You're now using 2D graphics. 3D graphics will be unavailable until you refresh the page.`);
+    return this.ctx;
   },
 
   run() {
@@ -96160,6 +96177,7 @@ const SDF = {
   FFT:              require( './audio.js' ),
   fx:               require( './mergepass.js' ),
 
+  gl:               null,
   // a function that generates the fragment shader
   renderFragmentShader: require( './renderFragmentShader.js' ),
 
@@ -96208,7 +96226,7 @@ const SDF = {
     obj.FFT = this.FFT
   },
 
-  init( canvas, shouldInit = false ) {
+  init( canvas, shouldInit = true ) {
     this.primitives = this.__primitives( this )
     this.Scene      = this.__scene( this )
     this.domainOps  = this.__domainOps( this )
@@ -96224,8 +96242,13 @@ const SDF = {
     this.textures = this.__textures( this )
     this.Texture = this.textures.texture
 
-    this.gl = this.canvas.getContext( 'webgl2', { antialias:true, alpha:true })
+    if( shouldInit ) this.initGL()
+     
 
+  },
+
+  initGL() {
+    this.gl = this.canvas.getContext( 'webgl2', { antialias:true, alpha:true })
   },
   // generate shaders, initialize camera, start rendering loop 
   createScene( ...args ) {
@@ -96240,6 +96263,9 @@ const SDF = {
 
   start( fs, width, height, shouldAnimate ) {
     if( this.render !== null ) this.render.running = false
+
+    if( this.gl === null ) 
+      this.gl = this.canvas.getContext( 'webgl2', { antialias:true, alpha:true })
 
     this.fs = fs
     this.callbacks.length = 0
@@ -96388,6 +96414,7 @@ const SDF = {
   },
 
   initBuffers( width, height, colorTexture, depthTexture ) {
+    if( this.gl === null ) this.initGL()
     const gl = this.gl
     gl.clearColor( 0.0, 0.0, 0.0, 0.0 )
     gl.clear(gl.COLOR_BUFFER_BIT)
