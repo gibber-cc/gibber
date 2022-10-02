@@ -13588,12 +13588,17 @@ const Graphics = {
     Marching.export(this.__native);
 
     this.clear = () => {
+      if (typeof window.onframe === 'function') {
+        window.onframe = function () {};
+      }
+
       if (this.mode === 3) {
         Marching.clear();
         this.background();
         this.fog(0, Marching.vectors.Vec3(0), false);
       } else {
         if (this.ctx !== null) {
+          this.ctx.clearRect(0, 0, canvas.width, canvas.height);
           canvas.width = canvas.width;
         }
       }
@@ -13603,10 +13608,6 @@ const Graphics = {
       if (sheet.cssRules.length > 0 && Graphics.__ruleIdx !== null) {
         sheet.deleteRule(Graphics.__ruleIdx);
         Graphics.__ruleIdx = null;
-      }
-
-      if (typeof window.onframe === 'function') {
-        window.onframe = function () {};
       }
     };
 
@@ -13619,7 +13620,12 @@ const Graphics = {
     this.canvas.width = width;
     this.canvas.height = height;
     this.mode = 2;
-    console.log(`You're now using 2D graphics. 3D graphics will be unavailable until you refresh the page.`);
+
+    if (Gibber.Environment) {
+      const sheet = window.document.styleSheets[window.document.styleSheets.length - 1];
+      Graphics.__ruleIdx = sheet.insertRule('.CodeMirror pre { background-color: rgba( 0,0,0,.75 ) !important; }', sheet.cssRules.length);
+    }
+
     return this.ctx;
   },
 
