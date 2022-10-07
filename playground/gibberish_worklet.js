@@ -17415,7 +17415,6 @@ module.exports = function (Gibberish) {
       __phase: 0,
       __type: 'seq',
       __pattern: mini.mini(props.pattern),
-      //Pattern( props.pattern, { addLocations:true, addUID:true, enclose:true }),
       __events: null,
 
       tick(priority) {
@@ -17536,6 +17535,10 @@ module.exports = function (Gibberish) {
           addUID: true,
           enclose: true
         });
+      },
+
+      addFilter(filter) {
+        this.filters.push(filter);
       }
 
     };

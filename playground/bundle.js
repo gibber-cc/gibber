@@ -78292,9 +78292,27 @@ module.exports = function( Gibber, Environment ) {
   }
 
   window.watchers = []
-  window.watch = function( method, cb, seqId=0 ) {
+  window.watch = function( watched, cb, seqId=0 ) {
+    // check to see if this is a method or object
+    const watchMethod = watched.__owner !== undefined
+    const obj = watchMethod ? watched.__owner : watched 
+    const name = watchMethod ? watched.__name : obj.__seqDefault
+    const method = obj[ name ]
+
+    // check to see if method has been sequenced
+    if( method[ seqId ] === undefined ) {
+      Console.error( `You tried to watch '${name}' on an object where that is not sequenced.` )
+      return
+    }
+
     // get reference to current values pattern for sequence
-    const pattern =  method.__owner[ method.__name ][ seqId ].values
+    const sequencer = method[ seqId ]
+    // wish there was a better way to identify if this is 
+    // .tidal or .seq...
+    
+    const isTidal = sequencer.__pattern !== undefined
+
+    const pattern = isTidal ? sequencer.__pattern : sequencer.values
 
     // if the pattern is already being watched, remove the associated filter.
     // .watchIndex is set at bottom of this function
@@ -78310,40 +78328,44 @@ module.exports = function( Gibber, Environment ) {
     // in gibber for situations like below. this enables us to just call
     // watch( k.trigger, ()=> {} ) instead of having to do something like
     // watch( k, 'trigger', ()=>{} ) which just offends my sense of aesthetics.
-    eval(`method.__owner[ method.__name ][ seqId ].values.addFilter( args => {
-      global.main( eval( '()=>window.watchers[${pos}](' + args[0] + ')' ) )
-      return args
-    })`)
+
+    if( isTidal ) {
+      Gibber.Audio.Gibberish.worklet.port.postMessage({
+        address:'method',
+        name:'addFilter',
+        object: sequencer.id,
+        functions:true,
+        args:`function( value ) {
+          global.main( eval( '()=>window.watchers[${pos}](' + value + ')' ) )
+          return value
+        }`
+      })
+    }else{
+      eval(`pattern.addFilter( args => {
+        global.main( eval( '()=>window.watchers[${pos}](' + args[0] + ')' ) )
+        return args
+      })`)
+    }
 
     // we need to overide the seq method of the function being watched,
     // so that if it is called again we can assign our watcher to
     // the new sequence that is created.
-    const store = method.seq
-    method.seq = function( ...args ) {
+    const store = isTidal ? method.tidal : method.seq
+    const sequenceName = isTidal ? 'tidal' : 'seq'
+
+    method[ sequenceName ] = function( ...args ) {
       if( args[2] === seqId || args[2] === undefined && seqId === 0 ) {
         store( ...args )
         window.watch( method, cb, seqId )
       }
     }
+
     // store pattern filter index so we can potentially remove filter
     // but do we still need this? after testing it seems like we do
     // although I'm not 100% sure why
-    pattern.watchIndex = pattern.filters.length - 1 
+    if( !isTidal ) pattern.watchIndex = pattern.filters.length - 1 
   }
 
-  watchers.clear = (fnc=null) => {
-    if( fnc === null ) {
-      watchers.length = 0
-      return
-    }
-    // I don't think we want to do the below lines as we'll change the 
-    // indexing for all watchers > pos and that will cause massive
-    // issues...
-    // const pos = watchers.findIndex( fnc )
-    // watchers.splice( pos, 1 )
-  }
-
-  Gibber.subscribe( 'clear', ()=> watchers.length = 0 )
 }
 
 },{}],247:[function(require,module,exports){
@@ -92636,7 +92658,6 @@ module.exports = function( Gibberish ) {
       __phase: 0,
       __type: 'seq',
       __pattern: mini.mini( props.pattern ),
-      //Pattern( props.pattern, { addLocations:true, addUID:true, enclose:true }),
       __events: null,
 
       tick(priority) {
@@ -92747,14 +92768,14 @@ module.exports = function( Gibberish ) {
       },
 
       start(delay = 0) {
-        seq.__isRunning = true;
-        Gibberish.scheduler.add(delay, seq.tick, seq.priority);
+        seq.__isRunning = true
+        Gibberish.scheduler.add(delay, seq.tick, seq.priority)
         return __seq;
       },
 
       stop() {
-        seq.__isRunning = false;
-        return __seq;
+        seq.__isRunning = false
+        return __seq
       },
 
       set(patternString) {
@@ -92763,6 +92784,10 @@ module.exports = function( Gibberish ) {
           addUID: true,
           enclose: true
         });
+      },
+
+      addFilter( filter ) {
+        this.filters.push( filter )
       }
 
     };
