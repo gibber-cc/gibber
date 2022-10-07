@@ -55,20 +55,54 @@ module.exports = function( Gibber, Environment ) {
 
   window.watchers = []
   window.watch = function( method, cb, seqId=0 ) {
+    // get reference to current values pattern for sequence
+    const pattern =  method.__owner[ method.__name ][ seqId ].values
+
+    // if the pattern is already being watched, remove the associated filter.
+    // .watchIndex is set at bottom of this function
+    if( pattern.watchIndex !== undefined ) pattern.removeFilter( pattern.watchIndex )
+
     const pos = window.watchers.length
+
+    // is it fine to just leave this as an expanding array and never
+    // cull dormant watchers? I think yes, it is fine.
     window.watchers.push( cb )
+
+    // I added .__owner and .__name properties to all sequencable functions
+    // in gibber for situations like below. this enables us to just call
+    // watch( k.trigger, ()=> {} ) instead of having to do something like
+    // watch( k, 'trigger', ()=>{} ) which just offends my sense of aesthetics.
     eval(`method.__owner[ method.__name ][ seqId ].values.addFilter( args => {
       global.main( eval( '()=>window.watchers[${pos}](' + args[0] + ')' ) )
       return args
     })`)
+
+    // we need to overide the seq method of the function being watched,
+    // so that if it is called again we can assign our watcher to
+    // the new sequence that is created.
+    const store = method.seq
+    method.seq = function( ...args ) {
+      if( args[2] === seqId || args[2] === undefined && seqId === 0 ) {
+        store( ...args )
+        window.watch( method, cb, seqId )
+      }
+    }
+    // store pattern filter index so we can potentially remove filter
+    // but do we still need this? after testing it seems like we do
+    // although I'm not 100% sure why
+    pattern.watchIndex = pattern.filters.length - 1 
   }
+
   watchers.clear = (fnc=null) => {
     if( fnc === null ) {
       watchers.length = 0
       return
     }
-    const pos = watchers.findIndex( fnc )
-    watchers.splice( pos, 1 )
+    // I don't think we want to do the below lines as we'll change the 
+    // indexing for all watchers > pos and that will cause massive
+    // issues...
+    // const pos = watchers.findIndex( fnc )
+    // watchers.splice( pos, 1 )
   }
 
   Gibber.subscribe( 'clear', ()=> watchers.length = 0 )
