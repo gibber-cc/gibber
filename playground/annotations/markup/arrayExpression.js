@@ -321,7 +321,8 @@ module.exports = function( Marker ) {
         cycle.clear()
       }else{
         const values = isLookup === false ? patternObject.values : patternObject._values
-        cycle( Array.isArray( values ) )
+        const isArray = Array.isArray( values ) && Array.isArray( values[ patternObject.update.currentIndex ] )
+        cycle( isArray )
       }
     }
 

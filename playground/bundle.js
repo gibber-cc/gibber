@@ -75374,7 +75374,8 @@ module.exports = function( Marker ) {
         cycle.clear()
       }else{
         const values = isLookup === false ? patternObject.values : patternObject._values
-        cycle( Array.isArray( values ) )
+        const isArray = Array.isArray( values ) && Array.isArray( values[ patternObject.update.currentIndex ] )
+        cycle( isArray )
       }
     }
 
@@ -76531,6 +76532,7 @@ module.exports = function( classNamePrefix, patternObject ) {
       $( className ).add( 'annotation-' + border + '-border-cycle' )
 
       if( lastBorder !== null ) {
+        console.log( 'last border:', lastBorder )
         $( className ).remove( 'annotation-' + lastBorder + '-border-cycle' )
         $( className ).add( 'annotation-' + lastBorder + '-border' )
       }
@@ -76559,7 +76561,9 @@ module.exports = function( classNamePrefix, patternObject ) {
 
   // XXX need to delay timing annotations in case value annotations changes underlying text, in
   // which case the underlying CSS of the line gets all wonky.
-  const __cycle = patternObject.__delayAnnotations = true ? isArray => { setTimeout( cycle(isArray), 0 ) } : cycle
+  const __cycle = patternObject.__delayAnnotations = true 
+    ? isArray => { setTimeout( cycle(isArray), 0 ) } 
+    : cycle
 
   // must create reference to original clear function so that it can be called via the delayed wrapper
   // if needed... if not needed, the below assignment is a no-op.
@@ -78273,7 +78277,7 @@ module.exports = function( Gibber, Environment ) {
 
           let color = 'white', bg = 'transparent'
 
-          // if ugen has been faded out, flash a warning
+          // if ugen has been faded out / is fading out, flash a warning
           if( isFade && arr[1].gain.value.to === 0 ) {
             color = toggle ? 'yellow' : 'black'
             bg    = toggle ? 'black'  : 'yellow'

@@ -1,6 +1,12 @@
 const Utility = require( '../utilities.js' )
 const $ = Utility.create
 
+// this function is called in the pattern.update function
+// for markup/arrayExpressions to generate a function that
+// cycles through highlighted borders on each side. However,
+// the array markup function handles setting the initial borders
+// for selected array elements... this only takes care of the
+// cycling.
 module.exports = function( classNamePrefix, patternObject ) {
   let modCount = 0,
       lastBorder = null,
@@ -17,8 +23,6 @@ module.exports = function( classNamePrefix, patternObject ) {
       }
     }
 
-    //isArray = false 
-
     switch( modCount++ % 4 ) {
       case 1: border = 'right'; break;
       case 2: border = 'bottom'; break;
@@ -26,6 +30,7 @@ module.exports = function( classNamePrefix, patternObject ) {
     }
 
     // for a pattern holding arrays... like for chord()
+    // this is passed as an argument inside of pattern.update()
     if( isArray === true ) {
       // make sure base border surrounds array before dealing with highlight
       $( className ).add( 'annotation-array' )
@@ -95,7 +100,9 @@ module.exports = function( classNamePrefix, patternObject ) {
 
   // XXX need to delay timing annotations in case value annotations changes underlying text, in
   // which case the underlying CSS of the line gets all wonky.
-  const __cycle = patternObject.__delayAnnotations = true ? isArray => { setTimeout( cycle(isArray), 0 ) } : cycle
+  const __cycle = patternObject.__delayAnnotations = true 
+    ? isArray => { setTimeout( cycle(isArray), 0 ) } 
+    : cycle
 
   // must create reference to original clear function so that it can be called via the delayed wrapper
   // if needed... if not needed, the below assignment is a no-op.

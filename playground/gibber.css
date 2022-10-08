@@ -337,7 +337,7 @@ img {
 
 .annotation-border { 
   /* border-color:#999 !important; */
-  border-color:var(--f_med);
+  border-color:var(--f_low);
   border-width:1px;
   border-style:solid
 }
