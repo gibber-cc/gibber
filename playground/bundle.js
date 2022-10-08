@@ -78274,7 +78274,7 @@ module.exports = function( Gibber, Environment ) {
           let color = 'white', bg = 'transparent'
 
           // if ugen has been faded out, flash a warning
-          if( isFade ) {
+          if( isFade && arr[1].gain.value.to === 0 ) {
             color = toggle ? 'yellow' : 'black'
             bg    = toggle ? 'black'  : 'yellow'
           } else if( gain < .00001 ) {
@@ -78291,7 +78291,19 @@ module.exports = function( Gibber, Environment ) {
     window.requestAnimationFrame( statsCallback )
   }
 
+  // array to hold "watchers", creating using watch( obj, method, callback ),
+  // which trigger the assigned callback method whenever the method of the 
+  // object is called by a .seq or a .tidal.
+  // XXX should I just be overriding the acutal method instead here? this would
+  // give the benefit of also calling the callback when the user calls the method
+  // directly and would avoid some of the (dicey) proxy behavior that is implemented
+  // in the watch() function for when sequencers are replaced.
   window.watchers = []
+
+  // set all watchers to blank functions in case they continue
+  // to be called from the audio thread.
+  window.watchers.clear = ()=> window.watchers = watchers.map( v=> ()=>{} )
+
   window.watch = function( watched, cb, seqId=0 ) {
     // check to see if this is a method or object
     const watchMethod = watched.__owner !== undefined
@@ -78364,6 +78376,7 @@ module.exports = function( Gibber, Environment ) {
     // but do we still need this? after testing it seems like we do
     // although I'm not 100% sure why
     if( !isTidal ) pattern.watchIndex = pattern.filters.length - 1 
+
   }
 
 }
