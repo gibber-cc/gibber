@@ -294,6 +294,11 @@ window.onload = function() {
         Object.defineProperty( constructor, presetName, {
           get() { return constructor( presetName ) }
         })
+        for( let i = 0; i < 20; i++ ) {
+          Object.defineProperty( constructor[i], presetName, {
+            get() { return constructor[i]( presetName ) }
+          })
+        }
       }
     }
     for( let effectName in Gibber.Audio.effects ) {
@@ -406,7 +411,7 @@ const addSamplerExtensions = function( Gibber ) {
 const addFadeExtensions = function( Gibber ) {
   const fade = {
     fadein( time=16 ) { this.gain.fade( 0,null,time ) },
-    fadeOut( time=16 ) { this.gain.fade( null,0,time ) }
+    fadeout( time=16 ) { this.gain.fade( null,0,time ) }
   }
 
   for( let instrumentName in Gibber.Audio.instruments ) {
