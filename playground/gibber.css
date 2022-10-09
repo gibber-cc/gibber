@@ -350,10 +350,10 @@ img {
 .annotation-top-border      { border-top-color:var(--f_low) } 
 .annotation-bottom-border   { border-bottom-color:var(--f_low) }
 
-.annotation-right-border-cycle   { border-right-color:var(--f_med)  !important }
-.annotation-left-border-cycle    { border-left-color:var(--f_med)   !important }
-.annotation-top-border-cycle     { border-top-color:var(--f_med)    !important } 
-.annotation-bottom-border-cycle  { border-bottom-color:var(--f_med) !important }
+.annotation-right-border-cycle   { border-right-color:var(--f_high)  !important }
+.annotation-left-border-cycle    { border-left-color:var(--f_high)   !important }
+.annotation-top-border-cycle     { border-top-color:var(--f_high)    !important } 
+.annotation-bottom-border-cycle  { border-bottom-color:var(--f_high) !important }
 
 .annotation-no-left-border  { border-left-color:transparent  !important }
 .annotation-no-right-border { border-right-color:transparent !important }
