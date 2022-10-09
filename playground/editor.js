@@ -49,7 +49,8 @@ let cm, cmconsole, exampleCode,
       }`
           code = Babel.transform(code, { presets: [], plugins:['jsdsp'] }).code 
 
-          if( environment.networkConfig.isNetworked && shouldRunNetworkCode ) environment.runCodeOverNetwork( selectedCode )
+          if( environment.networkConfig.isNetworked && shouldRunNetworkCode ) 
+            environment.runCodeOverNetwork( selectedCode )
 
           environment.flash( cm, selectedCode.selection )
 
@@ -89,7 +90,7 @@ let cm, cmconsole, exampleCode,
           if( !Environment.debug ) {
             Gibber.Scheduler.functionsToExecute.push( func )
             if( environment.annotations === true ) {
-              Gibber.Scheduler.functionsToExecute.push( markupFunction  )
+              Gibber.Scheduler.functionsToExecute.push( markupFunction )
             }
           }else{
             //func()
@@ -102,6 +103,7 @@ let cm, cmconsole, exampleCode,
 
         Gibber.shouldDelay = false
       },
+
       getSelectionCodeColumn( cm, findBlock ) {
         let  pos = cm.getCursor(), 
         text = null

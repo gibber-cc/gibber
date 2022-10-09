@@ -77979,9 +77979,10 @@ const Marker = {
         count++
       }
     }else{
+      // assume we are using fadein or fadeout directly on an instrument
       gen = gen.gain
     }
-    //if( gen.value !== undefined && typeof gen.value !== 'number' ) gen = gen.value
+
     Marker.waveform.createWaveformWidget( line, closeParenStart, ch-1, false, node, state.cm, gen, null, false, state )
   },
 
@@ -78558,7 +78559,8 @@ let cm, cmconsole, exampleCode,
       }`
           code = Babel.transform(code, { presets: [], plugins:['jsdsp'] }).code 
 
-          if( environment.networkConfig.isNetworked && shouldRunNetworkCode ) environment.runCodeOverNetwork( selectedCode )
+          if( environment.networkConfig.isNetworked && shouldRunNetworkCode ) 
+            environment.runCodeOverNetwork( selectedCode )
 
           environment.flash( cm, selectedCode.selection )
 
@@ -78598,7 +78600,7 @@ let cm, cmconsole, exampleCode,
           if( !Environment.debug ) {
             Gibber.Scheduler.functionsToExecute.push( func )
             if( environment.annotations === true ) {
-              Gibber.Scheduler.functionsToExecute.push( markupFunction  )
+              Gibber.Scheduler.functionsToExecute.push( markupFunction )
             }
           }else{
             //func()
@@ -78611,6 +78613,7 @@ let cm, cmconsole, exampleCode,
 
         Gibber.shouldDelay = false
       },
+
       getSelectionCodeColumn( cm, findBlock ) {
         let  pos = cm.getCursor(), 
         text = null
@@ -79239,6 +79242,15 @@ window.onload = function () {
           }
 
         });
+
+        for (let i = 0; i < 20; i++) {
+          Object.defineProperty(constructor[i], presetName, {
+            get() {
+              return constructor[i](presetName);
+            }
+
+          });
+        }
       }
     }
 
@@ -79343,7 +79355,7 @@ const addFadeExtensions = function (Gibber) {
       this.gain.fade(0, null, time);
     },
 
-    fadeOut(time = 16) {
+    fadeout(time = 16) {
       this.gain.fade(null, 0, time);
     }
 
