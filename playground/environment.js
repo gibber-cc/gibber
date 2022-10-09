@@ -70,6 +70,7 @@ window.onload = function() {
     Gibber.export( window ) 
 
     addSamplerExtensions( Gibber )
+    addFadeExtensions( Gibber )
 
     window.future = function( fnc, time, dict ) {
       Gibber.Audio.Gibberish.utilities.future( fnc, Clock.btos(time*4), dict )
@@ -272,12 +273,48 @@ window.onload = function() {
     })
 
     cm.__setup()
+    
+    Storage.runUserSetup()
+    for( let instrumentName in Gibber.Audio.instruments ) {
+      const constructor = Gibber.Audio.instruments[ instrumentName ]
+      if( constructor.presets ) {
+        // sampler.list() shows sample directories on server
+        if( instrumentName !== 'Multisampler'  && instrumentName !== 'Sampler' ) { 
+          constructor.list = constructor.presets.list.bind( constructor.presets )
+        }
+
+        constructor.inspect = constructor.presets.inspect.bind( constructor.presets )
+      }
+
+      // sampler presets are defined for Multisampler
+      if( instrumentName === 'Sampler' ) continue
+
+      for( let presetName in constructor.presets ) {
+        if( presetName === 'inspect' || presetName === 'list' ) continue
+        Object.defineProperty( constructor, presetName, {
+          get() { return constructor( presetName ) }
+        })
+      }
+    }
+    for( let effectName in Gibber.Audio.effects ) {
+      const constructor = Gibber.Audio.effects[ effectName ]
+      if( constructor.presets ) {
+        //constructor.list = constructor.presets.list.bind( constructor.presets )
+        constructor.inspect = constructor.presets.inspect.bind( constructor.presets )
+      }
+
+      for( let presetName in constructor.presets ) {
+        if( presetName === 'inspect' || presetName === 'list' ) continue
+        Object.defineProperty( constructor, presetName, {
+          get() { return constructor( presetName ) }
+        })
+      }
+    }
+
     Console.log( 
       '%cgibber is now running. thanks for playing!', 
       `color:black;background:white; width:100%` 
     )
-
-    Storage.runUserSetup()
   }) 
 
   environment.editor = cm
@@ -301,6 +338,8 @@ window.onload = function() {
   Gibber.Environment = environment
 
   Collab( Gibber, environment )
+
+  
 
   setupExamples()
   setupThemeMenu()
@@ -361,9 +400,21 @@ const addSamplerExtensions = function( Gibber ) {
           })
       }
     }
+  }
+}
 
+const addFadeExtensions = function( Gibber ) {
+  const fade = {
+    fadein( time=16 ) { this.gain.fade( 0,null,time ) },
+    fadeOut( time=16 ) { this.gain.fade( null,0,time ) }
   }
 
+  for( let instrumentName in Gibber.Audio.instruments ) {
+    if( Gibber.extensions[ instrumentName ] === undefined ) 
+      Gibber.extensions[ instrumentName ] = {}
+
+    Object.assign( Gibber.extensions[ instrumentName ], fade )
+  }
 }
 
 // shouldRunNetworkCode is used to prevent recursive ws sending of code

@@ -285,11 +285,15 @@ const Marker = {
     let name = state[0]
     let count = 1
     let gen  = window[ name ]
-    while( name !== 'fade' ) {
-      name = state[ count ]
-      if( name === 'fade' ) break
-      gen = gen[ name ]
-      count++
+    if( state.indexOf( 'fadein' ) === -1  && state.indexOf( 'fadeout' ) === -1 ) {
+      while( name !== 'fade' ) {
+        name = state[ count ]
+        if( name === 'fade' ) break
+        gen = gen[ name ]
+        count++
+      }
+    }else{
+      gen = gen.gain
     }
     //if( gen.value !== undefined && typeof gen.value !== 'number' ) gen = gen.value
     Marker.waveform.createWaveformWidget( line, closeParenStart, ch-1, false, node, state.cm, gen, null, false, state )

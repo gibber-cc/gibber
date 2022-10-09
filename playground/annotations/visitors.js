@@ -305,8 +305,10 @@ module.exports = function( Marker ) {
         //console.log( 'marking pattern for seq:', seq )
       }else{
         // XXX need to fix this when we add gen~ expressions back in!!!
-        if( node.callee.object !== undefined && node.callee.object.type !== 'Identifier' && node.callee.property ) {
-          if( node.callee.property.name === 'fade' ) {
+        //if( node.callee.object !== undefined && node.callee.object.type !== 'Identifier' && node.callee.property ) {
+        if( node.callee.object !== undefined && node.callee.property ) {
+          const name = node.callee.property.name
+          if( name === 'fade' || name === 'fadein' || name === 'fadeout' ) {
             Marker.processFade( state, node )
           }
         }
