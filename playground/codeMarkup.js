@@ -293,9 +293,10 @@ const Marker = {
         count++
       }
     }else{
+      // assume we are using fadein or fadeout directly on an instrument
       gen = gen.gain
     }
-    //if( gen.value !== undefined && typeof gen.value !== 'number' ) gen = gen.value
+
     Marker.waveform.createWaveformWidget( line, closeParenStart, ch-1, false, node, state.cm, gen, null, false, state )
   },
 
