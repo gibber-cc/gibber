@@ -5892,18 +5892,19 @@ const Effects = {
 
       const shouldUsePool = poolEffects.indexOf( effectName ) > -1 
 
-      effects[ effectName ] = Ugen( gibberishConstructor, description, Audio, shouldUsePool )
+      effects[ replaceName ] = Ugen( gibberishConstructor, description, Audio, shouldUsePool )
       
-      effects[ effectName ].presets = Audio.Presets.effects[ effectName ] 
-      if( effects[ effectName ].presets !== undefined ) {
-        effects[ effectName ].presets.inspect = function() {
+      effects[ replaceName ].presets = Audio.Presets.effects[ replaceName ] 
+      if( effects[ replaceName ].presets !== undefined ) {
+        effects[ replaceName ].presets.inspect = function() {
           console.table( this )
         }
       }else{
-        effects[ effectName ].presets = { inspect() { console.log( `${effectName} has no presets.` ) } }
+        effects[ replaceName ].presets = { inspect() { console.log( `${effectName} has no presets.` ) } }
       }
     }
 
+    /*
     effects.Reverb = function( ...args ) {
       let argprops = null
       if( args.length === 1 ) {
@@ -5922,7 +5923,7 @@ const Effects = {
       }
 
       return ugen
-    }
+    }*/
 
     return effects
   },
@@ -7221,7 +7222,17 @@ const Instruments = {
           console.table( this )
         }
       }else{
-        instruments[ instrumentName ].presets = { inspect() { console.log( `${instrumentName} has no presets.` ) } }
+        instruments[ instrumentName ].presets = { 
+          inspect() { console.log( `${instrumentName} has no presets.` ) } 
+        }
+      }
+      instruments[ instrumentName ].presets.list = function() {
+        const names = Object.keys( this )
+        names.splice( names.indexOf( 'inspect' ), 1 )
+        names.splice( names.indexOf( 'list' ), 1 )
+        console.group( `${instrumentName} presets` )
+        names.forEach( v=>console.log(v) )
+        console.groupEnd()
       }
     }
     instruments.Pluck = instruments.Karplus
@@ -7446,27 +7457,26 @@ const Presets = {
   },
 
   instruments: {
-    Complex: require( './presets/complex_presets.js' ),
-    Synth: require( './presets/synth_presets.js' ),
-    FM:    require( './presets/fm_presets.js' ),
-    Monosynth: require( './presets/monosynth_presets.js' ),
-    PolyMono: require( './presets/monosynth_presets.js' ),
-    Snare: require( './presets/snare_presets.js' ),
-    Kick: require( './presets/kick_presets.js' ),
-    Hat: require( './presets/hat_presets.js' ),
-
-    EDrums: require( './presets/edrums_presets.js' ),
-    Drums:  require( './presets/drums_presets.js' ),
+    Complex:      require( './presets/complex_presets.js' ),
+    Synth:        require( './presets/synth_presets.js' ),
+    FM:           require( './presets/fm_presets.js' ),
+    Monosynth:    require( './presets/monosynth_presets.js' ),
+    PolyMono:     require( './presets/monosynth_presets.js' ),
+    Snare:        require( './presets/snare_presets.js' ),
+    Kick:         require( './presets/kick_presets.js' ),
+    Hat:          require( './presets/hat_presets.js' ),
+    EDrums:       require( './presets/edrums_presets.js' ),
+    Drums:        require( './presets/drums_presets.js' ),
     Multisampler: require( './presets/multisampler.js' ),
     Soundfont:    require( './presets/soundfont_presets.js' )
   },
 
   effects: {
-    Chorus: require( './presets/chorus_presets.js' ),
+    Chorus:     require( './presets/chorus_presets.js' ),
     Distortion: require( './presets/distortion_presets.js' ),
-    Flanger: require( './presets/flanger_presets.js' ),
-    Reverb: require( './presets/reverb.js' ),
-    Delay: require( './presets/delay_presets.js' ),
+    Flanger:    require( './presets/flanger_presets.js' ),
+    Reverb:     require( './presets/reverb.js' ),
+    Delay:      require( './presets/delay_presets.js' ),
   },
 
   misc: {
@@ -7477,8 +7487,8 @@ const Presets = {
 
 Presets.instruments.Sampler   = Presets.instruments.Multisampler
 Presets.instruments.PolySynth = Presets.instruments.Synth
-Presets.instruments.PolyFM = Presets.instruments.FM
-Presets.instruments.PolyMono = Presets.instruments.Monosynth
+Presets.instruments.PolyFM    = Presets.instruments.FM
+Presets.instruments.PolyMono  = Presets.instruments.Monosynth
 
 module.exports = Presets
 
@@ -8321,17 +8331,8 @@ module.exports = {
       this.length = 4
     }
   },
-  test: {
-    files:[
-      'resources/audiofiles/kick.wav',
-      'resources/audiofiles/openhat.wav'
-    ],
-    presetInit() {
-      this.length = 2
-    }
-  },
   beatbox: {
-    files:[
+  files:[
       'resources/audiofiles/beatbox/^k.wav',
       'resources/audiofiles/beatbox/^p.wav',
       'resources/audiofiles/beatbox/^tss.wav',
@@ -76466,6 +76467,12 @@ module.exports = ( patternObject, marker, className, cm ) => {
 const Utility = require( '../utilities.js' )
 const $ = Utility.create
 
+// this function is called in the pattern.update function
+// for markup/arrayExpressions to generate a function that
+// cycles through highlighted borders on each side. However,
+// the array markup function handles setting the initial borders
+// for selected array elements... this only takes care of the
+// cycling.
 module.exports = function( classNamePrefix, patternObject ) {
   let modCount = 0,
       lastBorder = null,
@@ -76482,8 +76489,6 @@ module.exports = function( classNamePrefix, patternObject ) {
       }
     }
 
-    //isArray = false 
-
     switch( modCount++ % 4 ) {
       case 1: border = 'right'; break;
       case 2: border = 'bottom'; break;
@@ -76491,6 +76496,7 @@ module.exports = function( classNamePrefix, patternObject ) {
     }
 
     // for a pattern holding arrays... like for chord()
+    // this is passed as an argument inside of pattern.update()
     if( isArray === true ) {
       // make sure base border surrounds array before dealing with highlight
       $( className ).add( 'annotation-array' )
@@ -76532,7 +76538,6 @@ module.exports = function( classNamePrefix, patternObject ) {
       $( className ).add( 'annotation-' + border + '-border-cycle' )
 
       if( lastBorder !== null ) {
-        console.log( 'last border:', lastBorder )
         $( className ).remove( 'annotation-' + lastBorder + '-border-cycle' )
         $( className ).add( 'annotation-' + lastBorder + '-border' )
       }
@@ -77237,8 +77242,10 @@ module.exports = function( Marker ) {
         //console.log( 'marking pattern for seq:', seq )
       }else{
         // XXX need to fix this when we add gen~ expressions back in!!!
-        if( node.callee.object !== undefined && node.callee.object.type !== 'Identifier' && node.callee.property ) {
-          if( node.callee.property.name === 'fade' ) {
+        //if( node.callee.object !== undefined && node.callee.object.type !== 'Identifier' && node.callee.property ) {
+        if( node.callee.object !== undefined && node.callee.property ) {
+          const name = node.callee.property.name
+          if( name === 'fade' || name === 'fadein' || name === 'fadeout' ) {
             Marker.processFade( state, node )
           }
         }
@@ -77964,11 +77971,15 @@ const Marker = {
     let name = state[0]
     let count = 1
     let gen  = window[ name ]
-    while( name !== 'fade' ) {
-      name = state[ count ]
-      if( name === 'fade' ) break
-      gen = gen[ name ]
-      count++
+    if( state.indexOf( 'fadein' ) === -1  && state.indexOf( 'fadeout' ) === -1 ) {
+      while( name !== 'fade' ) {
+        name = state[ count ]
+        if( name === 'fade' ) break
+        gen = gen[ name ]
+        count++
+      }
+    }else{
+      gen = gen.gain
     }
     //if( gen.value !== undefined && typeof gen.value !== 'number' ) gen = gen.value
     Marker.waveform.createWaveformWidget( line, closeParenStart, ch-1, false, node, state.cm, gen, null, false, state )
@@ -78993,6 +79004,7 @@ window.onload = function () {
     Gibber.Audio.Theory.__loadingPrefix = './resources/tune.json/';
     Gibber.export(window);
     addSamplerExtensions(Gibber);
+    addFadeExtensions(Gibber);
 
     window.future = function (fnc, time, dict) {
       Gibber.Audio.Gibberish.utilities.future(fnc, Clock.btos(time * 4), dict);
@@ -79202,8 +79214,54 @@ window.onload = function () {
 
     cm.__setup();
 
-    Console.log('%cgibber is now running. thanks for playing!', `color:black;background:white; width:100%`);
     Storage.runUserSetup();
+
+    for (let instrumentName in Gibber.Audio.instruments) {
+      const constructor = Gibber.Audio.instruments[instrumentName];
+
+      if (constructor.presets) {
+        // sampler.list() shows sample directories on server
+        if (instrumentName !== 'Multisampler' && instrumentName !== 'Sampler') {
+          constructor.list = constructor.presets.list.bind(constructor.presets);
+        }
+
+        constructor.inspect = constructor.presets.inspect.bind(constructor.presets);
+      } // sampler presets are defined for Multisampler
+
+
+      if (instrumentName === 'Sampler') continue;
+
+      for (let presetName in constructor.presets) {
+        if (presetName === 'inspect' || presetName === 'list') continue;
+        Object.defineProperty(constructor, presetName, {
+          get() {
+            return constructor(presetName);
+          }
+
+        });
+      }
+    }
+
+    for (let effectName in Gibber.Audio.effects) {
+      const constructor = Gibber.Audio.effects[effectName];
+
+      if (constructor.presets) {
+        //constructor.list = constructor.presets.list.bind( constructor.presets )
+        constructor.inspect = constructor.presets.inspect.bind(constructor.presets);
+      }
+
+      for (let presetName in constructor.presets) {
+        if (presetName === 'inspect' || presetName === 'list') continue;
+        Object.defineProperty(constructor, presetName, {
+          get() {
+            return constructor(presetName);
+          }
+
+        });
+      }
+    }
+
+    Console.log('%cgibber is now running. thanks for playing!', `color:black;background:white; width:100%`);
   });
   environment.editor = cm; //environment.console = cmconsole
 
@@ -79277,6 +79335,24 @@ const addSamplerExtensions = function (Gibber) {
     }
 
   };
+};
+
+const addFadeExtensions = function (Gibber) {
+  const fade = {
+    fadein(time = 16) {
+      this.gain.fade(0, null, time);
+    },
+
+    fadeOut(time = 16) {
+      this.gain.fade(null, 0, time);
+    }
+
+  };
+
+  for (let instrumentName in Gibber.Audio.instruments) {
+    if (Gibber.extensions[instrumentName] === undefined) Gibber.extensions[instrumentName] = {};
+    Object.assign(Gibber.extensions[instrumentName], fade);
+  }
 }; // shouldRunNetworkCode is used to prevent recursive ws sending of code
 // while isNetworked is used to test for acive ws connection
 // selectedCode can be set via ws messages
