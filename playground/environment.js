@@ -692,11 +692,8 @@ window.__use = function( lib ) {
           hydra.setResolution(canvas.width,canvas.height)
 
           if( Gibber.Environment ) {
-            const sheet = window.document.styleSheets[ window.document.styleSheets.length - 1 ]
-            sheet.insertRule(
-              '.CodeMirror pre { background-color: rgba( 0,0,0,.75 ) !important; }', 
-              sheet.cssRules.length
-            )
+            Gibber.Graphics.addCodeBackground()
+
             if( shouldSrcGibberCanvas ) {
               s0.init({ 
                 src:document.querySelector('#graphics'), 
@@ -731,12 +728,9 @@ window.__use = function( lib ) {
 
       window.setup = function(){
         if( Gibber.Environment ) {
-          const sheet = window.document.styleSheets[ window.document.styleSheets.length - 1 ]
-          sheet.insertRule(
-            '.CodeMirror pre { background-color: rgba( 0,0,0,.75 ) !important; }', 
-            sheet.cssRules.length
-          )
+          Gibber.Graphics.addCodeBackground()
         }
+
         createCanvas( window.innerWidth,window.innerHeight )
 
         // manage the draw loop ourselves so we can handle errors

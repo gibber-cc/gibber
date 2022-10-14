@@ -279,10 +279,6 @@ li.CodeMirror-hint-active {
   display: block;
 }
 
-.CodeMirror-selected {
-  background:var(--b_low) !important;
-}
-
 .CodeMirror-highlight {
   background:var(--b_low)
 }

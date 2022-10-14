@@ -5,6 +5,7 @@ key mappings
 This tutorial-that-is-not-really-a-tutorial
 just lists all the various keystroke mappings
 in gibber and provides explanations as needed.
+In macOS, replace any Alt keys with Option.
 
 ********** Running Code ***********
 (also see running/stopping code tutorial)
@@ -52,6 +53,6 @@ keys to navigate the 3D scene:
 - alt = move / turn faster while holding this down
 
 ********** Misc  ***********
-- hide code and top bar = ctrl + h
-
+- hide code and top bar  = Ctrl + h
+- toggle code background = Ctrl + Alt + b
 */

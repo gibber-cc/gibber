@@ -8809,7 +8809,17 @@ module.exports = {
     decay:1/8,
     panVoices:true
   },
-
+  'square.bass': { 
+    waveform:'square', 
+    shape:'exponential', 
+    antialias:true, 
+    filterModel:2, 
+    cutoff:.25, 
+    decay:1/4,
+    panVoices:false,
+    octave:-3,
+    gain:1
+  },
   'square.perc.long': { 
     waveform:'square', 
     shape:'exponential', 
@@ -13481,6 +13491,7 @@ const Graphics = {
   __storedir: null,
   __postprocessing: [],
   __marchingInitialized: false,
+  __showCodeBackground: false,
   camera: {
     pos: {
       x: 0,
@@ -13603,17 +13614,29 @@ const Graphics = {
           canvas.width = canvas.width;
         }
       }
-
-      const sheet = window.document.styleSheets[window.document.styleSheets.length - 1];
-
-      if (sheet.cssRules.length > 0 && Graphics.__ruleIdx !== null) {
-        sheet.deleteRule(Graphics.__ruleIdx);
-        Graphics.__ruleIdx = null;
-      }
     };
 
     Gibber.subscribe('clear', this.clear);
     return Promise.resolve([Graphics, 'Graphics']);
+  },
+
+  addCodeBackground() {
+    if (Gibber.Environment) {
+      const sheet = window.document.styleSheets[window.document.styleSheets.length - 1];
+      Graphics.__ruleIdx = sheet.insertRule('.CodeMirror pre { background-color: rgba( 0,0,0,.75 ) !important; }', sheet.cssRules.length);
+      Graphics.__showCodeBackground = true;
+    }
+  },
+
+  clearCodeBackground() {
+    const sheet = window.document.styleSheets[window.document.styleSheets.length - 1];
+
+    if (sheet.cssRules.length > 0 && Graphics.__ruleIdx !== null) {
+      sheet.deleteRule(Graphics.__ruleIdx);
+      Graphics.__ruleIdx = null;
+    }
+
+    Graphics.__showCodeBackground = false;
   },
 
   two(width = window.innerWidth, height = window.innerHeight) {
@@ -13621,12 +13644,7 @@ const Graphics = {
     this.canvas.width = width;
     this.canvas.height = height;
     this.mode = 2;
-
-    if (Gibber.Environment) {
-      const sheet = window.document.styleSheets[window.document.styleSheets.length - 1];
-      Graphics.__ruleIdx = sheet.insertRule('.CodeMirror pre { background-color: rgba( 0,0,0,.75 ) !important; }', sheet.cssRules.length);
-    }
-
+    Graphics.addCodeBackground();
     return this.ctx;
   },
 
@@ -78532,6 +78550,7 @@ let cm, cmconsole, exampleCode,
       networkConfig : { isNetworked :false },
       showArgHints:true,
       showCompletions:true,
+      showCodeBackground:false,
       CodeMirror,
       runCodeOverNetwork( selectedCode ) {
         //socket.send( JSON.stringify({ cmd:'eval', body:selectedCode }) ) 
@@ -78877,6 +78896,15 @@ CodeMirror.keyMap.playground =  {
   'Shift-Enter'( cm ) { environment.runCode( cm, false, false ) },
   'Alt-Enter'( cm )   { environment.runCode( cm, true,  true  ) },
   'Shift-Alt-Enter'( cm ) { environment.runCode( cm, true, false, true ) },
+  'Ctrl-Alt-B'( cm ) {
+    Gibber.Graphics.__showCodeBackground = !Gibber.Graphics.__showCodeBackground
+
+    if( Gibber.Graphics.__showCodeBackground ) {
+      Gibber.Graphics.addCodeBackground()
+    }else{
+      Gibber.Graphics.clearCodeBackground()
+    }
+  },
 
   //'Shift-Ctrl-C'(cm) {
   //  Marching.cameraEnabled = !Marching.cameraEnabled
@@ -79634,8 +79662,7 @@ window.__use = function (lib) {
           hydra.setResolution(canvas.width, canvas.height);
 
           if (Gibber.Environment) {
-            const sheet = window.document.styleSheets[window.document.styleSheets.length - 1];
-            sheet.insertRule('.CodeMirror pre { background-color: rgba( 0,0,0,.75 ) !important; }', sheet.cssRules.length);
+            Gibber.Graphics.addCodeBackground();
 
             if (shouldSrcGibberCanvas) {
               s0.init({
@@ -79674,8 +79701,7 @@ window.__use = function (lib) {
 
       window.setup = function () {
         if (Gibber.Environment) {
-          const sheet = window.document.styleSheets[window.document.styleSheets.length - 1];
-          sheet.insertRule('.CodeMirror pre { background-color: rgba( 0,0,0,.75 ) !important; }', sheet.cssRules.length);
+          Gibber.Graphics.addCodeBackground();
         }
 
         createCanvas(window.innerWidth, window.innerHeight); // manage the draw loop ourselves so we can handle errors

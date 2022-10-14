@@ -22,6 +22,7 @@ let cm, cmconsole, exampleCode,
       networkConfig : { isNetworked :false },
       showArgHints:true,
       showCompletions:true,
+      showCodeBackground:false,
       CodeMirror,
       runCodeOverNetwork( selectedCode ) {
         //socket.send( JSON.stringify({ cmd:'eval', body:selectedCode }) ) 
@@ -367,6 +368,15 @@ CodeMirror.keyMap.playground =  {
   'Shift-Enter'( cm ) { environment.runCode( cm, false, false ) },
   'Alt-Enter'( cm )   { environment.runCode( cm, true,  true  ) },
   'Shift-Alt-Enter'( cm ) { environment.runCode( cm, true, false, true ) },
+  'Ctrl-Alt-B'( cm ) {
+    Gibber.Graphics.__showCodeBackground = !Gibber.Graphics.__showCodeBackground
+
+    if( Gibber.Graphics.__showCodeBackground ) {
+      Gibber.Graphics.addCodeBackground()
+    }else{
+      Gibber.Graphics.clearCodeBackground()
+    }
+  },
 
   //'Shift-Ctrl-C'(cm) {
   //  Marching.cameraEnabled = !Marching.cameraEnabled
