@@ -104,6 +104,61 @@ Any 3D geometry in gibber includes methods from this prototype.
 **modifiers** *object* (optional) - This optional object contains key/value pairs that modify the preset/texture passed as the first argument.
 
 
+# Mixins
+number(sequencable)
+----
+
+
+#### Methods ####
+### number(sequencable).fade(  *start*,  *end*,  *time* ) ###
+**start** *float or null* (required) - The starting value for the fade. If a value of null is passed, the current value of the property will be the fade starting point.
+
+**end** *float or null* (required) - The end value for the fade. If a value of null is passed, the current value of the property will be the end of the fade.
+
+**time** *number* (required) - The duration of the fade, in measures.
+
+### number(sequencable).seq(  *values*,  *timings?*,  *seq_id?* ) ###
+**values** *number, pattern, or gen expression* (required) - This determines the output of the sequencer. A single value will be outputted repeatedly. Arrays will be converted to gibber Pattern objects. gen expressions creating signals can also be used here; this signals will be sampled whenever the sequencer is triggered (as determined by the timings argument).
+
+**timings** *number or pattern* (optional) - This argument determines when the sequencer fires. If no value is passed, the sequencer will fire whenever another sequencer on the same object fires... this enables you to only specify a single timings pattern and control all sequencers on an object with it. Arrays passed as an argument will be automatically converted to gibber pattern objects.
+
+**seq_id** *number* (optional) - This argument is used to identify individual sequencers, as multiple sequencers can be assigned to control a single method/property.
+
+### number(sequencable).start( ### number(sequencable).stop( ### number(sequencable).tidal(  *pattern*,  *tidal_id?* ) ###
+**pattern** *string* (required) - A string using the TidalCycles mini-notation. See the TidalCycles tutorial for more information.
+
+**tidal_id** *number* (optional) - 
+
+
+#### Properties ####
+### number(sequencable).sequencers ###
+*array*  Stores all scheduler instances created by calling .seq on this property/method.
+### number(sequencable).tidals ###
+*array*  Stores all scheduler instances created by calling .tidal on this property/method.
+method(sequencable)
+----
+
+
+#### Methods ####
+### method(sequencable).seq(  *values*,  *timings?*,  *seq_id?* ) ###
+**values** *number, array, pattern, or gen expression* (required) - This determines the output of the sequencer. A single value will be outputted repeatedly. Arrays will be converted to gibber Pattern objects. gen expressions creating signals can also be used here; this signals will be sampled whenever the sequencer is triggered (as determined by the timings argument).
+
+**timings** *number, array, or pattern* (optional) - This argument determines when the sequencer fires. If no value is passed, the sequencer will fire whenever another sequencer on the same object fires... this enables you to only specify a single timings pattern and control all sequencers on an object with it. Arrays passed as an argument will be automatically converted to gibber pattern objects.
+
+**seq_id** *number* (optional) - 
+
+### method(sequencable).start( ### method(sequencable).stop( ### method(sequencable).tidal(  *pattern*,  *tidal_id?* ) ###
+**pattern** *string* (required) - A string using the TidalCycles mini-notation. See the TidalCycles tutorial for more information.
+
+**tidal_id** *number* (optional) - 
+
+
+#### Properties ####
+### method(sequencable).sequencers ###
+*array*  Stores all scheduler instances created by calling .seq on this property/method.
+### method(sequencable).tidals ###
+*array*  Stores all scheduler instances created by calling .tidal on this property/method.
+
 # Misc
 ## Rndi
  This creates a function that outputs random integers within a given range; although the function is intended for use within sequences it can be called like any ordinary JavaScript function.

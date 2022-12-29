@@ -88,6 +88,15 @@ for( let proto of gibberDef.prototypes.graphics ) {
 }
 
 text += `
+# Mixins
+`
+for( let proto of gibberDef.mixins ) {
+  text = displayHeader( proto, text )
+  text = displayMethods( proto, text )
+  text = displayProperties( proto, text )  
+}
+
+text += `
 # Misc
 `
 
