@@ -315,6 +315,31 @@ window.onload = function() {
         })
       }
     }
+    const def = {
+      name:'Var',
+      type:'Ugen',
+      properties: { value:1 },
+      constructor: function() {
+        const gen = Gibberish.genish
+        const graph = gen.in( 'value' )
+
+        return graph
+      }
+    }
+
+    window.__Var = Make( def )
+    window.Var = function( value=null ) {
+      const obj = window.__Var()
+      obj.get = ()=> obj.__out
+
+      if( value !== null ) {
+        obj.value = value
+      }
+
+      obj.fade = obj.value.fade.bind( obj.value )
+
+      return obj
+    }
 
     Console.log( 
       '%cgibber is now running. thanks for playing!', 
@@ -344,6 +369,7 @@ window.onload = function() {
 
   Collab( Gibber, environment )
 
+  
   
 
   setupExamples()
