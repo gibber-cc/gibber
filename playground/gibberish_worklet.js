@@ -5515,10 +5515,6 @@ Object.defineProperties(exports, _defineProperty({
   value: "Module"
 }));
 
-function getDefaultExportFromCjs(x) {
-  return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, "default") ? x["default"] : x;
-}
-
 function peg$subclass(child, parent) {
   function C() {
     this.constructor = child;
@@ -5691,18 +5687,18 @@ function peg$parse(input, options) {
   var peg$c11 = ":";
   var peg$c12 = "[";
   var peg$c13 = "]";
-  var peg$c14 = "<";
-  var peg$c15 = ">";
-  var peg$c16 = "@";
-  var peg$c17 = "!";
-  var peg$c18 = "(";
-  var peg$c19 = ")";
-  var peg$c20 = "/";
-  var peg$c21 = "*";
-  var peg$c22 = "%";
-  var peg$c23 = "?";
-  var peg$c24 = "<~";
-  var peg$c25 = "~>";
+  var peg$c14 = "{";
+  var peg$c15 = "}";
+  var peg$c16 = "%";
+  var peg$c17 = "<";
+  var peg$c18 = ">";
+  var peg$c19 = "@";
+  var peg$c20 = "!";
+  var peg$c21 = "(";
+  var peg$c22 = ")";
+  var peg$c23 = "/";
+  var peg$c24 = "*";
+  var peg$c25 = "?";
   var peg$c26 = "struct";
   var peg$c27 = "target";
   var peg$c28 = "euclid";
@@ -5744,18 +5740,18 @@ function peg$parse(input, options) {
   var peg$e18 = peg$literalExpectation(":", false);
   var peg$e19 = peg$literalExpectation("[", false);
   var peg$e20 = peg$literalExpectation("]", false);
-  var peg$e21 = peg$literalExpectation("<", false);
-  var peg$e22 = peg$literalExpectation(">", false);
-  var peg$e23 = peg$literalExpectation("@", false);
-  var peg$e24 = peg$literalExpectation("!", false);
-  var peg$e25 = peg$literalExpectation("(", false);
-  var peg$e26 = peg$literalExpectation(")", false);
-  var peg$e27 = peg$literalExpectation("/", false);
-  var peg$e28 = peg$literalExpectation("*", false);
-  var peg$e29 = peg$literalExpectation("%", false);
-  var peg$e30 = peg$literalExpectation("?", false);
-  var peg$e31 = peg$literalExpectation("<~", false);
-  var peg$e32 = peg$literalExpectation("~>", false);
+  var peg$e21 = peg$literalExpectation("{", false);
+  var peg$e22 = peg$literalExpectation("}", false);
+  var peg$e23 = peg$literalExpectation("%", false);
+  var peg$e24 = peg$literalExpectation("<", false);
+  var peg$e25 = peg$literalExpectation(">", false);
+  var peg$e26 = peg$literalExpectation("@", false);
+  var peg$e27 = peg$literalExpectation("!", false);
+  var peg$e28 = peg$literalExpectation("(", false);
+  var peg$e29 = peg$literalExpectation(")", false);
+  var peg$e30 = peg$literalExpectation("/", false);
+  var peg$e31 = peg$literalExpectation("*", false);
+  var peg$e32 = peg$literalExpectation("?", false);
   var peg$e33 = peg$literalExpectation("struct", false);
   var peg$e34 = peg$literalExpectation("target", false);
   var peg$e35 = peg$literalExpectation("euclid", false);
@@ -5777,137 +5773,119 @@ function peg$parse(input, options) {
   };
 
   var peg$f1 = function (chars) {
-    return chars.join("");
+    return new AtomStub(chars.join(""));
   };
 
   var peg$f2 = function (s) {
     return s;
   };
 
-  var peg$f3 = function (sc) {
-    sc.arguments_.alignment = "t";
-    return sc;
+  var peg$f3 = function (s, stepsPerCycle) {
+    s.arguments_.stepsPerCycle = stepsPerCycle;
+    return s;
   };
 
-  var peg$f4 = function (a) {
+  var peg$f4 = function (a2) {
+    return a2;
+  };
+
+  var peg$f5 = function (s) {
+    s.arguments_.alignment = "slowcat";
+    return s;
+  };
+
+  var peg$f6 = function (a2) {
     return {
-      weight: a
+      weight: a2
     };
   };
 
-  var peg$f5 = function (a) {
+  var peg$f7 = function (a2) {
     return {
-      replicate: a
+      replicate: a2
     };
   };
 
-  var peg$f6 = function (p, s, r) {
+  var peg$f8 = function (p, s, r2) {
     return {
       operator: {
         type_: "bjorklund",
         arguments_: {
           pulse: p,
           step: s,
-          rotation: r || 0
+          rotation: r2
         }
       }
     };
   };
 
-  var peg$f7 = function (a) {
+  var peg$f9 = function (a2) {
     return {
       operator: {
         type_: "stretch",
         arguments_: {
-          amount: a
+          amount: a2,
+          type: "slow"
         }
       }
     };
   };
 
-  var peg$f8 = function (a) {
+  var peg$f10 = function (a2) {
     return {
       operator: {
         type_: "stretch",
         arguments_: {
-          amount: "1/" + a
+          amount: a2,
+          type: "fast"
         }
       }
     };
   };
 
-  var peg$f9 = function (a) {
-    return {
-      operator: {
-        type_: "fixed-step",
-        arguments_: {
-          amount: a
-        }
-      }
-    };
-  };
-
-  var peg$f10 = function (a) {
+  var peg$f11 = function (a2) {
     return {
       operator: {
         type_: "degradeBy",
         arguments_: {
-          amount: a ? a : 0.5
+          amount: a2
         }
       }
     };
   };
 
-  var peg$f11 = function (a) {
-    return {
-      operator: {
-        type_: "early",
-        arguments_: {
-          amount: a
-        }
-      }
-    };
-  };
-
-  var peg$f12 = function (a) {
-    return {
-      operator: {
-        type_: "late",
-        arguments_: {
-          amount: a
-        }
-      }
-    };
-  };
-
-  var peg$f13 = function (s, o) {
+  var peg$f12 = function (s, o) {
     return new ElementStub(s, o);
   };
 
-  var peg$f14 = function (s) {
-    return new PatternStub(s, "h");
+  var peg$f13 = function (s) {
+    return new PatternStub(s, "fastcat");
+  };
+
+  var peg$f14 = function (tail) {
+    return {
+      alignment: "stack",
+      list: tail
+    };
   };
 
   var peg$f15 = function (tail) {
     return {
-      alignment: "v",
+      alignment: "rand",
       list: tail
     };
   };
 
-  var peg$f16 = function (tail) {
-    return {
-      alignment: "r",
-      list: tail
-    };
-  };
-
-  var peg$f17 = function (head, tail) {
+  var peg$f16 = function (head, tail) {
     if (tail && tail.list.length > 0) {
       return new PatternStub([head, ...tail.list], tail.alignment);
     } else {
       return head;
     }
+  };
+
+  var peg$f17 = function (head, tail) {
+    return new PatternStub(tail ? [head, ...tail.list] : [head], "polymeter");
   };
 
   var peg$f18 = function (sc) {
@@ -5918,7 +5896,7 @@ function peg$parse(input, options) {
     return {
       name: "struct",
       args: {
-        sequence: s
+        mini: s
       }
     };
   };
@@ -5932,48 +5910,48 @@ function peg$parse(input, options) {
     };
   };
 
-  var peg$f21 = function (p, s, r) {
+  var peg$f21 = function (p, s, r2) {
     return {
       name: "bjorklund",
       args: {
-        pulse: parseInt(p),
+        pulse: p,
         step: parseInt(s)
       }
     };
   };
 
-  var peg$f22 = function (a) {
+  var peg$f22 = function (a2) {
     return {
       name: "stretch",
       args: {
-        amount: a
+        amount: a2
       }
     };
   };
 
-  var peg$f23 = function (a) {
+  var peg$f23 = function (a2) {
     return {
       name: "shift",
       args: {
-        amount: "-" + a
+        amount: "-" + a2
       }
     };
   };
 
-  var peg$f24 = function (a) {
+  var peg$f24 = function (a2) {
     return {
       name: "shift",
       args: {
-        amount: a
+        amount: a2
       }
     };
   };
 
-  var peg$f25 = function (a) {
+  var peg$f25 = function (a2) {
     return {
       name: "stretch",
       args: {
-        amount: "1/" + a
+        amount: "1/" + a2
       }
     };
   };
@@ -5993,7 +5971,7 @@ function peg$parse(input, options) {
 
   var peg$f28 = function (s, ss) {
     ss.unshift(s);
-    return new PatternStub(ss, "t");
+    return new PatternStub(ss, "slowcat");
   };
 
   var peg$f29 = function (sg) {
@@ -6716,12 +6694,12 @@ function peg$parse(input, options) {
     return s0;
   }
 
-  function peg$parsetimeline() {
-    var s0, s2, s4, s6;
+  function peg$parsepolymeter() {
+    var s0, s2, s4, s6, s7;
     s0 = peg$currPos;
     peg$parsews();
 
-    if (input.charCodeAt(peg$currPos) === 60) {
+    if (input.charCodeAt(peg$currPos) === 123) {
       s2 = peg$c14;
       peg$currPos++;
     } else {
@@ -6734,12 +6712,12 @@ function peg$parse(input, options) {
 
     if (s2 !== peg$FAILED) {
       peg$parsews();
-      s4 = peg$parsesingle_cycle();
+      s4 = peg$parsepolymeter_stack();
 
       if (s4 !== peg$FAILED) {
         peg$parsews();
 
-        if (input.charCodeAt(peg$currPos) === 62) {
+        if (input.charCodeAt(peg$currPos) === 125) {
           s6 = peg$c15;
           peg$currPos++;
         } else {
@@ -6751,9 +6729,102 @@ function peg$parse(input, options) {
         }
 
         if (s6 !== peg$FAILED) {
+          s7 = peg$parsepolymeter_steps();
+
+          if (s7 === peg$FAILED) {
+            s7 = null;
+          }
+
           peg$parsews();
           peg$savedPos = s0;
-          s0 = peg$f3(s4);
+          s0 = peg$f3(s4, s7);
+        } else {
+          peg$currPos = s0;
+          s0 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+
+    return s0;
+  }
+
+  function peg$parsepolymeter_steps() {
+    var s0, s1, s2;
+    s0 = peg$currPos;
+
+    if (input.charCodeAt(peg$currPos) === 37) {
+      s1 = peg$c16;
+      peg$currPos++;
+    } else {
+      s1 = peg$FAILED;
+
+      if (peg$silentFails === 0) {
+        peg$fail(peg$e23);
+      }
+    }
+
+    if (s1 !== peg$FAILED) {
+      s2 = peg$parseslice();
+
+      if (s2 !== peg$FAILED) {
+        peg$savedPos = s0;
+        s0 = peg$f4(s2);
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+
+    return s0;
+  }
+
+  function peg$parseslow_sequence() {
+    var s0, s2, s4, s6;
+    s0 = peg$currPos;
+    peg$parsews();
+
+    if (input.charCodeAt(peg$currPos) === 60) {
+      s2 = peg$c17;
+      peg$currPos++;
+    } else {
+      s2 = peg$FAILED;
+
+      if (peg$silentFails === 0) {
+        peg$fail(peg$e24);
+      }
+    }
+
+    if (s2 !== peg$FAILED) {
+      peg$parsews();
+      s4 = peg$parsesequence();
+
+      if (s4 !== peg$FAILED) {
+        peg$parsews();
+
+        if (input.charCodeAt(peg$currPos) === 62) {
+          s6 = peg$c18;
+          peg$currPos++;
+        } else {
+          s6 = peg$FAILED;
+
+          if (peg$silentFails === 0) {
+            peg$fail(peg$e25);
+          }
+        }
+
+        if (s6 !== peg$FAILED) {
+          peg$parsews();
+          peg$savedPos = s0;
+          s0 = peg$f5(s4);
         } else {
           peg$currPos = s0;
           s0 = peg$FAILED;
@@ -6778,7 +6849,11 @@ function peg$parse(input, options) {
       s0 = peg$parsesub_cycle();
 
       if (s0 === peg$FAILED) {
-        s0 = peg$parsetimeline();
+        s0 = peg$parsepolymeter();
+
+        if (s0 === peg$FAILED) {
+          s0 = peg$parseslow_sequence();
+        }
       }
     }
 
@@ -6799,22 +6874,10 @@ function peg$parse(input, options) {
           s0 = peg$parseslice_fast();
 
           if (s0 === peg$FAILED) {
-            s0 = peg$parseslice_fixed_step();
+            s0 = peg$parseslice_replicate();
 
             if (s0 === peg$FAILED) {
-              s0 = peg$parseslice_replicate();
-
-              if (s0 === peg$FAILED) {
-                s0 = peg$parseslice_degrade();
-
-                if (s0 === peg$FAILED) {
-                  s0 = peg$parseslice_early();
-
-                  if (s0 === peg$FAILED) {
-                    s0 = peg$parseslice_late();
-                  }
-                }
-              }
+              s0 = peg$parseslice_degrade();
             }
           }
         }
@@ -6829,13 +6892,13 @@ function peg$parse(input, options) {
     s0 = peg$currPos;
 
     if (input.charCodeAt(peg$currPos) === 64) {
-      s1 = peg$c16;
+      s1 = peg$c19;
       peg$currPos++;
     } else {
       s1 = peg$FAILED;
 
       if (peg$silentFails === 0) {
-        peg$fail(peg$e23);
+        peg$fail(peg$e26);
       }
     }
 
@@ -6844,7 +6907,7 @@ function peg$parse(input, options) {
 
       if (s2 !== peg$FAILED) {
         peg$savedPos = s0;
-        s0 = peg$f4(s2);
+        s0 = peg$f6(s2);
       } else {
         peg$currPos = s0;
         s0 = peg$FAILED;
@@ -6862,13 +6925,13 @@ function peg$parse(input, options) {
     s0 = peg$currPos;
 
     if (input.charCodeAt(peg$currPos) === 33) {
-      s1 = peg$c17;
+      s1 = peg$c20;
       peg$currPos++;
     } else {
       s1 = peg$FAILED;
 
       if (peg$silentFails === 0) {
-        peg$fail(peg$e24);
+        peg$fail(peg$e27);
       }
     }
 
@@ -6877,7 +6940,7 @@ function peg$parse(input, options) {
 
       if (s2 !== peg$FAILED) {
         peg$savedPos = s0;
-        s0 = peg$f5(s2);
+        s0 = peg$f7(s2);
       } else {
         peg$currPos = s0;
         s0 = peg$FAILED;
@@ -6895,19 +6958,19 @@ function peg$parse(input, options) {
     s0 = peg$currPos;
 
     if (input.charCodeAt(peg$currPos) === 40) {
-      s1 = peg$c18;
+      s1 = peg$c21;
       peg$currPos++;
     } else {
       s1 = peg$FAILED;
 
       if (peg$silentFails === 0) {
-        peg$fail(peg$e25);
+        peg$fail(peg$e28);
       }
     }
 
     if (s1 !== peg$FAILED) {
       peg$parsews();
-      s3 = peg$parsenumber();
+      s3 = peg$parseslice_with_modifier();
 
       if (s3 !== peg$FAILED) {
         peg$parsews();
@@ -6915,13 +6978,13 @@ function peg$parse(input, options) {
 
         if (s5 !== peg$FAILED) {
           peg$parsews();
-          s7 = peg$parsenumber();
+          s7 = peg$parseslice_with_modifier();
 
           if (s7 !== peg$FAILED) {
             peg$parsews();
             peg$parsecomma();
             peg$parsews();
-            s11 = peg$parsenumber();
+            s11 = peg$parseslice_with_modifier();
 
             if (s11 === peg$FAILED) {
               s11 = null;
@@ -6930,19 +6993,19 @@ function peg$parse(input, options) {
             peg$parsews();
 
             if (input.charCodeAt(peg$currPos) === 41) {
-              s13 = peg$c19;
+              s13 = peg$c22;
               peg$currPos++;
             } else {
               s13 = peg$FAILED;
 
               if (peg$silentFails === 0) {
-                peg$fail(peg$e26);
+                peg$fail(peg$e29);
               }
             }
 
             if (s13 !== peg$FAILED) {
               peg$savedPos = s0;
-              s0 = peg$f6(s3, s7, s11);
+              s0 = peg$f8(s3, s7, s11);
             } else {
               peg$currPos = s0;
               s0 = peg$FAILED;
@@ -6972,22 +7035,22 @@ function peg$parse(input, options) {
     s0 = peg$currPos;
 
     if (input.charCodeAt(peg$currPos) === 47) {
-      s1 = peg$c20;
+      s1 = peg$c23;
       peg$currPos++;
     } else {
       s1 = peg$FAILED;
 
       if (peg$silentFails === 0) {
-        peg$fail(peg$e27);
+        peg$fail(peg$e30);
       }
     }
 
     if (s1 !== peg$FAILED) {
-      s2 = peg$parsenumber();
+      s2 = peg$parseslice();
 
       if (s2 !== peg$FAILED) {
         peg$savedPos = s0;
-        s0 = peg$f7(s2);
+        s0 = peg$f9(s2);
       } else {
         peg$currPos = s0;
         s0 = peg$FAILED;
@@ -7005,55 +7068,22 @@ function peg$parse(input, options) {
     s0 = peg$currPos;
 
     if (input.charCodeAt(peg$currPos) === 42) {
-      s1 = peg$c21;
+      s1 = peg$c24;
       peg$currPos++;
     } else {
       s1 = peg$FAILED;
 
       if (peg$silentFails === 0) {
-        peg$fail(peg$e28);
+        peg$fail(peg$e31);
       }
     }
 
     if (s1 !== peg$FAILED) {
-      s2 = peg$parsenumber();
+      s2 = peg$parseslice();
 
       if (s2 !== peg$FAILED) {
         peg$savedPos = s0;
-        s0 = peg$f8(s2);
-      } else {
-        peg$currPos = s0;
-        s0 = peg$FAILED;
-      }
-    } else {
-      peg$currPos = s0;
-      s0 = peg$FAILED;
-    }
-
-    return s0;
-  }
-
-  function peg$parseslice_fixed_step() {
-    var s0, s1, s2;
-    s0 = peg$currPos;
-
-    if (input.charCodeAt(peg$currPos) === 37) {
-      s1 = peg$c22;
-      peg$currPos++;
-    } else {
-      s1 = peg$FAILED;
-
-      if (peg$silentFails === 0) {
-        peg$fail(peg$e29);
-      }
-    }
-
-    if (s1 !== peg$FAILED) {
-      s2 = peg$parsenumber();
-
-      if (s2 !== peg$FAILED) {
-        peg$savedPos = s0;
-        s0 = peg$f9(s2);
+        s0 = peg$f10(s2);
       } else {
         peg$currPos = s0;
         s0 = peg$FAILED;
@@ -7071,73 +7101,8 @@ function peg$parse(input, options) {
     s0 = peg$currPos;
 
     if (input.charCodeAt(peg$currPos) === 63) {
-      s1 = peg$c23;
-      peg$currPos++;
-    } else {
-      s1 = peg$FAILED;
-
-      if (peg$silentFails === 0) {
-        peg$fail(peg$e30);
-      }
-    }
-
-    if (s1 !== peg$FAILED) {
-      s2 = peg$parsenumber();
-
-      if (s2 === peg$FAILED) {
-        s2 = null;
-      }
-
-      peg$savedPos = s0;
-      s0 = peg$f10(s2);
-    } else {
-      peg$currPos = s0;
-      s0 = peg$FAILED;
-    }
-
-    return s0;
-  }
-
-  function peg$parseslice_early() {
-    var s0, s1, s2;
-    s0 = peg$currPos;
-
-    if (input.substr(peg$currPos, 2) === peg$c24) {
-      s1 = peg$c24;
-      peg$currPos += 2;
-    } else {
-      s1 = peg$FAILED;
-
-      if (peg$silentFails === 0) {
-        peg$fail(peg$e31);
-      }
-    }
-
-    if (s1 !== peg$FAILED) {
-      s2 = peg$parsenumber();
-
-      if (s2 !== peg$FAILED) {
-        peg$savedPos = s0;
-        s0 = peg$f11(s2);
-      } else {
-        peg$currPos = s0;
-        s0 = peg$FAILED;
-      }
-    } else {
-      peg$currPos = s0;
-      s0 = peg$FAILED;
-    }
-
-    return s0;
-  }
-
-  function peg$parseslice_late() {
-    var s0, s1, s2;
-    s0 = peg$currPos;
-
-    if (input.substr(peg$currPos, 2) === peg$c25) {
       s1 = peg$c25;
-      peg$currPos += 2;
+      peg$currPos++;
     } else {
       s1 = peg$FAILED;
 
@@ -7149,13 +7114,12 @@ function peg$parse(input, options) {
     if (s1 !== peg$FAILED) {
       s2 = peg$parsenumber();
 
-      if (s2 !== peg$FAILED) {
-        peg$savedPos = s0;
-        s0 = peg$f12(s2);
-      } else {
-        peg$currPos = s0;
-        s0 = peg$FAILED;
+      if (s2 === peg$FAILED) {
+        s2 = null;
       }
+
+      peg$savedPos = s0;
+      s0 = peg$f11(s2);
     } else {
       peg$currPos = s0;
       s0 = peg$FAILED;
@@ -7177,7 +7141,7 @@ function peg$parse(input, options) {
       }
 
       peg$savedPos = s0;
-      s0 = peg$f13(s1, s2);
+      s0 = peg$f12(s1, s2);
     } else {
       peg$currPos = s0;
       s0 = peg$FAILED;
@@ -7186,7 +7150,7 @@ function peg$parse(input, options) {
     return s0;
   }
 
-  function peg$parsesingle_cycle() {
+  function peg$parsesequence() {
     var s0, s1, s2;
     s0 = peg$currPos;
     s1 = [];
@@ -7203,7 +7167,7 @@ function peg$parse(input, options) {
 
     if (s1 !== peg$FAILED) {
       peg$savedPos = s0;
-      s1 = peg$f14(s1);
+      s1 = peg$f13(s1);
     }
 
     s0 = s1;
@@ -7218,7 +7182,7 @@ function peg$parse(input, options) {
     s3 = peg$parsecomma();
 
     if (s3 !== peg$FAILED) {
-      s4 = peg$parsesingle_cycle();
+      s4 = peg$parsesequence();
 
       if (s4 !== peg$FAILED) {
         s2 = s4;
@@ -7238,7 +7202,61 @@ function peg$parse(input, options) {
         s3 = peg$parsecomma();
 
         if (s3 !== peg$FAILED) {
-          s4 = peg$parsesingle_cycle();
+          s4 = peg$parsesequence();
+
+          if (s4 !== peg$FAILED) {
+            s2 = s4;
+          } else {
+            peg$currPos = s2;
+            s2 = peg$FAILED;
+          }
+        } else {
+          peg$currPos = s2;
+          s2 = peg$FAILED;
+        }
+      }
+    } else {
+      s1 = peg$FAILED;
+    }
+
+    if (s1 !== peg$FAILED) {
+      peg$savedPos = s0;
+      s1 = peg$f14(s1);
+    }
+
+    s0 = s1;
+    return s0;
+  }
+
+  function peg$parsechoose_tail() {
+    var s0, s1, s2, s3, s4;
+    s0 = peg$currPos;
+    s1 = [];
+    s2 = peg$currPos;
+    s3 = peg$parsepipe();
+
+    if (s3 !== peg$FAILED) {
+      s4 = peg$parsesequence();
+
+      if (s4 !== peg$FAILED) {
+        s2 = s4;
+      } else {
+        peg$currPos = s2;
+        s2 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s2;
+      s2 = peg$FAILED;
+    }
+
+    if (s2 !== peg$FAILED) {
+      while (s2 !== peg$FAILED) {
+        s1.push(s2);
+        s2 = peg$currPos;
+        s3 = peg$parsepipe();
+
+        if (s3 !== peg$FAILED) {
+          s4 = peg$parsesequence();
 
           if (s4 !== peg$FAILED) {
             s2 = s4;
@@ -7264,64 +7282,10 @@ function peg$parse(input, options) {
     return s0;
   }
 
-  function peg$parsechoose_tail() {
-    var s0, s1, s2, s3, s4;
-    s0 = peg$currPos;
-    s1 = [];
-    s2 = peg$currPos;
-    s3 = peg$parsepipe();
-
-    if (s3 !== peg$FAILED) {
-      s4 = peg$parsesingle_cycle();
-
-      if (s4 !== peg$FAILED) {
-        s2 = s4;
-      } else {
-        peg$currPos = s2;
-        s2 = peg$FAILED;
-      }
-    } else {
-      peg$currPos = s2;
-      s2 = peg$FAILED;
-    }
-
-    if (s2 !== peg$FAILED) {
-      while (s2 !== peg$FAILED) {
-        s1.push(s2);
-        s2 = peg$currPos;
-        s3 = peg$parsepipe();
-
-        if (s3 !== peg$FAILED) {
-          s4 = peg$parsesingle_cycle();
-
-          if (s4 !== peg$FAILED) {
-            s2 = s4;
-          } else {
-            peg$currPos = s2;
-            s2 = peg$FAILED;
-          }
-        } else {
-          peg$currPos = s2;
-          s2 = peg$FAILED;
-        }
-      }
-    } else {
-      s1 = peg$FAILED;
-    }
-
-    if (s1 !== peg$FAILED) {
-      peg$savedPos = s0;
-      s1 = peg$f16(s1);
-    }
-
-    s0 = s1;
-    return s0;
-  }
-
   function peg$parsestack_or_choose() {
     var s0, s1, s2;
     s0 = peg$currPos;
-    s1 = peg$parsesingle_cycle();
+    s1 = peg$parsesequence();
 
     if (s1 !== peg$FAILED) {
       s2 = peg$parsestack_tail();
@@ -7329,6 +7293,28 @@ function peg$parse(input, options) {
       if (s2 === peg$FAILED) {
         s2 = peg$parsechoose_tail();
       }
+
+      if (s2 === peg$FAILED) {
+        s2 = null;
+      }
+
+      peg$savedPos = s0;
+      s0 = peg$f16(s1, s2);
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+
+    return s0;
+  }
+
+  function peg$parsepolymeter_stack() {
+    var s0, s1, s2;
+    s0 = peg$currPos;
+    s1 = peg$parsesequence();
+
+    if (s1 !== peg$FAILED) {
+      s2 = peg$parsestack_tail();
 
       if (s2 === peg$FAILED) {
         s2 = null;
@@ -7344,7 +7330,7 @@ function peg$parse(input, options) {
     return s0;
   }
 
-  function peg$parsesequence() {
+  function peg$parsemini() {
     var s0, s2, s3, s4;
     s0 = peg$currPos;
     peg$parsews();
@@ -7427,7 +7413,7 @@ function peg$parse(input, options) {
 
     if (s1 !== peg$FAILED) {
       peg$parsews();
-      s3 = peg$parsesequence_or_operator();
+      s3 = peg$parsemini_or_operator();
 
       if (s3 !== peg$FAILED) {
         peg$savedPos = s0;
@@ -7815,7 +7801,7 @@ function peg$parse(input, options) {
 
       if (s3 !== peg$FAILED) {
         peg$parsews();
-        s5 = peg$parsesequence_or_operator();
+        s5 = peg$parsemini_or_operator();
 
         if (s5 !== peg$FAILED) {
           s6 = [];
@@ -7823,7 +7809,7 @@ function peg$parse(input, options) {
           s8 = peg$parsecomma();
 
           if (s8 !== peg$FAILED) {
-            s9 = peg$parsesequence_or_operator();
+            s9 = peg$parsemini_or_operator();
 
             if (s9 !== peg$FAILED) {
               peg$savedPos = s7;
@@ -7843,7 +7829,7 @@ function peg$parse(input, options) {
             s8 = peg$parsecomma();
 
             if (s8 !== peg$FAILED) {
-              s9 = peg$parsesequence_or_operator();
+              s9 = peg$parsemini_or_operator();
 
               if (s9 !== peg$FAILED) {
                 peg$savedPos = s7;
@@ -7894,21 +7880,21 @@ function peg$parse(input, options) {
     return s0;
   }
 
-  function peg$parsesequence_or_group() {
+  function peg$parsemini_or_group() {
     var s0;
     s0 = peg$parsecat();
 
     if (s0 === peg$FAILED) {
-      s0 = peg$parsesequence();
+      s0 = peg$parsemini();
     }
 
     return s0;
   }
 
-  function peg$parsesequence_or_operator() {
+  function peg$parsemini_or_operator() {
     var s0, s1, s3, s4, s5;
     s0 = peg$currPos;
-    s1 = peg$parsesequence_or_group();
+    s1 = peg$parsemini_or_group();
 
     if (s1 !== peg$FAILED) {
       peg$parsews();
@@ -7947,7 +7933,7 @@ function peg$parse(input, options) {
 
         if (s3 !== peg$FAILED) {
           s4 = peg$parsews();
-          s5 = peg$parsesequence_or_operator();
+          s5 = peg$parsemini_or_operator();
 
           if (s5 !== peg$FAILED) {
             peg$savedPos = s0;
@@ -7972,7 +7958,7 @@ function peg$parse(input, options) {
   function peg$parsesequ_or_operator_or_comment() {
     var s0, s1;
     s0 = peg$currPos;
-    s1 = peg$parsesequence_or_operator();
+    s1 = peg$parsemini_or_operator();
 
     if (s1 !== peg$FAILED) {
       peg$savedPos = s0;
@@ -7988,7 +7974,7 @@ function peg$parse(input, options) {
     return s0;
   }
 
-  function peg$parsesequence_definition() {
+  function peg$parsemini_definition() {
     var s0;
     s0 = peg$parsesequ_or_operator_or_comment();
     return s0;
@@ -8114,7 +8100,7 @@ function peg$parse(input, options) {
 
   function peg$parsestatement() {
     var s0;
-    s0 = peg$parsesequence_definition();
+    s0 = peg$parsemini_definition();
 
     if (s0 === peg$FAILED) {
       s0 = peg$parsecommand();
@@ -8122,6 +8108,12 @@ function peg$parse(input, options) {
 
     return s0;
   }
+
+  var AtomStub = function (source) {
+    this.type_ = "atom";
+    this.source_ = source;
+    this.location_ = location();
+  };
 
   var PatternStub = function (source, alignment) {
     this.type_ = "pattern";
@@ -8163,10 +8155,10 @@ function peg$parse(input, options) {
   }
 }
 
-var krillParser = {
-  SyntaxError: peg$SyntaxError,
-  parse: peg$parse
-};
+function getDefaultExportFromCjs(x2) {
+  return x2 && x2.__esModule && Object.prototype.hasOwnProperty.call(x2, "default") ? x2["default"] : x2;
+}
+
 var fraction$1 = {
   exports: {}
 };
@@ -8203,9 +8195,9 @@ var fraction$1 = {
       var f = Object.create(Fraction2.prototype);
       f["s"] = n < 0 ? -1 : 1;
       n = n < 0 ? -n : n;
-      var a = gcd2(n, d);
-      f["n"] = n / a;
-      f["d"] = d / a;
+      var a2 = gcd2(n, d);
+      f["n"] = n / a2;
+      f["d"] = d / a2;
       return f;
     }
 
@@ -8238,9 +8230,9 @@ var fraction$1 = {
           d = 1,
           s = 1;
       var v = 0,
-          w = 0,
-          x = 0,
-          y = 1,
+          w2 = 0,
+          x2 = 0,
+          y2 = 1,
           z = 1;
       var A = 0,
           B = 1;
@@ -8345,7 +8337,7 @@ var fraction$1 = {
             }
 
             if (B.length === A + 1) {
-              w = assign(B[A++], s);
+              w2 = assign(B[A++], s);
             } else if (B[A + 1] === "." || B[A] === ".") {
               if (B[A] !== ".") {
                 v = assign(B[A++], s);
@@ -8354,30 +8346,30 @@ var fraction$1 = {
               A++;
 
               if (A + 1 === B.length || B[A + 1] === "(" && B[A + 3] === ")" || B[A + 1] === "'" && B[A + 3] === "'") {
-                w = assign(B[A], s);
-                y = Math.pow(10, B[A].length);
+                w2 = assign(B[A], s);
+                y2 = Math.pow(10, B[A].length);
                 A++;
               }
 
               if (B[A] === "(" && B[A + 2] === ")" || B[A] === "'" && B[A + 2] === "'") {
-                x = assign(B[A + 1], s);
+                x2 = assign(B[A + 1], s);
                 z = Math.pow(10, B[A + 1].length) - 1;
                 A += 3;
               }
             } else if (B[A + 1] === "/" || B[A + 1] === ":") {
-              w = assign(B[A], s);
-              y = assign(B[A + 2], 1);
+              w2 = assign(B[A], s);
+              y2 = assign(B[A + 2], 1);
               A += 3;
             } else if (B[A + 3] === "/" && B[A + 1] === " ") {
               v = assign(B[A], s);
-              w = assign(B[A + 2], s);
-              y = assign(B[A + 4], 1);
+              w2 = assign(B[A + 2], s);
+              y2 = assign(B[A + 4], 1);
               A += 5;
             }
 
             if (B.length <= A) {
-              d = y * z;
-              s = n = x + d * v + z * w;
+              d = y2 * z;
+              s = n = x2 + d * v + z * w2;
               break;
             }
           }
@@ -8396,15 +8388,15 @@ var fraction$1 = {
     };
 
     function modpow(b, e, m) {
-      var r = 1;
+      var r2 = 1;
 
       for (; e > 0; b = b * b % m, e >>= 1) {
         if (e & 1) {
-          r = r * b % m;
+          r2 = r2 * b % m;
         }
       }
 
-      return r;
+      return r2;
     }
 
     function cycleLen(n, d) {
@@ -8437,26 +8429,26 @@ var fraction$1 = {
       return 0;
     }
 
-    function gcd2(a, b) {
-      if (!a) return b;
-      if (!b) return a;
+    function gcd2(a2, b) {
+      if (!a2) return b;
+      if (!b) return a2;
 
       while (1) {
-        a %= b;
-        if (!a) return b;
-        b %= a;
-        if (!b) return a;
+        a2 %= b;
+        if (!a2) return b;
+        b %= a2;
+        if (!b) return a2;
       }
     }
 
-    function Fraction2(a, b) {
-      parse(a, b);
+    function Fraction2(a2, b) {
+      parse(a2, b);
 
       if (this instanceof Fraction2) {
-        a = gcd2(P["d"], P["n"]);
+        a2 = gcd2(P["d"], P["n"]);
         this["s"] = P["s"];
-        this["n"] = P["n"] / a;
-        this["d"] = P["d"] / a;
+        this["n"] = P["n"] / a2;
+        this["d"] = P["d"] / a2;
       } else {
         return newFraction(P["s"] * P["n"], P["d"]);
       }
@@ -8475,35 +8467,35 @@ var fraction$1 = {
       "neg": function () {
         return newFraction(-this["s"] * this["n"], this["d"]);
       },
-      "add": function (a, b) {
-        parse(a, b);
+      "add": function (a2, b) {
+        parse(a2, b);
         return newFraction(this["s"] * this["n"] * P["d"] + P["s"] * this["d"] * P["n"], this["d"] * P["d"]);
       },
-      "sub": function (a, b) {
-        parse(a, b);
+      "sub": function (a2, b) {
+        parse(a2, b);
         return newFraction(this["s"] * this["n"] * P["d"] - P["s"] * this["d"] * P["n"], this["d"] * P["d"]);
       },
-      "mul": function (a, b) {
-        parse(a, b);
+      "mul": function (a2, b) {
+        parse(a2, b);
         return newFraction(this["s"] * P["s"] * this["n"] * P["n"], this["d"] * P["d"]);
       },
-      "div": function (a, b) {
-        parse(a, b);
+      "div": function (a2, b) {
+        parse(a2, b);
         return newFraction(this["s"] * P["s"] * this["n"] * P["d"], this["d"] * P["n"]);
       },
       "clone": function () {
         return newFraction(this["s"] * this["n"], this["d"]);
       },
-      "mod": function (a, b) {
+      "mod": function (a2, b) {
         if (isNaN(this["n"]) || isNaN(this["d"])) {
           return new Fraction2(NaN);
         }
 
-        if (a === void 0) {
+        if (a2 === void 0) {
           return newFraction(this["s"] * this["n"] % this["d"], 1);
         }
 
-        parse(a, b);
+        parse(a2, b);
 
         if (0 === P["n"] && 0 === this["d"]) {
           throw Fraction2["DivisionByZero"];
@@ -8511,12 +8503,12 @@ var fraction$1 = {
 
         return newFraction(this["s"] * (P["d"] * this["n"]) % (P["n"] * this["d"]), P["d"] * this["d"]);
       },
-      "gcd": function (a, b) {
-        parse(a, b);
+      "gcd": function (a2, b) {
+        parse(a2, b);
         return newFraction(gcd2(P["n"], this["n"]) * gcd2(P["d"], this["d"]), P["d"] * this["d"]);
       },
-      "lcm": function (a, b) {
-        parse(a, b);
+      "lcm": function (a2, b) {
+        parse(a2, b);
 
         if (P["n"] === 0 && this["n"] === 0) {
           return newFraction(0, 1);
@@ -8554,8 +8546,8 @@ var fraction$1 = {
       "inverse": function () {
         return newFraction(this["s"] * this["d"], this["n"]);
       },
-      "pow": function (a, b) {
-        parse(a, b);
+      "pow": function (a2, b) {
+        parse(a2, b);
 
         if (P["d"] === 1) {
           if (P["s"] < 0) {
@@ -8605,12 +8597,12 @@ var fraction$1 = {
 
         return newFraction(n, d);
       },
-      "equals": function (a, b) {
-        parse(a, b);
+      "equals": function (a2, b) {
+        parse(a2, b);
         return this["s"] * this["n"] * P["d"] === P["s"] * P["n"] * this["d"];
       },
-      "compare": function (a, b) {
-        parse(a, b);
+      "compare": function (a2, b) {
+        parse(a2, b);
         var t = this["s"] * this["n"] * P["d"] - P["s"] * P["n"] * this["d"];
         return (0 < t) - (t < 0);
       },
@@ -8637,8 +8629,8 @@ var fraction$1 = {
 
         return this;
       },
-      "divisible": function (a, b) {
-        parse(a, b);
+      "divisible": function (a2, b) {
+        parse(a2, b);
         return !(!(P["n"] * this["d"]) || this["n"] * P["d"] % (P["n"] * this["d"]));
       },
       "valueOf": function () {
@@ -8699,20 +8691,20 @@ var fraction$1 = {
       },
       "toContinued": function () {
         var t;
-        var a = this["n"];
+        var a2 = this["n"];
         var b = this["d"];
         var res = [];
 
-        if (isNaN(a) || isNaN(b)) {
+        if (isNaN(a2) || isNaN(b)) {
           return res;
         }
 
         do {
-          res.push(Math.floor(a / b));
-          t = a % b;
-          a = b;
+          res.push(Math.floor(a2 / b));
+          t = a2 % b;
+          a2 = b;
           b = t;
-        } while (a !== 1);
+        } while (a2 !== 1);
 
         return res;
       },
@@ -8771,73 +8763,69 @@ var fraction$1 = {
   })();
 })(fraction$1);
 
-var Fraction$1 = /* @__PURE__ */getDefaultExportFromCjs(fraction$1.exports);
+var Fraction = /* @__PURE__ */getDefaultExportFromCjs(fraction$1.exports);
 
-Fraction$1.prototype.sam = function () {
+Fraction.prototype.sam = function () {
   return this.floor();
 };
 
-Fraction$1.prototype.nextSam = function () {
+Fraction.prototype.nextSam = function () {
   return this.sam().add(1);
 };
 
-Fraction$1.prototype.wholeCycle = function () {
+Fraction.prototype.wholeCycle = function () {
   return new TimeSpan(this.sam(), this.nextSam());
 };
 
-Fraction$1.prototype.cyclePos = function () {
+Fraction.prototype.cyclePos = function () {
   return this.sub(this.sam());
 };
 
-Fraction$1.prototype.lt = function (other) {
+Fraction.prototype.lt = function (other) {
   return this.compare(other) < 0;
 };
 
-Fraction$1.prototype.gt = function (other) {
+Fraction.prototype.gt = function (other) {
   return this.compare(other) > 0;
 };
 
-Fraction$1.prototype.lte = function (other) {
+Fraction.prototype.lte = function (other) {
   return this.compare(other) <= 0;
 };
 
-Fraction$1.prototype.gte = function (other) {
+Fraction.prototype.gte = function (other) {
   return this.compare(other) >= 0;
 };
 
-Fraction$1.prototype.eq = function (other) {
+Fraction.prototype.eq = function (other) {
   return this.compare(other) == 0;
 };
 
-Fraction$1.prototype.max = function (other) {
+Fraction.prototype.max = function (other) {
   return this.gt(other) ? this : other;
 };
 
-Fraction$1.prototype.min = function (other) {
+Fraction.prototype.min = function (other) {
   return this.lt(other) ? this : other;
 };
 
-Fraction$1.prototype.show = function () {
+Fraction.prototype.show = function () {
   return this.s * this.n + "/" + this.d;
 };
 
-Fraction$1.prototype.or = function (other) {
+Fraction.prototype.or = function (other) {
   return this.eq(0) ? other : this;
 };
 
 var fraction = n => {
-  if (typeof n === "number") {
-    n = String(n);
-  }
-
-  return Fraction$1(n);
+  return Fraction(n);
 };
 
 var gcd = (...fractions) => {
   return fractions.reduce((gcd2, fraction2) => gcd2.gcd(fraction2), fraction(1));
 };
 
-fraction._original = Fraction$1;
+fraction._original = Fraction;
 
 var TimeSpan = /*#__PURE__*/function () {
   function TimeSpan(begin, end) {
@@ -8854,6 +8842,10 @@ var TimeSpan = /*#__PURE__*/function () {
       var begin = this.begin;
       const end = this.end;
       const end_sam = end.sam();
+
+      if (begin.equals(end)) {
+        return [new TimeSpan(begin, end)];
+      }
 
       while (end.gt(begin)) {
         if (begin.sam().equals(end_sam)) {
@@ -8944,7 +8936,7 @@ var TimeSpan = /*#__PURE__*/function () {
   }, {
     key: "show",
     value: function show() {
-      return this.begin.show() + " -> " + this.end.show();
+      return this.begin.show() + " \u2192 " + this.end.show();
     }
   }]);
 
@@ -9016,21 +9008,48 @@ var Hap = /*#__PURE__*/function () {
     }
   }, {
     key: "show",
-    value: function show() {
-      return "(" + (this.whole == void 0 ? "~" : this.whole.show()) + ", " + this.part.show() + ", " + this.value + ")";
+    value: function show(compact = false) {
+      const value = typeof this.value === "object" ? compact ? JSON.stringify(this.value).slice(1, -1).replaceAll('"', "").replaceAll(",", " ") : JSON.stringify(this.value) : this.value;
+      var spans = "";
+
+      if (this.whole == void 0) {
+        spans = "~" + this.part.show;
+      } else {
+        var is_whole = this.whole.begin.equals(this.part.begin) && this.whole.end.equals(this.part.end);
+
+        if (!this.whole.begin.equals(this.part.begin)) {
+          spans = this.whole.begin.show() + " \u21DC ";
+        }
+
+        if (!is_whole) {
+          spans += "(";
+        }
+
+        spans += this.part.show();
+
+        if (!is_whole) {
+          spans += ")";
+        }
+
+        if (!this.whole.end.equals(this.part.end)) {
+          spans += " \u21DD " + this.whole.end.show();
+        }
+      }
+
+      return "[ " + spans + " | " + value + " ]";
     }
   }, {
     key: "showWhole",
-    value: function showWhole() {
-      return `${this.whole == void 0 ? "~" : this.whole.show()}: ${typeof this.value === "object" ? JSON.stringify(this.value) : this.value}`;
+    value: function showWhole(compact = false) {
+      return `${this.whole == void 0 ? "~" : this.whole.show()}: ${typeof this.value === "object" ? compact ? JSON.stringify(this.value).slice(1, -1).replaceAll('"', "").replaceAll(",", " ") : JSON.stringify(this.value) : this.value}`;
     }
   }, {
     key: "combineContext",
     value: function combineContext(b) {
-      const a = this;
-      return { ...a.context,
+      const a2 = this;
+      return { ...a2.context,
         ...b.context,
-        locations: (a.context.locations || []).concat(b.context.locations || [])
+        locations: (a2.context.locations || []).concat(b.context.locations || [])
       };
     }
   }, {
@@ -9071,7 +9090,7 @@ var State = /*#__PURE__*/function () {
   return State;
 }();
 
-var isNote = name => /^[a-gA-G][#b]*[0-9]$/.test(name);
+var isNote = name => /^[a-gA-G][#bs]*[0-9]?$/.test(name);
 
 var tokenizeNote = note => {
   var _a;
@@ -9090,7 +9109,7 @@ var tokenizeNote = note => {
 };
 
 var toMidi = note => {
-  const [pc, acc, oct] = tokenizeNote(note);
+  const [pc, acc, oct = 3] = tokenizeNote(note);
 
   if (!pc) {
     throw new Error('not a note: "' + note + '"');
@@ -9113,91 +9132,27 @@ var toMidi = note => {
   return (Number(oct) + 1) * 12 + chroma + offset;
 };
 
-var fromMidi = n => {
-  return Math.pow(2, (n - 69) / 12) * 440;
+var freqToMidi = freq => {
+  return 12 * Math.log(freq / 440) / Math.LN2 + 69;
 };
 
-var getFreq = noteOrMidi => {
-  if (typeof noteOrMidi === "number") {
-    return fromMidi(noteOrMidi);
-  }
-
-  return fromMidi(toMidi(noteOrMidi));
-};
-
-var midi2note = n => {
-  const oct = Math.floor(n / 12) - 1;
-  const pc = ["C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B"][n % 12];
-  return pc + oct;
-};
-
-var mod = (n, m) => (n % m + m) % m;
-
-var getPlayableNoteValue = hap => {
-  let {
-    value: note,
-    context
-  } = hap;
-
-  if (typeof note === "object" && !Array.isArray(note)) {
-    note = note.note || note.n || note.value;
-  }
-
-  if (typeof note === "number" && context.type !== "frequency") {
-    note = fromMidi(hap.value);
-  } else if (typeof note === "number" && context.type === "frequency") {
-    note = hap.value;
-  } else if (typeof note !== "string" || !isNote(note)) {
-    throw new Error("not a note: " + JSON.stringify(note));
-  }
-
-  return note;
-};
-
-var getFrequency = hap => {
-  let {
-    value,
-    context
-  } = hap;
-
-  if (typeof value === "object" && value.freq) {
-    return value.freq;
-  }
-
-  if (typeof value === "number" && context.type !== "frequency") {
-    value = fromMidi(hap.value);
-  } else if (typeof value === "string" && isNote(value)) {
-    value = fromMidi(toMidi(hap.value));
-  } else if (typeof value !== "number") {
-    throw new Error("not a note or frequency:" + value);
-  }
-
-  return value;
-};
+var _mod = (n, m) => (n % m + m) % m;
 
 var rotate = (arr, n) => arr.slice(n).concat(arr.slice(0, n));
 
-var pipe = (...funcs) => {
-  return funcs.reduce((f, g) => (...args) => f(g(...args)), x => x);
-};
-
-var compose = (...funcs) => pipe(...funcs.reverse());
-
-var removeUndefineds = xs => xs.filter(x => x != void 0);
+var removeUndefineds = xs => xs.filter(x2 => x2 != void 0);
 
 var flatten = arr => [].concat(...arr);
 
-var id = a => a;
-
-var constant = (a, b) => a;
+var id = a2 => a2;
 
 var listRange = (min, max) => Array.from({
   length: max - min + 1
 }, (_, i) => i + min);
 
-function curry(func, overload) {
+function curry(func, overload, arity = func.length) {
   const fn = function curried(...args) {
-    if (args.length >= func.length) {
+    if (args.length >= arity) {
       return func.apply(this, args);
     } else {
       const partial = function (...args2) {
@@ -9219,12 +9174,41 @@ function curry(func, overload) {
   return fn;
 }
 
-function unionWithObj(a, b, func) {
-  const common = Object.keys(a).filter(k => Object.keys(b).includes(k));
-  return Object.assign({}, a, b, Object.fromEntries(common.map(k => [k, func(a[k], b[k])])));
+function parseNumeral(numOrString) {
+  const asNumber = Number(numOrString);
+
+  if (!isNaN(asNumber)) {
+    return asNumber;
+  }
+
+  if (isNote(numOrString)) {
+    return toMidi(numOrString);
+  }
+
+  throw new Error(`cannot parse as numeral: "${numOrString}"`);
 }
 
-curry((a, b) => a * b);
+function mapArgs(fn, mapFn) {
+  return (...args) => fn(...args.map(mapFn));
+}
+
+function numeralArgs(fn) {
+  return mapArgs(fn, parseNumeral);
+}
+
+function unionWithObj(a2, b, func) {
+  if (typeof (b == null ? void 0 : b.value) === "number") {
+    const numKeys = Object.keys(a2).filter(k => typeof a2[k] === "number");
+    const numerals = Object.fromEntries(numKeys.map(k => [k, b.value]));
+    b = Object.assign(b, numerals);
+    delete b.value;
+  }
+
+  const common = Object.keys(a2).filter(k => Object.keys(b).includes(k));
+  return Object.assign({}, a2, b, Object.fromEntries(common.map(k => [k, func(a2[k], b[k])])));
+}
+
+curry((a2, b) => a2 * b);
 curry((f, anyFunctor) => anyFunctor.map(f));
 
 function _drawLine(pat, chars = 60) {
@@ -9271,140 +9255,37 @@ function _drawLine(pat, chars = 60) {
   return lines.join("\n");
 }
 
-var Pattern$1 = /*#__PURE__*/function () {
-  function Pattern$1(query) {
-    _classCallCheck(this, Pattern$1);
+var logKey = "strudel.log";
+
+function logger(message, type, data = {}) {
+  console.log(`%c${message}`, "background-color: black;color:white;border-radius:15px");
+
+  if (typeof document !== "undefined" && typeof CustomEvent !== "undefined") {
+    document.dispatchEvent(new CustomEvent(logKey, {
+      detail: {
+        message,
+        type,
+        data
+      }
+    }));
+  }
+}
+
+logger.key = logKey;
+
+var Pattern = /*#__PURE__*/function () {
+  function Pattern(query) {
+    _classCallCheck(this, Pattern);
 
     __publicField(this, "_Pattern", true);
 
     this.query = query;
   }
 
-  _createClass(Pattern$1, [{
-    key: "queryArc",
-    value: function queryArc(begin, end) {
-      return this.query(new State(new TimeSpan(begin, end)));
-    }
-  }, {
-    key: "_splitQueries",
-    value: function _splitQueries() {
-      const pat = this;
-
-      const q = state => {
-        return flatten(state.span.spanCycles.map(subspan => pat.query(state.setSpan(subspan))));
-      };
-
-      return new Pattern$1(q);
-    }
-  }, {
-    key: "withQuerySpan",
-    value: function withQuerySpan(func) {
-      return new Pattern$1(state => this.query(state.withSpan(func)));
-    }
-  }, {
-    key: "withQueryTime",
-    value: function withQueryTime(func) {
-      return new Pattern$1(state => this.query(state.withSpan(span => span.withTime(func))));
-    }
-  }, {
-    key: "withHapSpan",
-    value: function withHapSpan(func) {
-      return new Pattern$1(state => this.query(state).map(hap => hap.withSpan(func)));
-    }
-  }, {
-    key: "withHapTime",
-    value: function withHapTime(func) {
-      return this.withHapSpan(span => span.withTime(func));
-    }
-  }, {
-    key: "_withHaps",
-    value: function _withHaps(func) {
-      return new Pattern$1(state => func(this.query(state)));
-    }
-  }, {
-    key: "_withHap",
-    value: function _withHap(func) {
-      return this._withHaps(haps => haps.map(func));
-    }
-  }, {
-    key: "_setContext",
-    value: function _setContext(context) {
-      return this._withHap(hap => hap.setContext(context));
-    }
-  }, {
-    key: "_withContext",
-    value: function _withContext(func) {
-      return this._withHap(hap => hap.setContext(func(hap.context)));
-    }
-  }, {
-    key: "_stripContext",
-    value: function _stripContext() {
-      return this._withHap(hap => hap.setContext({}));
-    }
-  }, {
-    key: "withLocation",
-    value: function withLocation(start, end) {
-      const location = {
-        start: {
-          line: start[0],
-          column: start[1],
-          offset: start[2]
-        },
-        end: {
-          line: end[0],
-          column: end[1],
-          offset: end[2]
-        }
-      };
-      return this._withContext(context => {
-        const locations = (context.locations || []).concat([location]);
-        return { ...context,
-          locations
-        };
-      });
-    }
-  }, {
-    key: "withMiniLocation",
-    value: function withMiniLocation(start, end) {
-      const offset = {
-        start: {
-          line: start[0],
-          column: start[1],
-          offset: start[2]
-        },
-        end: {
-          line: end[0],
-          column: end[1],
-          offset: end[2]
-        }
-      };
-      return this._withContext(context => {
-        let locations = context.locations || [];
-        locations = locations.map(({
-          start: start2,
-          end: end2
-        }) => {
-          const colOffset = start2.line === 1 ? offset.start.column : 0;
-          return {
-            start: { ...start2,
-              line: start2.line - 1 + (offset.start.line - 1) + 1,
-              column: start2.column - 1 + colOffset
-            },
-            end: { ...end2,
-              line: end2.line - 1 + (offset.start.line - 1) + 1,
-              column: end2.column - 1 + colOffset
-            }
-          };
-        });
-        return { ...context,
-          locations
-        };
-      });
-    }
-  }, {
+  _createClass(Pattern, [{
     key: "withValue",
     value: function withValue(func) {
-      return new Pattern$1(state => this.query(state).map(hap => hap.withValue(func)));
+      return new Pattern(state => this.query(state).map(hap => hap.withValue(func)));
     }
   }, {
     key: "fmap",
@@ -9412,33 +9293,8 @@ var Pattern$1 = /*#__PURE__*/function () {
       return this.withValue(func);
     }
   }, {
-    key: "_filterHaps",
-    value: function _filterHaps(hap_test) {
-      return new Pattern$1(state => this.query(state).filter(hap_test));
-    }
-  }, {
-    key: "_filterValues",
-    value: function _filterValues(value_test) {
-      return new Pattern$1(state => this.query(state).filter(hap => value_test(hap.value)));
-    }
-  }, {
-    key: "_removeUndefineds",
-    value: function _removeUndefineds() {
-      return this._filterValues(val => val != void 0);
-    }
-  }, {
-    key: "onsetsOnly",
-    value: function onsetsOnly() {
-      return this._filterHaps(hap => hap.hasOnset());
-    }
-  }, {
-    key: "discreteOnly",
-    value: function discreteOnly() {
-      return this._filterHaps(hap => hap.whole);
-    }
-  }, {
-    key: "_appWhole",
-    value: function _appWhole(whole_func, pat_val) {
+    key: "appWhole",
+    value: function appWhole(whole_func, pat_val) {
       const pat_func = this;
 
       const query = function (state) {
@@ -9458,7 +9314,7 @@ var Pattern$1 = /*#__PURE__*/function () {
         return flatten(hap_funcs.map(hap_func => removeUndefineds(hap_vals.map(hap_val => apply(hap_func, hap_val)))));
       };
 
-      return new Pattern$1(query);
+      return new Pattern(query);
     }
   }, {
     key: "appBoth",
@@ -9471,7 +9327,7 @@ var Pattern$1 = /*#__PURE__*/function () {
         return span_a.intersection_e(span_b);
       };
 
-      return this._appWhole(whole_func, pat_val);
+      return this.appWhole(whole_func, pat_val);
     }
   }, {
     key: "appLeft",
@@ -9500,7 +9356,7 @@ var Pattern$1 = /*#__PURE__*/function () {
         return haps;
       };
 
-      return new Pattern$1(query);
+      return new Pattern(query);
     }
   }, {
     key: "appRight",
@@ -9529,183 +9385,41 @@ var Pattern$1 = /*#__PURE__*/function () {
         return haps;
       };
 
-      return new Pattern$1(query);
+      return new Pattern(query);
     }
   }, {
-    key: "firstCycle",
-    value: function firstCycle(with_context = false) {
-      var self = this;
-
-      if (!with_context) {
-        self = self._stripContext();
-      }
-
-      return self.query(new State(new TimeSpan(fraction(0), fraction(1))));
-    }
-  }, {
-    key: "_firstCycleValues",
-    get: function () {
-      return this.firstCycle().map(hap => hap.value);
-    }
-  }, {
-    key: "_showFirstCycle",
-    get: function () {
-      return this.firstCycle().map(hap => `${hap.value}: ${hap.whole.begin.toFraction()} - ${hap.whole.end.toFraction()}`);
-    }
-  }, {
-    key: "_sortHapsByPart",
-    value: function _sortHapsByPart() {
-      return this._withHaps(haps => haps.sort((a, b) => a.part.begin.sub(b.part.begin).or(a.part.end.sub(b.part.end)).or(a.whole.begin.sub(b.whole.begin).or(a.whole.end.sub(b.whole.end)))));
-    }
-  }, {
-    key: "_opIn",
-    value: function _opIn(other, func) {
-      return this.fmap(func).appLeft(reify$2(other));
-    }
-  }, {
-    key: "_opOut",
-    value: function _opOut(other, func) {
-      return this.fmap(func).appRight(reify$2(other));
-    }
-  }, {
-    key: "_opMix",
-    value: function _opMix(other, func) {
-      return this.fmap(func).appBoth(reify$2(other));
-    }
-  }, {
-    key: "_opSqueeze",
-    value: function _opSqueeze(other, func) {
-      const otherPat = reify$2(other);
-      return this.fmap(a => otherPat.fmap(b => func(a)(b)))._squeezeJoin();
-    }
-  }, {
-    key: "_opSqueezeOut",
-    value: function _opSqueezeOut(other, func) {
-      const thisPat = this;
-      const otherPat = reify$2(other);
-      return otherPat.fmap(a => thisPat.fmap(b => func(b)(a)))._squeezeJoin();
-    }
-  }, {
-    key: "_opTrig",
-    value: function _opTrig(other, func) {
-      const otherPat = reify$2(other);
-      return otherPat.fmap(b => this.fmap(a => func(a)(b)))._trigJoin();
-    }
-  }, {
-    key: "_opTrigzero",
-    value: function _opTrigzero(other, func) {
-      const otherPat = reify$2(other);
-      return otherPat.fmap(b => this.fmap(a => func(a)(b)))._TrigzeroJoin();
-    }
-  }, {
-    key: "_asNumber",
-    value: function _asNumber(dropfails = false, softfail = false) {
-      return this._withHap(hap => {
-        const asNumber = Number(hap.value);
-
-        if (!isNaN(asNumber)) {
-          return hap.withValue(() => asNumber);
-        }
-
-        const specialValue = {
-          e: Math.E,
-          pi: Math.PI
-        }[hap.value];
-
-        if (typeof specialValue !== "undefined") {
-          return hap.withValue(() => specialValue);
-        }
-
-        if (isNote(hap.value)) {
-          return new Hap(hap.whole, hap.part, toMidi(hap.value), { ...hap.context,
-            type: "midi"
-          });
-        }
-
-        if (dropfails) {
-          return void 0;
-        }
-
-        if (softfail) {
-          return hap;
-        }
-
-        throw new Error('cannot parse as number: "' + hap.value + '"');
-      });
-    }
-  }, {
-    key: "round",
-    value: function round() {
-      return this._asNumber().fmap(v => Math.round(v));
-    }
-  }, {
-    key: "floor",
-    value: function floor() {
-      return this._asNumber().fmap(v => Math.floor(v));
-    }
-  }, {
-    key: "ceil",
-    value: function ceil() {
-      return this._asNumber().fmap(v => Math.ceil(v));
-    }
-  }, {
-    key: "_toBipolar",
-    value: function _toBipolar() {
-      return this.fmap(x => x * 2 - 1);
-    }
-  }, {
-    key: "_fromBipolar",
-    value: function _fromBipolar() {
-      return this.fmap(x => (x + 1) / 2);
-    }
-  }, {
-    key: "range",
-    value: function range(min, max) {
-      return this.mul(max - min).add(min);
-    }
-  }, {
-    key: "rangex",
-    value: function rangex(min, max) {
-      return this.range(Math.log(min), Math.log(max)).fmap(Math.exp);
-    }
-  }, {
-    key: "range2",
-    value: function range2(min, max) {
-      return this._fromBipolar().range(min, max);
-    }
-  }, {
-    key: "_bindWhole",
-    value: function _bindWhole(choose_whole, func) {
+    key: "bindWhole",
+    value: function bindWhole(choose_whole, func) {
       const pat_val = this;
 
       const query = function (state) {
-        const withWhole = function (a, b) {
-          return new Hap(choose_whole(a.whole, b.whole), b.part, b.value, Object.assign({}, a.context, b.context, {
-            locations: (a.context.locations || []).concat(b.context.locations || [])
+        const withWhole = function (a2, b) {
+          return new Hap(choose_whole(a2.whole, b.whole), b.part, b.value, Object.assign({}, a2.context, b.context, {
+            locations: (a2.context.locations || []).concat(b.context.locations || [])
           }));
         };
 
-        const match = function (a) {
-          return func(a.value).query(state.setSpan(a.part)).map(b => withWhole(a, b));
+        const match = function (a2) {
+          return func(a2.value).query(state.setSpan(a2.part)).map(b => withWhole(a2, b));
         };
 
-        return flatten(pat_val.query(state).map(a => match(a)));
+        return flatten(pat_val.query(state).map(a2 => match(a2)));
       };
 
-      return new Pattern$1(query);
+      return new Pattern(query);
     }
   }, {
     key: "bind",
     value: function bind(func) {
-      const whole_func = function (a, b) {
-        if (a == void 0 || b == void 0) {
+      const whole_func = function (a2, b) {
+        if (a2 == void 0 || b == void 0) {
           return void 0;
         }
 
-        return a.intersection_e(b);
+        return a2.intersection_e(b);
       };
 
-      return this._bindWhole(whole_func, func);
+      return this.bindWhole(whole_func, func);
     }
   }, {
     key: "join",
@@ -9715,7 +9429,7 @@ var Pattern$1 = /*#__PURE__*/function () {
   }, {
     key: "outerBind",
     value: function outerBind(func) {
-      return this._bindWhole((a, _) => a, func);
+      return this.bindWhole(a2 => a2, func);
     }
   }, {
     key: "outerJoin",
@@ -9725,7 +9439,7 @@ var Pattern$1 = /*#__PURE__*/function () {
   }, {
     key: "innerBind",
     value: function innerBind(func) {
-      return this._bindWhole((_, b) => b, func);
+      return this.bindWhole((_, b) => b, func);
     }
   }, {
     key: "innerJoin",
@@ -9733,32 +9447,32 @@ var Pattern$1 = /*#__PURE__*/function () {
       return this.innerBind(id);
     }
   }, {
-    key: "_trigJoin",
-    value: function _trigJoin(cycleZero = false) {
+    key: "trigJoin",
+    value: function trigJoin(cycleZero = false) {
       const pat_of_pats = this;
-      return new Pattern$1(state => {
+      return new Pattern(state => {
         return pat_of_pats.discreteOnly().query(state).map(outer_hap => {
           return outer_hap.value.late(cycleZero ? outer_hap.whole.begin : outer_hap.whole.begin.cyclePos()).query(state).map(inner_hap => new Hap(inner_hap.whole ? inner_hap.whole.intersection(outer_hap.whole) : void 0, inner_hap.part.intersection(outer_hap.part), inner_hap.value).setContext(outer_hap.combineContext(inner_hap))).filter(hap => hap.part);
         }).flat();
       });
     }
   }, {
-    key: "_TrigzeroJoin",
-    value: function _TrigzeroJoin() {
-      return this._trigJoin(true);
+    key: "trigzeroJoin",
+    value: function trigzeroJoin() {
+      return this.trigJoin(true);
     }
   }, {
-    key: "_squeezeJoin",
-    value: function _squeezeJoin() {
+    key: "squeezeJoin",
+    value: function squeezeJoin() {
       const pat_of_pats = this;
 
       function query(state) {
         const haps = pat_of_pats.discreteOnly().query(state);
 
         function flatHap(outerHap) {
-          const pat = outerHap.value._compressSpan(outerHap.wholeOrPart().cycleArc());
+          const inner_pat = outerHap.value._focusSpan(outerHap.wholeOrPart());
 
-          const innerHaps = pat.query(state.setSpan(outerHap.part));
+          const innerHaps = inner_pat.query(state.setSpan(outerHap.part));
 
           function munge(outer, inner) {
             let whole = void 0;
@@ -9785,308 +9499,317 @@ var Pattern$1 = /*#__PURE__*/function () {
         }
 
         const result = flatten(haps.map(flatHap));
-        return result.filter(x => x);
+        return result.filter(x2 => x2);
       }
 
-      return new Pattern$1(query);
+      return new Pattern(query);
     }
   }, {
-    key: "_squeezeBind",
-    value: function _squeezeBind(func) {
-      return this.fmap(func)._squeezeJoin();
+    key: "squeezeBind",
+    value: function squeezeBind(func) {
+      return this.fmap(func).squeezeJoin();
     }
   }, {
-    key: "_apply",
-    value: function _apply(func) {
-      return func(this);
+    key: "queryArc",
+    value: function queryArc(begin, end) {
+      return this.query(new State(new TimeSpan(begin, end)));
+    }
+  }, {
+    key: "splitQueries",
+    value: function splitQueries() {
+      const pat = this;
+
+      const q = state => {
+        return flatten(state.span.spanCycles.map(subspan => pat.query(state.setSpan(subspan))));
+      };
+
+      return new Pattern(q);
+    }
+  }, {
+    key: "withQuerySpan",
+    value: function withQuerySpan(func) {
+      return new Pattern(state => this.query(state.withSpan(func)));
+    }
+  }, {
+    key: "withQuerySpanMaybe",
+    value: function withQuerySpanMaybe(func) {
+      const pat = this;
+      return new Pattern(state => {
+        const newState = state.withSpan(func);
+
+        if (!newState.span) {
+          return [];
+        }
+
+        return pat.query(newState);
+      });
+    }
+  }, {
+    key: "withQueryTime",
+    value: function withQueryTime(func) {
+      return new Pattern(state => this.query(state.withSpan(span => span.withTime(func))));
+    }
+  }, {
+    key: "withHapSpan",
+    value: function withHapSpan(func) {
+      return new Pattern(state => this.query(state).map(hap => hap.withSpan(func)));
+    }
+  }, {
+    key: "withHapTime",
+    value: function withHapTime(func) {
+      return this.withHapSpan(span => span.withTime(func));
+    }
+  }, {
+    key: "withHaps",
+    value: function withHaps(func) {
+      return new Pattern(state => func(this.query(state)));
+    }
+  }, {
+    key: "withHap",
+    value: function withHap(func) {
+      return this.withHaps(haps => haps.map(func));
+    }
+  }, {
+    key: "setContext",
+    value: function setContext(context) {
+      return this.withHap(hap => hap.setContext(context));
+    }
+  }, {
+    key: "withContext",
+    value: function withContext(func) {
+      return this.withHap(hap => hap.setContext(func(hap.context)));
+    }
+  }, {
+    key: "stripContext",
+    value: function stripContext() {
+      return this.withHap(hap => hap.setContext({}));
+    }
+  }, {
+    key: "withLocation",
+    value: function withLocation(start, end) {
+      const location = {
+        start: {
+          line: start[0],
+          column: start[1],
+          offset: start[2]
+        },
+        end: {
+          line: end[0],
+          column: end[1],
+          offset: end[2]
+        }
+      };
+      return this.withContext(context => {
+        const locations = (context.locations || []).concat([location]);
+        return { ...context,
+          locations
+        };
+      });
+    }
+  }, {
+    key: "withMiniLocation",
+    value: function withMiniLocation(start, end) {
+      const offset = {
+        start: {
+          line: start[0],
+          column: start[1],
+          offset: start[2]
+        },
+        end: {
+          line: end[0],
+          column: end[1],
+          offset: end[2]
+        }
+      };
+      return this.withContext(context => {
+        let locations = context.locations || [];
+        locations = locations.map(({
+          start: start2,
+          end: end2
+        }) => {
+          const colOffset = start2.line === 1 ? offset.start.column : 0;
+          return {
+            start: { ...start2,
+              line: start2.line - 1 + (offset.start.line - 1) + 1,
+              column: start2.column - 1 + colOffset
+            },
+            end: { ...end2,
+              line: end2.line - 1 + (offset.start.line - 1) + 1,
+              column: end2.column - 1 + colOffset
+            }
+          };
+        });
+        return { ...context,
+          locations
+        };
+      });
+    }
+  }, {
+    key: "filterHaps",
+    value: function filterHaps(hap_test) {
+      return new Pattern(state => this.query(state).filter(hap_test));
+    }
+  }, {
+    key: "filterValues",
+    value: function filterValues(value_test) {
+      return new Pattern(state => this.query(state).filter(hap => value_test(hap.value)));
+    }
+  }, {
+    key: "removeUndefineds",
+    value: function removeUndefineds() {
+      return this.filterValues(val => val != void 0);
+    }
+  }, {
+    key: "onsetsOnly",
+    value: function onsetsOnly() {
+      return this.filterHaps(hap => hap.hasOnset());
+    }
+  }, {
+    key: "discreteOnly",
+    value: function discreteOnly() {
+      return this.filterHaps(hap => hap.whole);
+    }
+  }, {
+    key: "defragmentHaps",
+    value: function defragmentHaps() {
+      const pat = this.discreteOnly();
+      return pat.withHaps(haps => {
+        const result = [];
+
+        for (var i = 0; i < haps.length; ++i) {
+          var searching = true;
+          var a2 = haps[i];
+
+          while (searching) {
+            const a_value = JSON.stringify(haps[i].value);
+            var found = false;
+
+            for (var j = i + 1; j < haps.length; j++) {
+              const b = haps[j];
+
+              if (a2.whole.equals(b.whole)) {
+                if (a2.part.begin.eq(b.part.end)) {
+                  if (a_value === JSON.stringify(b.value)) {
+                    a2 = new Hap(a2.whole, new TimeSpan(b.part.begin, a2.part.end), a2.value);
+                    haps.splice(j, 1);
+                    found = true;
+                    break;
+                  }
+                } else if (b.part.begin.eq(a2.part.end)) {
+                  if (a_value == JSON.stringify(b.value)) {
+                    a2 = new Hap(a2.whole, new TimeSpan(a2.part.begin, b.part.end), a2.value);
+                    haps.splice(j, 1);
+                    found = true;
+                    break;
+                  }
+                }
+              }
+            }
+
+            searching = found;
+          }
+
+          result.push(a2);
+        }
+
+        return result;
+      });
+    }
+  }, {
+    key: "firstCycle",
+    value: function firstCycle(with_context = false) {
+      var self = this;
+
+      if (!with_context) {
+        self = self.stripContext();
+      }
+
+      return self.query(new State(new TimeSpan(fraction(0), fraction(1))));
+    }
+  }, {
+    key: "firstCycleValues",
+    get: function () {
+      return this.firstCycle().map(hap => hap.value);
+    }
+  }, {
+    key: "showFirstCycle",
+    get: function () {
+      return this.firstCycle().map(hap => `${hap.value}: ${hap.whole.begin.toFraction()} - ${hap.whole.end.toFraction()}`);
+    }
+  }, {
+    key: "sortHapsByPart",
+    value: function sortHapsByPart() {
+      return this.withHaps(haps => haps.sort((a2, b) => a2.part.begin.sub(b.part.begin).or(a2.part.end.sub(b.part.end)).or(a2.whole.begin.sub(b.whole.begin).or(a2.whole.end.sub(b.whole.end)))));
+    }
+  }, {
+    key: "asNumber",
+    value: function asNumber() {
+      return this.fmap(parseNumeral);
+    }
+  }, {
+    key: "_opIn",
+    value: function _opIn(other, func) {
+      return this.fmap(func).appLeft(reify(other));
+    }
+  }, {
+    key: "_opOut",
+    value: function _opOut(other, func) {
+      return this.fmap(func).appRight(reify(other));
+    }
+  }, {
+    key: "_opMix",
+    value: function _opMix(other, func) {
+      return this.fmap(func).appBoth(reify(other));
+    }
+  }, {
+    key: "_opSqueeze",
+    value: function _opSqueeze(other, func) {
+      const otherPat = reify(other);
+      return this.fmap(a2 => otherPat.fmap(b => func(a2)(b))).squeezeJoin();
+    }
+  }, {
+    key: "_opSqueezeOut",
+    value: function _opSqueezeOut(other, func) {
+      const thisPat = this;
+      const otherPat = reify(other);
+      return otherPat.fmap(a2 => thisPat.fmap(b => func(b)(a2))).squeezeJoin();
+    }
+  }, {
+    key: "_opTrig",
+    value: function _opTrig(other, func) {
+      const otherPat = reify(other);
+      return otherPat.fmap(b => this.fmap(a2 => func(a2)(b))).trigJoin();
+    }
+  }, {
+    key: "_opTrigzero",
+    value: function _opTrigzero(other, func) {
+      const otherPat = reify(other);
+      return otherPat.fmap(b => this.fmap(a2 => func(a2)(b))).trigzeroJoin();
     }
   }, {
     key: "layer",
     value: function layer(...funcs) {
-      return stack$1(...funcs.map(func => func(this)));
+      return _stack(...funcs.map(func => func(this)));
     }
   }, {
-    key: "_patternify",
-    value: function _patternify(func) {
-      const pat = this;
-
-      const patterned = function (...args) {
-        args = args.map(arg => isPattern(arg) ? arg.fmap(value => value.value || value) : arg);
-        const pat_arg = sequence$1(...args);
-        return pat_arg.fmap(arg => func.call(pat, arg)).innerJoin();
-      };
-
-      return patterned;
-    }
-  }, {
-    key: "_fastGap",
-    value: function _fastGap(factor) {
-      const qf = function (span) {
-        const cycle = span.begin.sam();
-        const begin = cycle.add(span.begin.sub(cycle).mul(factor).min(1));
-        const end = cycle.add(span.end.sub(cycle).mul(factor).min(1));
-        return new TimeSpan(begin, end);
-      };
-
-      const ef = function (span) {
-        const cycle = span.begin.sam();
-        const begin = cycle.add(span.begin.sub(cycle).div(factor).min(1));
-        const end = cycle.add(span.end.sub(cycle).div(factor).min(1));
-        return new TimeSpan(begin, end);
-      };
-
-      return this.withQuerySpan(qf).withHapSpan(ef)._splitQueries();
-    }
-  }, {
-    key: "_compress",
-    value: function _compress(b, e) {
-      if (b.gt(e) || b.gt(1) || e.gt(1) || b.lt(0) || e.lt(0)) {
-        return silence$1;
-      }
-
-      return this._fastGap(fraction(1).div(e.sub(b)))._late(b);
-    }
-  }, {
-    key: "_compressSpan",
-    value: function _compressSpan(span) {
-      return this._compress(span.begin, span.end);
-    }
-  }, {
-    key: "_fast",
-    value: function _fast(factor) {
-      const fastQuery = this.withQueryTime(t => t.mul(factor));
-      return fastQuery.withHapTime(t => t.div(factor));
-    }
-  }, {
-    key: "_slow",
-    value: function _slow(factor) {
-      return this._fast(fraction(1).div(factor));
-    }
-  }, {
-    key: "_inside",
-    value: function _inside(factor, f) {
-      return f(this._slow(factor))._fast(factor);
-    }
-  }, {
-    key: "_outside",
-    value: function _outside(factor, f) {
-      return f(this._fast(factor))._slow(factor);
-    }
-  }, {
-    key: "_ply",
-    value: function _ply(factor) {
-      return this.fmap(x => pure$1(x)._fast(factor))._squeezeJoin();
-    }
-  }, {
-    key: "_chop",
-    value: function _chop(n) {
-      const slices = Array.from({
-        length: n
-      }, (x, i) => i);
-      const slice_objects = slices.map(i => ({
-        begin: i / n,
-        end: (i + 1) / n
-      }));
-
-      const func = function (o) {
-        return sequence$1(slice_objects.map(slice_o => Object.assign({}, o, slice_o)));
-      };
-
-      return this._squeezeBind(func);
-    }
-  }, {
-    key: "_striate",
-    value: function _striate(n) {
-      const slices = Array.from({
-        length: n
-      }, (x, i) => i);
-      const slice_objects = slices.map(i => ({
-        begin: i / n,
-        end: (i + 1) / n
-      }));
-      const slicePat = slowcat$1(...slice_objects);
-      return this.set(slicePat)._fast(n);
-    }
-  }, {
-    key: "_cpm",
-    value: function _cpm(cpm) {
-      return this._fast(cpm / 60);
-    }
-  }, {
-    key: "_early",
-    value: function _early(offset) {
-      offset = fraction(offset);
-      return this.withQueryTime(t => t.add(offset)).withHapTime(t => t.sub(offset));
-    }
-  }, {
-    key: "_late",
-    value: function _late(offset) {
-      offset = fraction(offset);
-      return this._early(fraction(0).sub(offset));
-    }
-  }, {
-    key: "_zoom",
-    value: function _zoom(s, e) {
-      e = fraction(e);
-      s = fraction(s);
-      const d = e.sub(s);
-      return this.withQuerySpan(span => span.withCycle(t => t.mul(d).add(s))).withHapSpan(span => span.withCycle(t => t.sub(s).div(d)))._splitQueries();
-    }
-  }, {
-    key: "_zoomArc",
-    value: function _zoomArc(a) {
-      return this.zoom(a.begin, a.end);
-    }
-  }, {
-    key: "_linger",
-    value: function _linger(t) {
-      if (t == 0) {
-        return silence$1;
-      } else if (t < 0) {
-        return this._zoom(t.add(1), 1)._slow(t);
-      }
-
-      return this._zoom(0, t)._slow(t);
-    }
-  }, {
-    key: "_color",
-    value: function _color(color) {
-      return this._withContext(context => ({ ...context,
-        color
-      }));
-    }
-  }, {
-    key: "log",
-    value: function log(func = id) {
-      return this._withHap(hap => hap.setContext({ ...hap.context,
-        onTrigger: (...args) => {
-          if (hap.context.onTrigger) {
-            hap.context.onTrigger(...args);
-          }
-
-          console.log(func(...args));
-        }
-      }));
-    }
-  }, {
-    key: "drawLine",
-    value: function drawLine() {
-      console.log(_drawLine(this));
-      return this;
-    }
-  }, {
-    key: "_segment",
-    value: function _segment(rate) {
-      return this.struct(pure$1(true)._fast(rate));
-    }
-  }, {
-    key: "invert",
-    value: function invert() {
-      return this.fmap(x => !x);
-    }
-  }, {
-    key: "inv",
-    value: function inv() {
-      return this.invert();
-    }
-  }, {
-    key: "when",
-    value: function when(binary_pat, func) {
-      const true_pat = binary_pat._filterValues(id);
-
-      const false_pat = binary_pat._filterValues(val => !val);
-
-      const with_pat = true_pat.fmap(_ => y => y).appRight(func(this));
-      const without_pat = false_pat.fmap(_ => y => y).appRight(this);
-      return stack$1(with_pat, without_pat);
-    }
-  }, {
-    key: "off",
-    value: function off(time_pat, func) {
-      return stack$1(this, func(this.late(time_pat)));
-    }
-  }, {
-    key: "every",
-    value: function every(n, func) {
-      const pat = this;
-      const pats = Array(n - 1).fill(pat);
-      pats.unshift(func(pat));
-      return slowcatPrime(...pats);
-    }
-  }, {
-    key: "brak",
-    value: function brak() {
-      return this.when(slowcat$1(false, true), x => _fastcat(x, silence$1)._late(0.25));
-    }
-  }, {
-    key: "rev",
-    value: function rev() {
-      const pat = this;
-
-      const query = function (state) {
-        const span = state.span;
-        const cycle = span.begin.sam();
-        const next_cycle = span.begin.nextSam();
-
-        const reflect = function (to_reflect) {
-          const reflected = to_reflect.withTime(time2 => cycle.add(next_cycle.sub(time2)));
-          const tmp = reflected.begin;
-          reflected.begin = reflected.end;
-          reflected.end = tmp;
-          return reflected;
-        };
-
-        const haps = pat.query(state.setSpan(reflect(span)));
-        return haps.map(hap => hap.withSpan(reflect));
-      };
-
-      return new Pattern$1(query)._splitQueries();
-    }
-  }, {
-    key: "palindrome",
-    value: function palindrome() {
-      return this.every(2, rev);
-    }
-  }, {
-    key: "juxBy",
-    value: function juxBy(by, func) {
-      by /= 2;
-
-      const elem_or = function (dict, key, dflt) {
-        if (key in dict) {
-          return dict[key];
-        }
-
-        return dflt;
-      };
-
-      const left = this.withValue(val => Object.assign({}, val, {
-        pan: elem_or(val, "pan", 0.5) - by
-      }));
-      const right = this.withValue(val => Object.assign({}, val, {
-        pan: elem_or(val, "pan", 0.5) + by
-      }));
-      return stack$1(left, func(right));
-    }
-  }, {
-    key: "_jux",
-    value: function _jux(func) {
-      return this.juxBy(1, func);
+    key: "superimpose",
+    value: function superimpose(...funcs) {
+      return this.stack(...funcs.map(func => func(this)));
     }
   }, {
     key: "stack",
     value: function stack(...pats) {
-      return stack$1(this, ...pats);
+      return _stack(this, ...pats);
     }
   }, {
     key: "sequence",
     value: function sequence(...pats) {
-      return sequence$1(this, ...pats);
+      return _sequence(this, ...pats);
     }
   }, {
     key: "seq",
     value: function seq(...pats) {
-      return sequence$1(this, ...pats);
+      return _sequence(this, ...pats);
     }
   }, {
     key: "cat",
@@ -10101,115 +9824,80 @@ var Pattern$1 = /*#__PURE__*/function () {
   }, {
     key: "slowcat",
     value: function slowcat(...pats) {
-      return slowcat$1(this, ...pats);
-    }
-  }, {
-    key: "superimpose",
-    value: function superimpose(...funcs) {
-      return this.stack(...funcs.map(func => func(this)));
-    }
-  }, {
-    key: "stutWith",
-    value: function stutWith(times, time2, func) {
-      return stack$1(...listRange(0, times - 1).map(i => func(this.late(fraction(time2).mul(i)), i)));
-    }
-  }, {
-    key: "stut",
-    value: function stut(times, feedback, time2) {
-      return this.stutWith(times, time2, (pat, i) => pat.velocity(Math.pow(feedback, i)));
-    }
-  }, {
-    key: "_echoWith",
-    value: function _echoWith(times, time2, func) {
-      return stack$1(...listRange(0, times - 1).map(i => func(this.late(fraction(time2).mul(i)), i)));
-    }
-  }, {
-    key: "_echo",
-    value: function _echo(times, time2, feedback) {
-      return this._echoWith(times, time2, (pat, i) => pat.velocity(Math.pow(feedback, i)));
-    }
-  }, {
-    key: "iter",
-    value: function iter(times, back = false) {
-      return slowcat$1(...listRange(0, times - 1).map(i => back ? this.late(i / times) : this.early(i / times)));
-    }
-  }, {
-    key: "iterBack",
-    value: function iterBack(times) {
-      return this.iter(times, true);
-    }
-  }, {
-    key: "_chunk",
-    value: function _chunk(n, func, back = false) {
-      const binary = Array(n - 1).fill(false);
-      binary.unshift(true);
-      const binary_pat = sequence$1(...binary).iter(n, back);
-      return this.when(binary_pat, func);
-    }
-  }, {
-    key: "_chunkBack",
-    value: function _chunkBack(n, func) {
-      return this._chunk(n, func, true);
-    }
-  }, {
-    key: "_bypass",
-    value: function _bypass(on2) {
-      on2 = Boolean(parseInt(on2));
-      return on2 ? silence$1 : this;
-    }
-  }, {
-    key: "hush",
-    value: function hush() {
-      return silence$1;
-    }
-  }, {
-    key: "_duration",
-    value: function _duration(value) {
-      return this.withHapSpan(span => new TimeSpan(span.begin, span.begin.add(value)));
-    }
-  }, {
-    key: "_legato",
-    value: function _legato(value) {
-      return this.withHapSpan(span => new TimeSpan(span.begin, span.begin.add(span.end.sub(span.begin).mul(value))));
-    }
-  }, {
-    key: "_velocity",
-    value: function _velocity(velocity) {
-      return this._withContext(context => ({ ...context,
-        velocity: (context.velocity || 1) * velocity
-      }));
-    }
-  }, {
-    key: "_loopAt",
-    value: function _loopAt(factor, cps = 1) {
-      return this.speed(1 / factor * cps).unit("c").slow(factor);
+      return _slowcat(this, ...pats);
     }
   }, {
     key: "onTrigger",
-    value: function onTrigger(_onTrigger) {
-      return this._withHap(hap => hap.setContext({ ...hap.context,
-        onTrigger: _onTrigger
+    value: function onTrigger(_onTrigger, dominant = true) {
+      return this.withHap(hap => hap.setContext({ ...hap.context,
+        onTrigger: (...args) => {
+          if (!dominant && hap.context.onTrigger) {
+            hap.context.onTrigger(...args);
+          }
+
+          _onTrigger(...args);
+        },
+        dominantTrigger: dominant
       }));
+    }
+  }, {
+    key: "log",
+    value: function log(func = (_, hap) => `[hap] ${hap.showWhole(true)}`) {
+      return this.onTrigger((...args) => logger(func(...args)), false);
     }
   }, {
     key: "logValues",
     value: function logValues(func = id) {
       return this.log((_, hap) => func(hap.value));
     }
+  }, {
+    key: "drawLine",
+    value: function drawLine() {
+      console.log(_drawLine(this));
+      return this;
+    }
   }]);
 
-  return Pattern$1;
+  return Pattern;
 }();
 
-function _composeOp(a, b, func) {
-  function _nonFunctionObject(x) {
-    return x instanceof Object && !(x instanceof Function);
+function groupHapsBy(eq, haps) {
+  let groups = [];
+  haps.forEach(hap => {
+    const match = groups.findIndex(([other]) => eq(hap, other));
+
+    if (match === -1) {
+      groups.push([hap]);
+    } else {
+      groups[match].push(hap);
+    }
+  });
+  return groups;
+}
+
+var congruent = (a2, b) => a2.spanEquals(b);
+
+Pattern.prototype.collect = function () {
+  return this.withHaps(haps => groupHapsBy(congruent, haps).map(_haps => new Hap(_haps[0].whole, _haps[0].part, _haps, {})));
+};
+
+Pattern.prototype.arpWith = function (func) {
+  return this.collect().fmap(v => reify(func(v))).squeezeJoin().withHap(h2 => new Hap(h2.whole, h2.part, h2.value.value, h2.combineContext(h2.value)));
+};
+
+Pattern.prototype.arp = function (pat) {
+  return this.arpWith(haps => pat.fmap(i => haps[i % haps.length]));
+};
+
+function _composeOp(a2, b, func) {
+  function _nonFunctionObject(x2) {
+    return x2 instanceof Object && !(x2 instanceof Function);
   }
 
-  if (_nonFunctionObject(a) || _nonFunctionObject(b)) {
-    if (!_nonFunctionObject(a)) {
-      a = {
-        value: a
+  if (_nonFunctionObject(a2) || _nonFunctionObject(b)) {
+    if (!_nonFunctionObject(a2)) {
+      a2 = {
+        value: a2
       };
     }
 
@@ -10219,148 +9907,176 @@ function _composeOp(a, b, func) {
       };
     }
 
-    return unionWithObj(a, b, func);
+    return unionWithObj(a2, b, func);
   }
 
-  return func(a, b);
+  return func(a2, b);
 }
 
 (function () {
-  const num = pat => pat._asNumber();
-
-  const numOrString = pat => pat._asNumber(false, true);
-
   const composers = {
-    set: [(a, b) => b],
-    keep: [(a, b) => a],
-    keepif: [(a, b) => b ? a : void 0],
-    add: [(a, b) => a + b, numOrString],
-    sub: [(a, b) => a - b, num],
-    mul: [(a, b) => a * b, num],
-    div: [(a, b) => a / b, num],
-    mod: [mod, num],
-    pow: [Math.pow, num],
-    _and: [(a, b) => a & b, num],
-    _or: [(a, b) => a | b, num],
-    _xor: [(a, b) => a ^ b, num],
-    _lshift: [(a, b) => a << b, num],
-    _rshift: [(a, b) => a >> b, num],
-    lt: [(a, b) => a < b],
-    gt: [(a, b) => a > b],
-    lte: [(a, b) => a <= b],
-    gte: [(a, b) => a >= b],
-    eq: [(a, b) => a == b],
-    eqt: [(a, b) => a === b],
-    ne: [(a, b) => a != b],
-    net: [(a, b) => a !== b],
-    and: [(a, b) => a && b],
-    or: [(a, b) => a || b],
-    func: [(a, b) => b(a)]
+    set: [(a2, b) => b],
+    keep: [a2 => a2],
+    keepif: [(a2, b) => b ? a2 : void 0],
+    add: [numeralArgs((a2, b) => a2 + b)],
+    sub: [numeralArgs((a2, b) => a2 - b)],
+    mul: [numeralArgs((a2, b) => a2 * b)],
+    div: [numeralArgs((a2, b) => a2 / b)],
+    mod: [numeralArgs(_mod)],
+    pow: [numeralArgs(Math.pow)],
+    band: [numeralArgs((a2, b) => a2 & b)],
+    bor: [numeralArgs((a2, b) => a2 | b)],
+    bxor: [numeralArgs((a2, b) => a2 ^ b)],
+    blshift: [numeralArgs((a2, b) => a2 << b)],
+    brshift: [numeralArgs((a2, b) => a2 >> b)],
+    lt: [(a2, b) => a2 < b],
+    gt: [(a2, b) => a2 > b],
+    lte: [(a2, b) => a2 <= b],
+    gte: [(a2, b) => a2 >= b],
+    eq: [(a2, b) => a2 == b],
+    eqt: [(a2, b) => a2 === b],
+    ne: [(a2, b) => a2 != b],
+    net: [(a2, b) => a2 !== b],
+    and: [(a2, b) => a2 && b],
+    or: [(a2, b) => a2 || b],
+    func: [(a2, b) => b(a2)]
   };
+  const hows = ["In", "Out", "Mix", "Squeeze", "SqueezeOut", "Trig", "Trigzero"];
 
   for (const [what, [op, preprocess]] of Object.entries(composers)) {
-    for (const how of ["In", "Out", "Mix", "Squeeze", "SqueezeOut", "Trig", "Trigzero"]) {
-      Pattern$1.prototype[what + how] = function (...other) {
-        var pat = this;
-        other = sequence$1(other);
+    Pattern.prototype["_" + what] = function (value) {
+      return this.fmap(x2 => op(x2, value));
+    };
 
-        if (preprocess) {
-          pat = preprocess(pat);
-          other = preprocess(other);
+    Object.defineProperty(Pattern.prototype, what, {
+      get: function () {
+        const pat = this;
+
+        const wrapper = (...other) => pat[what]["in"](...other);
+
+        for (const how of hows) {
+          wrapper[how.toLowerCase()] = function (...other) {
+            var howpat = pat;
+            other = _sequence(other);
+
+            if (preprocess) {
+              howpat = preprocess(howpat);
+              other = preprocess(other);
+            }
+
+            var result;
+
+            if (what === "keepif") {
+              result = howpat["_op" + how](other, a2 => b => op(a2, b));
+              result = result.removeUndefineds();
+            } else {
+              result = howpat["_op" + how](other, a2 => b => _composeOp(a2, b, op));
+            }
+
+            return result;
+          };
         }
 
-        var result = pat["_op" + how](other, a => b => _composeOp(a, b, op));
+        wrapper.squeezein = wrapper.squeeze;
+        return wrapper;
+      }
+    });
 
-        if (what === "keepif") {
-          result = result._removeUndefineds();
-        }
-
-        return result;
+    for (const how of hows) {
+      Pattern.prototype[how.toLowerCase()] = function (...args) {
+        return this.set[how.toLowerCase()](args);
       };
-
-      if (how === "Squeeze") {
-        Pattern$1.prototype[what + "SqueezeIn"] = Pattern$1.prototype[what + how];
-      }
-
-      if (how === "In") {
-        Pattern$1.prototype[what] = Pattern$1.prototype[what + how];
-      } else {
-        if (what === "set") {
-          Pattern$1.prototype[how.toLowerCase()] = Pattern$1.prototype[what + how];
-        }
-      }
     }
   }
 
-  Pattern$1.prototype.struct = Pattern$1.prototype.keepifOut;
-  Pattern$1.prototype.structAll = Pattern$1.prototype.keepOut;
-  Pattern$1.prototype.mask = Pattern$1.prototype.keepifIn;
-  Pattern$1.prototype.maskAll = Pattern$1.prototype.keepIn;
-  Pattern$1.prototype.reset = Pattern$1.prototype.keepifTrig;
-  Pattern$1.prototype.resetAll = Pattern$1.prototype.keepTrig;
-  Pattern$1.prototype.restart = Pattern$1.prototype.keepifTrigzero;
-  Pattern$1.prototype.restartAll = Pattern$1.prototype.keepTrigzero;
+  Pattern.prototype.struct = function (...args) {
+    return this.keepif.out(...args);
+  };
+
+  Pattern.prototype.structAll = function (...args) {
+    return this.keep.out(...args);
+  };
+
+  Pattern.prototype.mask = function (...args) {
+    return this.keepif.in(...args);
+  };
+
+  Pattern.prototype.maskAll = function (...args) {
+    return this.keep.in(...args);
+  };
+
+  Pattern.prototype.reset = function (...args) {
+    return this.keepif.trig(...args);
+  };
+
+  Pattern.prototype.resetAll = function (...args) {
+    return this.keep.trig(...args);
+  };
+
+  Pattern.prototype.restart = function (...args) {
+    return this.keepif.trigzero(...args);
+  };
+
+  Pattern.prototype.restartAll = function (...args) {
+    return this.keep.trigzero(...args);
+  };
 })();
 
-Pattern$1.prototype.patternified = ["apply", "chop", "color", "cpm", "duration", "early", "fast", "jux", "late", "legato", "linger", "ply", "segment", "striate", "slow", "velocity"];
-Pattern$1.prototype.factories = {
-  pure: pure$1,
-  stack: stack$1,
-  slowcat: slowcat$1,
+var polyrhythm = _stack;
+var pr = _stack;
+Pattern.prototype.factories = {
+  pure: pure,
+  stack: _stack,
+  slowcat: _slowcat,
   fastcat: _fastcat,
   cat: _cat,
-  timeCat: timeCat$1,
-  sequence: sequence$1,
+  timeCat: timeCat,
+  sequence: _sequence,
   seq: seq,
   polymeter: polymeter,
   pm: pm,
   polyrhythm: polyrhythm,
   pr: pr
 };
-var silence$1 = new Pattern$1(_ => []);
+var silence = new Pattern(() => []);
 
-function pure$1(value) {
+function pure(value) {
   function query(state) {
     return state.span.spanCycles.map(subspan => new Hap(fraction(subspan.begin).wholeCycle(), subspan, value));
   }
 
-  return new Pattern$1(query);
+  return new Pattern(query);
 }
 
 function isPattern(thing) {
-  const is = thing instanceof Pattern$1 || thing._Pattern;
-
-  if (!thing instanceof Pattern$1) {
-    console.warn(`Found Pattern that fails "instanceof Pattern" check.
-      This may happen if you are using multiple versions of @strudel.cycles/core. 
-      Please check by running "npm ls @strudel.cycles/core".`);
-  }
-
+  const is = thing instanceof Pattern || (thing == null ? void 0 : thing._Pattern);
   return is;
 }
 
-function reify$2(thing) {
+function reify(thing) {
   if (isPattern(thing)) {
     return thing;
   }
 
-  return pure$1(thing);
+  return pure(thing);
 }
 
-function stack$1(...pats) {
-  pats = pats.map(pat => Array.isArray(pat) ? sequence$1(...pat) : reify$2(pat));
+function _stack(...pats) {
+  pats = pats.map(pat => Array.isArray(pat) ? _sequence(...pat) : reify(pat));
 
   const query = state => flatten(pats.map(pat => pat.query(state)));
 
-  return new Pattern$1(query);
+  return new Pattern(query);
 }
 
-function slowcat$1(...pats) {
-  pats = pats.map(pat => Array.isArray(pat) ? sequence$1(...pat) : reify$2(pat));
+function _slowcat(...pats) {
+  pats = pats.map(pat => Array.isArray(pat) ? _sequence(...pat) : reify(pat));
 
   const query = function (state) {
     const span = state.span;
-    const pat_n = mod(span.begin.sam(), pats.length);
+
+    const pat_n = _mod(span.begin.sam(), pats.length);
+
     const pat = pats[pat_n];
 
     if (!pat) {
@@ -10371,11 +10087,11 @@ function slowcat$1(...pats) {
     return pat.withHapTime(t => t.add(offset)).query(state.setSpan(span.withTime(t => t.sub(offset))));
   };
 
-  return new Pattern$1(query)._splitQueries();
+  return new Pattern(query).splitQueries();
 }
 
 function slowcatPrime(...pats) {
-  pats = pats.map(reify$2);
+  pats = pats.map(reify);
 
   const query = function (state) {
     const pat_n = Math.floor(state.span.begin) % pats.length;
@@ -10383,32 +10099,32 @@ function slowcatPrime(...pats) {
     return (pat == null ? void 0 : pat.query(state)) || [];
   };
 
-  return new Pattern$1(query)._splitQueries();
+  return new Pattern(query).splitQueries();
 }
 
 function _fastcat(...pats) {
-  return slowcat$1(...pats)._fast(pats.length);
+  return _slowcat(...pats)._fast(pats.length);
 }
 
 function _cat(...pats) {
-  return slowcat$1(...pats);
+  return _slowcat(...pats);
 }
 
-function timeCat$1(...timepats) {
-  const total = timepats.map(a => a[0]).reduce((a, b) => a.add(b), fraction(0));
+function timeCat(...timepats) {
+  const total = timepats.map(a2 => a2[0]).reduce((a2, b) => a2.add(b), fraction(0));
   let begin = fraction(0);
   const pats = [];
 
   for (const [time2, pat] of timepats) {
     const end = begin.add(time2);
-    pats.push(reify$2(pat)._compress(begin.div(total), end.div(total)));
+    pats.push(reify(pat)._compress(begin.div(total), end.div(total)));
     begin = end;
   }
 
-  return stack$1(...pats);
+  return _stack(...pats);
 }
 
-function sequence$1(...pats) {
+function _sequence(...pats) {
   return _fastcat(...pats);
 }
 
@@ -10416,27 +10132,27 @@ function seq(...pats) {
   return _fastcat(...pats);
 }
 
-function _sequenceCount(x) {
-  if (Array.isArray(x)) {
-    if (x.length == 0) {
-      return [silence$1, 0];
+function _sequenceCount(x2) {
+  if (Array.isArray(x2)) {
+    if (x2.length == 0) {
+      return [silence, 0];
     }
 
-    if (x.length == 1) {
-      return _sequenceCount(x[0]);
+    if (x2.length == 1) {
+      return _sequenceCount(x2[0]);
     }
 
-    return [_fastcat(...x.map(a => _sequenceCount(a)[0])), x.length];
+    return [_fastcat(...x2.map(a2 => _sequenceCount(a2)[0])), x2.length];
   }
 
-  return [reify$2(x), 1];
+  return [reify(x2), 1];
 }
 
 function polymeterSteps(steps, ...args) {
-  const seqs = args.map(a => _sequenceCount(a));
+  const seqs = args.map(a2 => _sequenceCount(a2));
 
   if (seqs.length == 0) {
-    return silence$1;
+    return silence;
   }
 
   if (steps == 0) {
@@ -10447,7 +10163,7 @@ function polymeterSteps(steps, ...args) {
 
   for (const seq2 of seqs) {
     if (seq2[1] == 0) {
-      next;
+      continue;
     }
 
     if (steps == seq2[1]) {
@@ -10457,7 +10173,7 @@ function polymeterSteps(steps, ...args) {
     }
   }
 
-  return stack$1(...pats);
+  return _stack(...pats);
 }
 
 function polymeter(...args) {
@@ -10468,165 +10184,385 @@ function pm(...args) {
   polymeter(...args);
 }
 
-function polyrhythm(...xs) {
-  const seqs = xs.map(a => sequence$1(a));
+curry((a2, b) => reify(b).mask(a2));
+curry((a2, b) => reify(b).struct(a2));
+curry((a2, b) => reify(b).superimpose(...a2));
+curry((a2, b) => reify(b).set(a2));
+curry((a2, b) => reify(b).keep(a2));
+curry((a2, b) => reify(b).keepif(a2));
+curry((a2, b) => reify(b).add(a2));
+curry((a2, b) => reify(b).sub(a2));
+curry((a2, b) => reify(b).mul(a2));
+curry((a2, b) => reify(b).div(a2));
+curry((a2, b) => reify(b).mod(a2));
+curry((a2, b) => reify(b).pow(a2));
+curry((a2, b) => reify(b).band(a2));
+curry((a2, b) => reify(b).bor(a2));
+curry((a2, b) => reify(b).bxor(a2));
+curry((a2, b) => reify(b).blshift(a2));
+curry((a2, b) => reify(b).brshift(a2));
+curry((a2, b) => reify(b).lt(a2));
+curry((a2, b) => reify(b).gt(a2));
+curry((a2, b) => reify(b).lte(a2));
+curry((a2, b) => reify(b).gte(a2));
+curry((a2, b) => reify(b).eq(a2));
+curry((a2, b) => reify(b).eqt(a2));
+curry((a2, b) => reify(b).ne(a2));
+curry((a2, b) => reify(b).net(a2));
+curry((a2, b) => reify(b).and(a2));
+curry((a2, b) => reify(b).or(a2));
+curry((a2, b) => reify(b).func(a2));
 
-  if (seqs.length == 0) {
-    return silence$1;
-  }
+function register(name, func) {
+  if (Array.isArray(name)) {
+    const result = {};
 
-  return stack$1(...seqs);
-}
-
-function pr(args) {
-  polyrhythm(args);
-}
-
-var add = curry((a, pat) => pat.add(a));
-var chop = curry((a, pat) => pat.chop(a));
-var chunk = curry((a, pat) => pat.chunk(a));
-var chunkBack = curry((a, pat) => pat.chunkBack(a));
-var div = curry((a, pat) => pat.div(a));
-var early = curry((a, pat) => pat.early(a));
-var echo = curry((a, b, c, pat) => pat.echo(a, b, c));
-var every = curry((i, f, pat) => pat.every(i, f));
-var fast = curry((a, pat) => pat.fast(a));
-
-var inv = pat => pat.inv();
-
-var invert = pat => pat.invert();
-
-var iter = curry((a, pat) => pat.iter(a));
-var iterBack = curry((a, pat) => pat.iter(a));
-var jux = curry((f, pat) => pat.jux(f));
-var juxBy = curry((by, f, pat) => pat.juxBy(by, f));
-var late = curry((a, pat) => pat.late(a));
-var linger = curry((a, pat) => pat.linger(a));
-var mask = curry((a, pat) => pat.mask(a));
-var mul = curry((a, pat) => pat.mul(a));
-var off = curry((t, f, pat) => pat.off(t, f));
-var ply = curry((a, pat) => pat.ply(a));
-var range = curry((a, b, pat) => pat.range(a, b));
-var range2 = curry((a, b, pat) => pat.range2(a, b));
-
-var rev = pat => pat.rev();
-
-var slow = curry((a, pat) => pat.slow(a));
-var struct = curry((a, pat) => pat.struct(a));
-var sub = curry((a, pat) => pat.sub(a));
-var superimpose = curry((array, pat) => pat.superimpose(...array));
-var set = curry((a, pat) => pat.set(a));
-var when = curry((binary, f, pat) => pat.when(binary, f));
-Pattern$1.prototype.composable = {
-  fast: fast,
-  slow: slow,
-  early: early,
-  late: late,
-  superimpose: superimpose
-};
-
-function makeComposable(func) {
-  Object.entries(Pattern$1.prototype.composable).forEach(([functionName, composable]) => {
-    func[functionName] = (...args) => {
-      const composition = compose(func, composable(...args));
-      return makeComposable(composition);
-    };
-  });
-  return func;
-}
-
-var patternify2 = f => (pata, patb, pat) => pata.fmap(a => b => f.call(pat, a, b)).appLeft(patb).innerJoin();
-
-var patternify3 = f => (pata, patb, patc, pat) => pata.fmap(a => b => c => f.call(pat, a, b, c)).appLeft(patb).appLeft(patc).innerJoin();
-
-var patternify4 = f => (pata, patb, patc, patd, pat) => pata.fmap(a => b => c => d => f.call(pat, a, b, c, d)).appLeft(patb).appLeft(patc).appLeft(patd).innerJoin();
-
-Pattern$1.prototype.echo = function (...args) {
-  args = args.map(reify$2);
-  return patternify3(Pattern$1.prototype._echo)(...args, this);
-};
-
-Pattern$1.prototype.echoWith = function (...args) {
-  args = args.map(reify$2);
-  return patternify3(Pattern$1.prototype._echoWith)(...args, this);
-};
-
-Pattern$1.prototype.chunk = function (...args) {
-  args = args.map(reify$2);
-  return patternify2(Pattern$1.prototype._chunk)(...args, this);
-};
-
-Pattern$1.prototype.chunkBack = function (...args) {
-  args = args.map(reify$2);
-  return patternify2(Pattern$1.prototype._chunkBack)(...args, this);
-};
-
-Pattern$1.prototype.loopAt = function (...args) {
-  args = args.map(reify$2);
-  return patternify2(Pattern$1.prototype._loopAt)(...args, this);
-};
-
-Pattern$1.prototype.zoom = function (...args) {
-  args = args.map(reify$2);
-  return patternify2(Pattern$1.prototype._zoom)(...args, this);
-};
-
-Pattern$1.prototype.compress = function (...args) {
-  args = args.map(reify$2);
-  return patternify2(Pattern$1.prototype._compress)(...args, this);
-};
-
-Pattern$1.prototype.outside = function (...args) {
-  args = args.map(reify$2);
-  return patternify2(Pattern$1.prototype._outside)(...args, this);
-};
-
-Pattern$1.prototype.inside = function (...args) {
-  args = args.map(reify$2);
-  return patternify2(Pattern$1.prototype._inside)(...args, this);
-};
-
-Pattern$1.prototype.bootstrap = function () {
-  const bootstrapped = Object.fromEntries(Object.entries(Pattern$1.prototype.composable).map(([functionName, composable]) => {
-    if (Pattern$1.prototype[functionName]) {
-      Pattern$1.prototype[functionName] = makeComposable(Pattern$1.prototype[functionName]);
+    for (const name_item of name) {
+      result[name_item] = register(name_item, func);
     }
 
-    return [functionName, curry(composable, makeComposable)];
-  }));
-  this.patternified.forEach(prop => {
-    Pattern$1.prototype[prop] = function (...args) {
-      return this._patternify(Pattern$1.prototype["_" + prop])(...args);
+    return result;
+  }
+
+  const arity = func.length;
+  var pfunc;
+
+  pfunc = function (...args) {
+    args = args.map(reify);
+    const pat = args[args.length - 1];
+
+    if (arity === 1) {
+      return func(pat);
+    }
+
+    const [left, ...right] = args.slice(0, -1);
+
+    let mapFn = (...args2) => {
+      Array(arity - 1).fill().map((_, i) => {
+        var _a;
+
+        return (_a = args2[i]) != null ? _a : void 0;
+      });
+      return func(...args2, pat);
     };
-  });
-  return bootstrapped;
-};
 
-Pattern$1.prototype.define = (name, func, options = {}) => {
-  if (options.composable) {
-    Pattern$1.prototype.composable[name] = func;
+    mapFn = curry(mapFn, null, arity - 1);
+    return right.reduce((acc, p) => acc.appLeft(p), left.fmap(mapFn)).innerJoin();
+  };
+
+  Pattern.prototype[name] = function (...args) {
+    args = args.map(reify);
+
+    if (arity === 2 && args.length !== 1) {
+      args = [_sequence(...args)];
+    } else if (arity !== args.length + 1) {
+      throw new Error(`.${name}() expects ${arity - 1} inputs but got ${args.length}.`);
+    }
+
+    return pfunc(...args, this);
+  };
+
+  if (arity > 1) {
+    Pattern.prototype["_" + name] = function (...args) {
+      return func(...args, this);
+    };
   }
 
-  if (options.patternified) {
-    Pattern$1.prototype.patternified = Pattern$1.prototype.patternified.concat([name]);
-  }
+  return curry(pfunc, null, arity);
+}
 
-  Pattern$1.prototype.bootstrap();
-};
-
-Pattern$1.prototype.define("hush", pat => pat.hush(), {
-  patternified: false,
-  composable: true
+register("round", function (pat) {
+  return pat.asNumber().fmap(v => Math.round(v));
 });
-Pattern$1.prototype.define("bypass", pat => pat.bypass(on), {
-  patternified: true,
-  composable: true
+register("floor", function (pat) {
+  return pat.asNumber().fmap(v => Math.floor(v));
+});
+register("ceil", function (pat) {
+  return pat.asNumber().fmap(v => Math.ceil(v));
+});
+register("toBipolar", function (pat) {
+  return pat.fmap(x2 => x2 * 2 - 1);
+});
+register("fromBipolar", function (pat) {
+  return pat.fmap(x2 => (x2 + 1) / 2);
+});
+register("range", function (min, max, pat) {
+  return pat.mul(max - min).add(min);
+});
+register("rangex", function (min, max, pat) {
+  return pat._range(Math.log(min), Math.log(max)).fmap(Math.exp);
+});
+register("range2", function (min, max, pat) {
+  return pat.fromBipolar()._range(min, max);
+});
+register("compress", function (b, e, pat) {
+  if (b.gt(e) || b.gt(1) || e.gt(1) || b.lt(0) || e.lt(0)) {
+    return silence;
+  }
+
+  return pat._fastGap(fraction(1).div(e.sub(b)))._late(b);
+});
+register(["compressSpan", "compressspan"], function (span, pat) {
+  return pat._compress(span.begin, span.end);
+});
+register(["fastGap", "fastgap"], function (factor, pat) {
+  const qf = function (span) {
+    const cycle = span.begin.sam();
+    const bpos = span.begin.sub(cycle).mul(factor).min(1);
+    const epos = span.end.sub(cycle).mul(factor).min(1);
+
+    if (bpos >= 1) {
+      return void 0;
+    }
+
+    return new TimeSpan(cycle.add(bpos), cycle.add(epos));
+  };
+
+  const ef = function (hap) {
+    const begin = hap.part.begin;
+    const end = hap.part.end;
+    const cycle = begin.sam();
+    const beginPos = begin.sub(cycle).div(factor).min(1);
+    const endPos = end.sub(cycle).div(factor).min(1);
+    const newPart = new TimeSpan(cycle.add(beginPos), cycle.add(endPos));
+    const newWhole = !hap.whole ? void 0 : new TimeSpan(newPart.begin.sub(begin.sub(hap.whole.begin).div(factor)), newPart.end.add(hap.whole.end.sub(end).div(factor)));
+    return new Hap(newWhole, newPart, hap.value, hap.context);
+  };
+
+  return pat.withQuerySpanMaybe(qf).withHap(ef).splitQueries();
+});
+register("focus", function (b, e, pat) {
+  return pat._fast(fraction(1).div(e.sub(b))).late(b.cyclePos());
+});
+register(["focusSpan", "focusspan"], function (span, pat) {
+  return pat._focus(span.begin, span.end);
+});
+register("ply", function (factor, pat) {
+  return pat.fmap(x2 => pure(x2)._fast(factor)).squeezeJoin();
+});
+register(["fast", "density"], function (factor, pat) {
+  factor = fraction(factor);
+  const fastQuery = pat.withQueryTime(t => t.mul(factor));
+  return fastQuery.withHapTime(t => t.div(factor));
+});
+register(["slow", "sparsity"], function (factor, pat) {
+  return pat._fast(fraction(1).div(factor));
+});
+register("inside", function (factor, f, pat) {
+  return f(pat._slow(factor))._fast(factor);
+});
+register("outside", function (factor, f, pat) {
+  return f(pat._fast(factor))._slow(factor);
+});
+register("lastOf", function (n, func, pat) {
+  const pats = Array(n - 1).fill(pat);
+  pats.push(func(pat));
+  return slowcatPrime(...pats);
+});
+register(["firstOf", "every"], function (n, func, pat) {
+  const pats = Array(n - 1).fill(pat);
+  pats.unshift(func(pat));
+  return slowcatPrime(...pats);
+});
+register("apply", function (func, pat) {
+  return func(pat);
+});
+register("cpm", function (cpm, pat) {
+  return pat._fast(cpm / 60);
+});
+register("early", function (offset, pat) {
+  offset = fraction(offset);
+  return pat.withQueryTime(t => t.add(offset)).withHapTime(t => t.sub(offset));
+});
+register("late", function (offset, pat) {
+  offset = fraction(offset);
+  return pat._early(fraction(0).sub(offset));
+});
+register("zoom", function (s, e, pat) {
+  e = fraction(e);
+  s = fraction(s);
+  const d = e.sub(s);
+  return pat.withQuerySpan(span => span.withCycle(t => t.mul(d).add(s))).withHapSpan(span => span.withCycle(t => t.sub(s).div(d))).splitQueries();
+});
+register(["zoomArc", "zoomarc"], function (a2, pat) {
+  return pat.zoom(a2.begin, a2.end);
+});
+register("linger", function (t, pat) {
+  if (t == 0) {
+    return silence;
+  } else if (t < 0) {
+    return pat._zoom(t.add(1), 1)._slow(t);
+  }
+
+  return pat._zoom(0, t)._slow(t);
+});
+register("segment", function (rate, pat) {
+  return pat.struct(pure(true)._fast(rate));
+});
+register(["invert", "inv"], function (pat) {
+  return pat.fmap(x2 => !x2);
+});
+register("when", function (on, func, pat) {
+  return on ? func(pat) : pat;
+});
+register("off", function (time_pat, func, pat) {
+  return _stack(pat, func(pat.late(time_pat)));
+});
+register("brak", function (pat) {
+  return pat.when(_slowcat(false, true), x2 => _fastcat(x2, silence)._late(0.25));
+});
+var rev = register("rev", function (pat) {
+  const query = function (state) {
+    const span = state.span;
+    const cycle = span.begin.sam();
+    const next_cycle = span.begin.nextSam();
+
+    const reflect = function (to_reflect) {
+      const reflected = to_reflect.withTime(time2 => cycle.add(next_cycle.sub(time2)));
+      const tmp = reflected.begin;
+      reflected.begin = reflected.end;
+      reflected.end = tmp;
+      return reflected;
+    };
+
+    const haps = pat.query(state.setSpan(reflect(span)));
+    return haps.map(hap => hap.withSpan(reflect));
+  };
+
+  return new Pattern(query).splitQueries();
+});
+register("hush", function (pat) {
+  return silence;
+});
+register("palindrome", function (pat) {
+  return pat.every(2, rev);
+});
+register(["juxBy", "juxby"], function (by, func, pat) {
+  by /= 2;
+
+  const elem_or = function (dict, key, dflt) {
+    if (key in dict) {
+      return dict[key];
+    }
+
+    return dflt;
+  };
+
+  const left = pat.withValue(val => Object.assign({}, val, {
+    pan: elem_or(val, "pan", 0.5) - by
+  }));
+  const right = pat.withValue(val => Object.assign({}, val, {
+    pan: elem_or(val, "pan", 0.5) + by
+  }));
+  return _stack(left, func(right));
+});
+register("jux", function (func, pat) {
+  return pat._juxBy(1, func, pat);
+});
+register(["stutWith", "stutwith"], function (times, time2, func, pat) {
+  return _stack(...listRange(0, times - 1).map(i => func(pat.late(fraction(time2).mul(i)), i)));
+});
+register("stut", function (times, feedback, time2, pat) {
+  return pat._stutWith(times, time2, (pat2, i) => pat2.velocity(Math.pow(feedback, i)));
+});
+register(["echoWith", "echowith"], function (times, time2, func, pat) {
+  return _stack(...listRange(0, times - 1).map(i => func(pat.late(fraction(time2).mul(i)), i)));
+});
+register("echo", function (times, time2, feedback, pat) {
+  return pat._echoWith(times, time2, (pat2, i) => pat2.velocity(Math.pow(feedback, i)));
+});
+
+var _iter = function (times, pat, back = false) {
+  times = fraction(times);
+  return _slowcat(...listRange(0, times.sub(1)).map(i => back ? pat.late(fraction(i).div(times)) : pat.early(fraction(i).div(times))));
+};
+
+register("iter", function (times, pat) {
+  return _iter(times, pat, false);
+});
+register(["iterBack", "iterback"], function (times, pat) {
+  return _iter(times, pat, true);
+});
+
+var _chunk = function (n, func, pat, back = false) {
+  const binary = Array(n - 1).fill(false);
+  binary.unshift(true);
+
+  const binary_pat = _iter(n, _sequence(...binary), back);
+
+  return pat.when(binary_pat, func);
+};
+
+register("chunk", function (n, func, pat) {
+  return _chunk(n, func, pat, false);
+});
+register(["chunkBack", "chunkback"], function (n, func, pat) {
+  return _chunk(n, func, pat, true);
+});
+register("bypass", function (on, pat) {
+  on = Boolean(parseInt(on));
+  return on ? silence : this;
+});
+register("duration", function (value, pat) {
+  return pat.withHapSpan(span => new TimeSpan(span.begin, span.begin.add(value)));
+});
+register(["color", "colour"], function (color, pat) {
+  return pat.withContext(context => ({ ...context,
+    color
+  }));
+});
+register("velocity", function (velocity, pat) {
+  return pat.withContext(context => ({ ...context,
+    velocity: (context.velocity || 1) * velocity
+  }));
+});
+register("legato", function (value, pat) {
+  return pat.withHapSpan(span => new TimeSpan(span.begin, span.begin.add(span.end.sub(span.begin).mul(value))));
+});
+register("chop", function (n, pat) {
+  const slices = Array.from({
+    length: n
+  }, (x2, i) => i);
+  const slice_objects = slices.map(i => ({
+    begin: i / n,
+    end: (i + 1) / n
+  }));
+
+  const func = function (o) {
+    return _sequence(slice_objects.map(slice_o => Object.assign({}, o, slice_o)));
+  };
+
+  return pat.squeezeBind(func);
+});
+register("striate", function (n, pat) {
+  const slices = Array.from({
+    length: n
+  }, (x2, i) => i);
+  const slice_objects = slices.map(i => ({
+    begin: i / n,
+    end: (i + 1) / n
+  }));
+
+  const slicePat = _slowcat(...slice_objects);
+
+  return pat.set(slicePat)._fast(n);
+});
+
+var _loopAt = function (factor, pat, cps = 1) {
+  return pat.speed(1 / factor * cps).unit("c").slow(factor);
+};
+
+register(["loopAt", "loopat"], function (factor, pat) {
+  return _loopAt(factor, pat, 1);
+});
+register(["loopAtCps", "loopatcps"], function (factor, cps, pat) {
+  return _loopAt(factor, pat, cps);
 });
 var controls = {};
-var generic_params = [["s", "s", "sound"], ["f", "n", "The note or sample number to choose for a synth or sampleset"], ["f", "note", "The note or pitch to play a sound or synth with"], ["f", "accelerate", "a pattern of numbers that speed up (or slow down) samples while they play."], ["f", "gain", "a pattern of numbers that specify volume. Values less than 1 make the sound quieter. Values greater than 1 make the sound louder. For the linear equivalent, see @amp@."], ["f", "amp", "like @gain@, but linear."], ["f", "attack", "a pattern of numbers to specify the attack time (in seconds) of an envelope applied to each sample."], ["f", "decay", ""], ["f", "sustain", ""], ["f", "release", "a pattern of numbers to specify the release time (in seconds) of an envelope applied to each sample."], ["f", "hold", "a pattern of numbers to specify the hold time (in seconds) of an envelope applied to each sample. Only takes effect if `attack` and `release` are also specified."], ["f", "bandf", "A pattern of numbers from 0 to 1. Sets the center frequency of the band-pass filter."], ["f", "bandq", "a pattern of anumbers from 0 to 1. Sets the q-factor of the band-pass filter."], ["f", "begin", "a pattern of numbers from 0 to 1. Skips the beginning of each sample, e.g. `0.25` to cut off the first quarter from each sample."], ["f", "end", "the same as `begin`, but cuts the end off samples, shortening them; e.g. `0.75` to cut off the last quarter of each sample."], ["f", "loop", "loops the sample (from `begin` to `end`) the specified number of times."], ["f", "legato", "controls the amount of overlap between two adjacent sounds"], ["f", "crush", "bit crushing, a pattern of numbers from 1 (for drastic reduction in bit-depth) to 16 (for barely no reduction)."], ["f", "coarse", "fake-resampling, a pattern of numbers for lowering the sample rate, i.e. 1 for original 2 for half, 3 for a third and so on."], ["i", "channel", "choose the channel the pattern is sent to in superdirt"], ["i", "cut", "In the style of classic drum-machines, `cut` will stop a playing sample as soon as another samples with in same cutgroup is to be played. An example would be an open hi-hat followed by a closed one, essentially muting the open."], ["f", "cutoff", "a pattern of numbers from 0 to 1. Applies the cutoff frequency of the low-pass filter."], ["f", "hcutoff", "a pattern of numbers from 0 to 1. Applies the cutoff frequency of the high-pass filter. Also has alias @hpf@"], ["f", "hresonance", "a pattern of numbers from 0 to 1. Applies the resonance of the high-pass filter. Has alias @hpq@"], ["f", "resonance", "a pattern of numbers from 0 to 1. Specifies the resonance of the low-pass filter."], ["f", "djf", "DJ filter, below 0.5 is low pass filter, above is high pass filter."], ["f", "delay", "a pattern of numbers from 0 to 1. Sets the level of the delay signal."], ["f", "delayfeedback", "a pattern of numbers from 0 to 1. Sets the amount of delay feedback."], ["f", "delaytime", "a pattern of numbers from 0 to 1. Sets the length of the delay."], ["f", "lock", "A pattern of numbers. Specifies whether delaytime is calculated relative to cps. When set to 1, delaytime is a direct multiple of a cycle."], ["f", "detune", ""], ["f", "dry", "when set to `1` will disable all reverb for this pattern. See `room` and `size` for more information about reverb."], ["f", "fadeTime", "Used when using begin/end or chop/striate and friends, to change the fade out time of the 'grain' envelope."], ["f", "fadeInTime", "As with fadeTime, but controls the fade in time of the grain envelope. Not used if the grain begins at position 0 in the sample."], ["f", "freq", ""], ["f", "gate", ""], ["f", "leslie", ""], ["f", "lrate", ""], ["f", "lsize", ""], ["f", "degree", ""], ["f", "mtranspose", ""], ["f", "ctranspose", ""], ["f", "harmonic", ""], ["f", "stepsPerOctave", ""], ["f", "octaveR", ""], ["f", "nudge", "Nudges events into the future by the specified number of seconds. Negative numbers work up to a point as well (due to internal latency)"], ["i", "octave", ""], ["f", "offset", ""], ["i", "orbit", "a pattern of numbers. An `orbit` is a global parameter context for patterns. Patterns with the same orbit will share hardware output bus offset and global effects, e.g. reverb and delay. The maximum number of orbits is specified in the superdirt startup, numbers higher than maximum will wrap around."], ["f", "overgain", ""], ["f", "overshape", ""], ["f", "pan", "a pattern of numbers between 0 and 1, from left to right (assuming stereo), once round a circle (assuming multichannel)"], ["f", "panspan", "a pattern of numbers between -inf and inf, which controls how much multichannel output is fanned out (negative is backwards ordering)"], ["f", "pansplay", "a pattern of numbers between 0.0 and 1.0, which controls the multichannel spread range (multichannel only)"], ["f", "panwidth", "a pattern of numbers between 0.0 and inf, which controls how much each channel is distributed over neighbours (multichannel only)"], ["f", "panorient", "a pattern of numbers between -1.0 and 1.0, which controls the relative position of the centre pan in a pair of adjacent speakers (multichannel only)"], ["f", "rate", "used in SuperDirt softsynths as a control rate or 'speed'"], ["f", "slide", ""], ["f", "semitone", ""], ["f", "velocity", ""], ["f", "voice", ""], ["f", "room", "a pattern of numbers from 0 to 1. Sets the level of reverb."], ["f", "size", "a pattern of numbers from 0 to 1. Sets the perceptual size (reverb time) of the `room` to be used in reverb."], ["f", "shape", "wave shaping distortion, a pattern of numbers from 0 for no distortion up to 1 for loads of distortion."], ["f", "speed", "a pattern of numbers which changes the speed of sample playback, i.e. a cheap way of changing pitch. Negative values will play the sample backwards!"], ["s", "unit", 'used in conjunction with `speed`, accepts values of "r" (rate, default behavior), "c" (cycles), or "s" (seconds). Using `unit "c"` means `speed` will be interpreted in units of cycles, e.g. `speed "1"` means samples will be stretched to fill a cycle. Using `unit "s"` means the playback speed will be adjusted so that the duration is the number of seconds specified by `speed`.'], ["f", "squiz", ""], ["f", "stutterdepth", ""], ["f", "stuttertime", ""], ["f", "timescale", ""], ["f", "timescalewin", ""], ["s", "vowel", "formant filter to make things sound like vowels, a pattern of either `a`, `e`, `i`, `o` or `u`. Use a rest (`~`) for no effect."], ["f", "waveloss", ""], ["f", "dur", ""], ["f", "expression", ""], ["f", "sustainpedal", ""], ["f", "tremolodepth", "Tremolo Audio DSP effect | params are 'tremolorate' and 'tremolodepth'"], ["f", "tremolorate", "Tremolo Audio DSP effect | params are 'tremolorate' and 'tremolodepth'"], ["f", "phaserdepth", "Phaser Audio DSP effect | params are 'phaserrate' and 'phaserdepth'"], ["f", "phaserrate", "Phaser Audio DSP effect | params are 'phaserrate' and 'phaserdepth'"], ["f", "fshift", "frequency shifter"], ["f", "fshiftnote", "frequency shifter"], ["f", "fshiftphase", "frequency shifter"], ["f", "triode", "tube distortion"], ["f", "krush", "shape/bass enhancer"], ["f", "kcutoff", ""], ["f", "octer", "octaver effect"], ["f", "octersub", "octaver effect"], ["f", "octersubsub", "octaver effect"], ["f", "ring", "ring modulation"], ["f", "ringf", "ring modulation"], ["f", "ringdf", "ring modulation"], ["f", "distort", "noisy fuzzy distortion"], ["f", "freeze", "Spectral freeze"], ["f", "xsdelay", ""], ["f", "tsdelay", ""], ["f", "real", "Spectral conform"], ["f", "imag", ""], ["f", "enhance", "Spectral enhance"], ["f", "partials", ""], ["f", "comb", "Spectral comb"], ["f", "smear", "Spectral smear"], ["f", "scram", "Spectral scramble"], ["f", "binshift", "Spectral binshift"], ["f", "hbrick", "High pass sort of spectral filter"], ["f", "lbrick", "Low pass sort of spectral filter"], ["f", "midichan", ""], ["f", "control", ""], ["f", "ccn", ""], ["f", "ccv", ""], ["f", "polyTouch", ""], ["f", "midibend", ""], ["f", "miditouch", ""], ["f", "ctlNum", ""], ["f", "frameRate", ""], ["f", "frames", ""], ["f", "hours", ""], ["s", "midicmd", ""], ["f", "minutes", ""], ["f", "progNum", ""], ["f", "seconds", ""], ["f", "songPtr", ""], ["f", "uid", ""], ["f", "val", ""], ["f", "cps", ""], ["f", "clip", ""]];
+var generic_params = [["s", "s", "sound"], ["f", "n", "The note or sample number to choose for a synth or sampleset"], ["f", "note", "The note or pitch to play a sound or synth with"], ["f", "accelerate", "a pattern of numbers that speed up (or slow down) samples while they play."], ["f", "gain", "a pattern of numbers that specify volume. Values less than 1 make the sound quieter. Values greater than 1 make the sound louder. For the linear equivalent, see @amp@."], ["f", "amp", "like @gain@, but linear."], ["f", "attack", "a pattern of numbers to specify the attack time (in seconds) of an envelope applied to each sample."], ["f", "bank", "selects sound bank to use"], ["f", "decay", ""], ["f", "sustain", ""], ["f", "release", "a pattern of numbers to specify the release time (in seconds) of an envelope applied to each sample."], ["f", "hold", "a pattern of numbers to specify the hold time (in seconds) of an envelope applied to each sample. Only takes effect if `attack` and `release` are also specified."], ["f", "bandf", "A pattern of numbers from 0 to 1. Sets the center frequency of the band-pass filter."], ["f", "bandq", "a pattern of anumbers from 0 to 1. Sets the q-factor of the band-pass filter."], ["f", "begin", "a pattern of numbers from 0 to 1. Skips the beginning of each sample, e.g. `0.25` to cut off the first quarter from each sample."], ["f", "end", "the same as `begin`, but cuts the end off samples, shortening them; e.g. `0.75` to cut off the last quarter of each sample."], ["f", "loop", "loops the sample (from `begin` to `end`) the specified number of times."], ["f", "crush", "bit crushing, a pattern of numbers from 1 (for drastic reduction in bit-depth) to 16 (for barely no reduction)."], ["f", "coarse", "fake-resampling, a pattern of numbers for lowering the sample rate, i.e. 1 for original 2 for half, 3 for a third and so on."], ["i", "channel", "choose the channel the pattern is sent to in superdirt"], ["i", "cut", "In the style of classic drum-machines, `cut` will stop a playing sample as soon as another samples with in same cutgroup is to be played. An example would be an open hi-hat followed by a closed one, essentially muting the open."], ["f", "cutoff", "a pattern of numbers from 0 to 1. Applies the cutoff frequency of the low-pass filter."], ["f", "hcutoff", "a pattern of numbers from 0 to 1. Applies the cutoff frequency of the high-pass filter. Also has alias @hpf@"], ["f", "hresonance", "a pattern of numbers from 0 to 1. Applies the resonance of the high-pass filter. Has alias @hpq@"], ["f", "resonance", "a pattern of numbers from 0 to 1. Specifies the resonance of the low-pass filter."], ["f", "djf", "DJ filter, below 0.5 is low pass filter, above is high pass filter."], ["f", "delay", "a pattern of numbers from 0 to 1. Sets the level of the delay signal."], ["f", "delayfeedback", "a pattern of numbers from 0 to 1. Sets the amount of delay feedback."], ["f", "delaytime", "a pattern of numbers from 0 to 1. Sets the length of the delay."], ["f", "lock", "A pattern of numbers. Specifies whether delaytime is calculated relative to cps. When set to 1, delaytime is a direct multiple of a cycle."], ["f", "detune", ""], ["f", "dry", "when set to `1` will disable all reverb for this pattern. See `room` and `size` for more information about reverb."], ["f", "fadeTime", "Used when using begin/end or chop/striate and friends, to change the fade out time of the 'grain' envelope."], ["f", "fadeInTime", "As with fadeTime, but controls the fade in time of the grain envelope. Not used if the grain begins at position 0 in the sample."], ["f", "freq", ""], ["f", "gate", ""], ["f", "leslie", ""], ["f", "lrate", ""], ["f", "lsize", ""], ["f", "degree", ""], ["f", "mtranspose", ""], ["f", "ctranspose", ""], ["f", "harmonic", ""], ["f", "stepsPerOctave", ""], ["f", "octaveR", ""], ["f", "nudge", "Nudges events into the future by the specified number of seconds. Negative numbers work up to a point as well (due to internal latency)"], ["i", "octave", ""], ["f", "offset", ""], ["i", "orbit", "a pattern of numbers. An `orbit` is a global parameter context for patterns. Patterns with the same orbit will share hardware output bus offset and global effects, e.g. reverb and delay. The maximum number of orbits is specified in the superdirt startup, numbers higher than maximum will wrap around."], ["f", "overgain", ""], ["f", "overshape", ""], ["f", "pan", "a pattern of numbers between 0 and 1, from left to right (assuming stereo), once round a circle (assuming multichannel)"], ["f", "panspan", "a pattern of numbers between -inf and inf, which controls how much multichannel output is fanned out (negative is backwards ordering)"], ["f", "pansplay", "a pattern of numbers between 0.0 and 1.0, which controls the multichannel spread range (multichannel only)"], ["f", "panwidth", "a pattern of numbers between 0.0 and inf, which controls how much each channel is distributed over neighbours (multichannel only)"], ["f", "panorient", "a pattern of numbers between -1.0 and 1.0, which controls the relative position of the centre pan in a pair of adjacent speakers (multichannel only)"], ["f", "rate", "used in SuperDirt softsynths as a control rate or 'speed'"], ["f", "slide", ""], ["f", "semitone", ""], ["f", "voice", ""], ["f", "room", "a pattern of numbers from 0 to 1. Sets the level of reverb."], ["f", "size", "a pattern of numbers from 0 to 1. Sets the perceptual size (reverb time) of the `room` to be used in reverb."], ["f", "roomsize", "a pattern of numbers from 0 to 1. Sets the perceptual size (reverb time) of the `room` to be used in reverb."], ["f", "shape", "wave shaping distortion, a pattern of numbers from 0 for no distortion up to 1 for loads of distortion."], ["f", "speed", "a pattern of numbers which changes the speed of sample playback, i.e. a cheap way of changing pitch. Negative values will play the sample backwards!"], ["s", "unit", 'used in conjunction with `speed`, accepts values of "r" (rate, default behavior), "c" (cycles), or "s" (seconds). Using `unit "c"` means `speed` will be interpreted in units of cycles, e.g. `speed "1"` means samples will be stretched to fill a cycle. Using `unit "s"` means the playback speed will be adjusted so that the duration is the number of seconds specified by `speed`.'], ["f", "squiz", ""], ["f", "stutterdepth", ""], ["f", "stuttertime", ""], ["f", "timescale", ""], ["f", "timescalewin", ""], ["s", "vowel", "formant filter to make things sound like vowels, a pattern of either `a`, `e`, `i`, `o` or `u`. Use a rest (`~`) for no effect."], ["f", "waveloss", ""], ["f", "dur", ""], ["f", "expression", ""], ["f", "sustainpedal", ""], ["f", "tremolodepth", "Tremolo Audio DSP effect | params are 'tremolorate' and 'tremolodepth'"], ["f", "tremolorate", "Tremolo Audio DSP effect | params are 'tremolorate' and 'tremolodepth'"], ["f", "phaserdepth", "Phaser Audio DSP effect | params are 'phaserrate' and 'phaserdepth'"], ["f", "phaserrate", "Phaser Audio DSP effect | params are 'phaserrate' and 'phaserdepth'"], ["f", "fshift", "frequency shifter"], ["f", "fshiftnote", "frequency shifter"], ["f", "fshiftphase", "frequency shifter"], ["f", "triode", "tube distortion"], ["f", "krush", "shape/bass enhancer"], ["f", "kcutoff", ""], ["f", "octer", "octaver effect"], ["f", "octersub", "octaver effect"], ["f", "octersubsub", "octaver effect"], ["f", "ring", "ring modulation"], ["f", "ringf", "ring modulation"], ["f", "ringdf", "ring modulation"], ["f", "distort", "noisy fuzzy distortion"], ["f", "freeze", "Spectral freeze"], ["f", "xsdelay", ""], ["f", "tsdelay", ""], ["f", "real", "Spectral conform"], ["f", "imag", ""], ["f", "enhance", "Spectral enhance"], ["f", "partials", ""], ["f", "comb", "Spectral comb"], ["f", "smear", "Spectral smear"], ["f", "scram", "Spectral scramble"], ["f", "binshift", "Spectral binshift"], ["f", "hbrick", "High pass sort of spectral filter"], ["f", "lbrick", "Low pass sort of spectral filter"], ["f", "midichan", ""], ["f", "control", ""], ["f", "ccn", ""], ["f", "ccv", ""], ["f", "polyTouch", ""], ["f", "midibend", ""], ["f", "miditouch", ""], ["f", "ctlNum", ""], ["f", "frameRate", ""], ["f", "frames", ""], ["f", "hours", ""], ["s", "midicmd", ""], ["f", "minutes", ""], ["f", "progNum", ""], ["f", "seconds", ""], ["f", "songPtr", ""], ["f", "uid", ""], ["f", "val", ""], ["f", "cps", ""], ["f", "clip", ""]];
 
-var _name = (name, ...pats) => sequence$1(...pats).withValue(x => ({
-  [name]: x
+var _name = (name, ...pats) => _sequence(...pats).withValue(x2 => ({
+  [name]: x2
 }));
 
 var _setter = (func, name) => function (...pats) {
@@ -10642,18 +10578,18 @@ var _setter = (func, name) => function (...pats) {
 generic_params.forEach(([type, name, description]) => {
   controls[name] = (...pats) => _name(name, ...pats);
 
-  Pattern$1.prototype[name] = _setter(controls[name], name);
+  Pattern.prototype[name] = _setter(controls[name], name);
 });
 
 controls.createParam = name => {
   const func = (...pats) => _name(name, ...pats);
 
-  Pattern$1.prototype[name] = _setter(func, name);
+  Pattern.prototype[name] = _setter(func, name);
   return (...pats) => _name(name, ...pats);
 };
 
 controls.createParams = (...names) => names.reduce((acc, name) => Object.assign(acc, {
-  [name]: createParam(name)
+  [name]: controls.createParam(name)
 }), {});
 
 function bjorklund(slots, pulses) {
@@ -10668,7 +10604,7 @@ function bjorklund(slots, pulses) {
     } else if (lv == -2) {
       pattern.push(1);
     } else {
-      for (var x = 0; x < count[lv]; x++) {
+      for (var x2 = 0; x2 < count[lv]; x2++) {
         build_pattern(lv - 1);
       }
 
@@ -10694,7 +10630,7 @@ var bjork = function (m, k) {
   if (m > k) return bjorklund(m, k);else return bjorklund(k, m);
 };
 
-var euclid = (pulses, steps, rotation = 0) => {
+var _euclidRot = function (pulses, steps, rotation) {
   const b = bjork(steps, pulses);
 
   if (rotation) {
@@ -10704,86 +10640,80 @@ var euclid = (pulses, steps, rotation = 0) => {
   return b;
 };
 
-Pattern$1.prototype.euclid = function (pulses, steps, rotation = 0) {
-  return this.struct(euclid(pulses, steps, rotation));
-};
+register("euclid", function (pulses, steps, pat) {
+  return pat.struct(_euclidRot(steps, pulses, 0));
+});
+register(["euclidrot", "euclidRot"], function (pulses, steps, rotation, pat) {
+  return pat.struct(_euclidRot(steps, pulses, rotation));
+});
 
-Pattern$1.prototype.euclidLegato = function (pulses, steps, rotation = 0) {
-  const bin_pat = euclid(pulses, steps, rotation);
+var _euclidLegato = function (pulses, steps, rotation, pat) {
+  const bin_pat = _euclidRot(pulses, steps, rotation);
+
   const firstOne = bin_pat.indexOf(1);
   const gapless = rotate(bin_pat, firstOne).join("").split("1").slice(1).map(s => [s.length + 1, true]);
-  return this.struct(timeCat$1(...gapless)).late(fraction(firstOne).div(steps));
+  return pat.struct(timeCat(...gapless)).late(fraction(firstOne).div(steps));
 };
 
-function steady(value) {
-  return new Pattern$1(state => [new Hap(void 0, state.span, value)]);
-}
+register(["euclidLegato"], function (pulses, steps, pat) {
+  return _euclidLegato(pulses, steps, 0, pat);
+});
+register(["euclidLegatoRot"], function (pulses, steps, rotation, pat) {
+  return _euclidLegato(pulses, steps, rotation, pat);
+});
 
 var signal = func => {
   const query = state => [new Hap(void 0, state.span, func(state.span.midpoint()))];
 
-  return new Pattern$1(query);
+  return new Pattern(query);
 };
 
 var isaw = signal(t => 1 - t % 1);
-
-var isaw2 = isaw._toBipolar();
-
+var isaw2 = isaw.toBipolar();
 var saw = signal(t => t % 1);
-
-var saw2 = saw._toBipolar();
-
+var saw2 = saw.toBipolar();
 var sine2 = signal(t => Math.sin(Math.PI * 2 * t));
+var sine = sine2.fromBipolar();
 
-var sine = sine2._fromBipolar();
+sine._early(fraction(1).div(4));
 
-var cosine = sine._early(fraction(1).div(4));
-
-var cosine2 = sine2._early(fraction(1).div(4));
+sine2._early(fraction(1).div(4));
 
 var square = signal(t => Math.floor(t * 2 % 2));
+square.toBipolar();
 
-var square2 = square._toBipolar();
+_fastcat(isaw, saw);
 
-var tri = _fastcat(isaw, saw);
-
-var tri2 = _fastcat(isaw2, saw2);
+_fastcat(isaw2, saw2);
 
 var time = signal(id);
 
-var xorwise = x => {
-  const a = x << 13 ^ x;
-  const b = a >> 17 ^ a;
+var xorwise = x2 => {
+  const a2 = x2 << 13 ^ x2;
+  const b = a2 >> 17 ^ a2;
   return b << 5 ^ b;
 };
 
-var _frac = x => x - Math.trunc(x);
+var _frac = x2 => x2 - Math.trunc(x2);
 
-var timeToIntSeed = x => xorwise(Math.trunc(_frac(x / 300) * 536870912));
+var timeToIntSeed = x2 => xorwise(Math.trunc(_frac(x2 / 300) * 536870912));
 
-var intSeedToRand = x => x % 536870912 / 536870912;
+var intSeedToRand = x2 => x2 % 536870912 / 536870912;
 
-var timeToRand = x => Math.abs(intSeedToRand(timeToIntSeed(x)));
+var timeToRand = x2 => Math.abs(intSeedToRand(timeToIntSeed(x2)));
 
 var rand = signal(timeToRand);
+rand.toBipolar();
 
-var rand2 = rand._toBipolar();
+var _brandBy = p => rand.fmap(x2 => x2 < p);
 
-var _brandBy = p => rand.fmap(x => x < p);
-
-var brandBy = pPat => reify$2(pPat).fmap(_brandBy).innerJoin();
-
-var brand = _brandBy(0.5);
-
-var _irand = i => rand.fmap(x => Math.trunc(x * i));
-
-var irand = ipat => reify$2(ipat).fmap(_irand).innerJoin();
+_brandBy(0.5);
 
 var __chooseWith = (pat, xs) => {
-  xs = xs.map(reify$2);
+  xs = xs.map(reify);
 
   if (xs.length == 0) {
-    return silence$1;
+    return silence;
   }
 
   return pat.range(0, xs.length).fmap(i => xs[Math.floor(i)]);
@@ -10797,143 +10727,67 @@ var chooseInWith = (pat, xs) => {
   return __chooseWith(pat, xs).innerJoin();
 };
 
-var choose = (...xs) => chooseWith(rand, xs);
-
-Pattern$1.prototype.choose = function (...xs) {
+Pattern.prototype.choose = function (...xs) {
   return chooseWith(this, xs);
 };
 
-Pattern$1.prototype.choose2 = function (...xs) {
-  return chooseWith(this._fromBipolar(), xs);
+Pattern.prototype.choose2 = function (...xs) {
+  return chooseWith(this.fromBipolar(), xs);
 };
 
 var chooseCycles = (...xs) => chooseInWith(rand.segment(1), xs);
-
-var randcat = chooseCycles;
-
-var _wchooseWith = function (pat, ...pairs) {
-  const values = pairs.map(pair => reify$2(pair[0]));
-  const weights = [];
-  let accum = 0;
-
-  for (const pair of pairs) {
-    accum += pair[1];
-    weights.push(accum);
-  }
-
-  const total = accum;
-
-  const match = function (r) {
-    const find = r * total;
-    return values[weights.findIndex(x => x > find, weights)];
-  };
-
-  return pat.fmap(match);
-};
-
-var wchooseWith = (...args) => _wchooseWith(...args).outerJoin();
-
-var wchoose = (...pairs) => wchooseWith(rand, ...pairs);
-
-var wchooseCycles = (...pairs) => _wchooseWith(rand, ...pairs).innerJoin();
 
 var perlinWith = pat => {
   const pata = pat.fmap(Math.floor);
   const patb = pat.fmap(t => Math.floor(t) + 1);
 
-  const smootherStep = x => 6 * x ** 5 - 15 * x ** 4 + 10 * x ** 3;
+  const smootherStep = x2 => 6 * x2 ** 5 - 15 * x2 ** 4 + 10 * x2 ** 3;
 
-  const interp = x => a => b => a + smootherStep(x) * (b - a);
+  const interp = x2 => a2 => b => a2 + smootherStep(x2) * (b - a2);
 
   return pat.sub(pata).fmap(interp).appBoth(pata.fmap(timeToRand)).appBoth(patb.fmap(timeToRand));
 };
 
-var perlin = perlinWith(time);
-
-Pattern$1.prototype._degradeByWith = function (withPat, x) {
-  return this.fmap(a => _ => a).appLeft(withPat._filterValues(v => v > x));
-};
-
-Pattern$1.prototype._degradeBy = function (x) {
-  return this._degradeByWith(rand, x);
-};
-
-Pattern$1.prototype.degrade = function () {
-  return this._degradeBy(0.5);
-};
-
-Pattern$1.prototype._undegradeBy = function (x) {
-  return this._degradeByWith(rand.fmap(r => 1 - r), x);
-};
-
-Pattern$1.prototype.undegrade = function () {
-  return this._undegradeBy(0.5);
-};
-
-Pattern$1.prototype._sometimesBy = function (x, func) {
-  return stack$1(this._degradeBy(x), func(this._undegradeBy(1 - x)));
-};
-
-Pattern$1.prototype.sometimesBy = function (patx, func) {
-  const pat = this;
-  return reify$2(patx).fmap(x => pat._sometimesBy(x, func)).innerJoin();
-};
-
-Pattern$1.prototype._sometimesByPre = function (x, func) {
-  return stack$1(this._degradeBy(x), func(this).undegradeBy(1 - x));
-};
-
-Pattern$1.prototype.sometimesByPre = function (patx, func) {
-  const pat = this;
-  return reify$2(patx).fmap(x => pat._sometimesByPre(x, func)).innerJoin();
-};
-
-Pattern$1.prototype.sometimes = function (func) {
-  return this._sometimesBy(0.5, func);
-};
-
-Pattern$1.prototype.sometimesPre = function (func) {
-  return this._sometimesByPre(0.5, func);
-};
-
-Pattern$1.prototype._someCyclesBy = function (x, func) {
-  return stack$1(this._degradeByWith(rand._segment(1), x), func(this._degradeByWith(rand.fmap(r => 1 - r)._segment(1), 1 - x)));
-};
-
-Pattern$1.prototype.someCyclesBy = function (patx, func) {
-  const pat = this;
-  return reify$2(patx).fmap(x => pat._someCyclesBy(x, func)).innerJoin();
-};
-
-Pattern$1.prototype.someCycles = function (func) {
-  return this._someCyclesBy(0.5, func);
-};
-
-Pattern$1.prototype.often = function (func) {
-  return this.sometimesBy(0.75, func);
-};
-
-Pattern$1.prototype.rarely = function (func) {
-  return this.sometimesBy(0.25, func);
-};
-
-Pattern$1.prototype.almostNever = function (func) {
-  return this.sometimesBy(0.1, func);
-};
-
-Pattern$1.prototype.almostAlways = function (func) {
-  return this.sometimesBy(0.9, func);
-};
-
-Pattern$1.prototype.never = function (func) {
-  return this;
-};
-
-Pattern$1.prototype.always = function (func) {
-  return func(this);
-};
-
-Pattern$1.prototype.patternified.push("degradeBy", "undegradeBy");
+perlinWith(time.fmap(v => Number(v)));
+register("degradeByWith", (withPat, x2, pat) => pat.fmap(a2 => _ => a2).appLeft(withPat.filterValues(v => v > x2)));
+register("degradeBy", function (x2, pat) {
+  return pat._degradeByWith(rand, x2);
+});
+register("degrade", pat => pat._degradeBy(0.5));
+register("undegradeBy", function (x2, pat) {
+  return pat._degradeByWith(rand.fmap(r2 => 1 - r2), x2);
+});
+register("undegrade", pat => pat._undegradeBy(0.5));
+register("sometimesBy", function (patx, func, pat) {
+  return reify(patx).fmap(x2 => _stack(pat._degradeBy(x2), func(pat._undegradeBy(1 - x2)))).innerJoin();
+});
+register("sometimes", function (func, pat) {
+  return pat._sometimesBy(0.5, func);
+});
+register("someCyclesBy", function (patx, func, pat) {
+  return reify(patx).fmap(x2 => _stack(pat._degradeByWith(rand._segment(1), x2), func(pat._degradeByWith(rand.fmap(r2 => 1 - r2)._segment(1), 1 - x2)))).innerJoin();
+});
+register("someCycles", function (func, pat) {
+  return pat._someCyclesBy(0.5, func);
+});
+register("often", function (func, pat) {
+  return pat.sometimesBy(0.75, func);
+});
+register("rarely", function (func, pat) {
+  return pat.sometimesBy(0.25, func);
+});
+register("almostNever", function (func, pat) {
+  return pat.sometimesBy(0.1, func);
+});
+register("almostAlways", function (func, pat) {
+  return pat.sometimesBy(0.9, func);
+});
+register("never", function (_, pat) {
+  return pat;
+});
+register("always", function (func, pat) {
+  return func(pat);
+});
 var synth;
 
 try {
@@ -10944,7 +10798,7 @@ try {
 
 var allVoices = synth == null ? void 0 : synth.getVoices();
 
-function speak(words, lang, voice) {
+function triggerSpeech(words, lang, voice) {
   synth.cancel();
   const utterance = new SpeechSynthesisUtterance(words);
   utterance.lang = lang;
@@ -10960,25 +10814,334 @@ function speak(words, lang, voice) {
   speechSynthesis.speak(utterance);
 }
 
-Pattern$1.prototype._speak = function (lang, voice) {
-  return this._withHap(hap => {
-    const onTrigger = (time2, hap2) => {
-      speak(hap2.value, lang, voice);
-    };
-
-    return hap.setContext({ ...hap.context,
-      onTrigger
-    });
+register("speak", function (lang, voice, pat) {
+  return pat.onTrigger((_, hap) => {
+    triggerSpeech(hap.value, lang, voice);
   });
+});
+
+function getTime() {
+  {
+    throw new Error("no time set! use setTime to define a time source");
+  }
+}
+
+var getDrawContext = (id2 = "test-canvas") => {
+  let canvas = document.querySelector("#" + id2);
+
+  if (!canvas) {
+    canvas = document.createElement("canvas");
+    canvas.id = id2;
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    canvas.style = "pointer-events:none;width:100%;height:100%;position:fixed;top:0;left:0;z-index:5";
+    document.body.prepend(canvas);
+  }
+
+  return canvas.getContext("2d");
 };
 
-Pattern$1.prototype.speak = function (lang, voice) {
-  return patternify2(Pattern$1.prototype._speak)(reify(lang), reify(voice), this);
+Pattern.prototype.draw = function (callback, {
+  from,
+  to,
+  onQuery
+}) {
+  if (window.strudelAnimation) {
+    cancelAnimationFrame(window.strudelAnimation);
+  }
+
+  const ctx = getDrawContext();
+  let cycle,
+      events = [];
+
+  const animate = time2 => {
+    const t = getTime();
+
+    if (from !== void 0 && to !== void 0) {
+      const currentCycle = Math.floor(t);
+
+      if (cycle !== currentCycle) {
+        cycle = currentCycle;
+        const begin = currentCycle + from;
+        const end = currentCycle + to;
+        setTimeout(() => {
+          events = this.query(new State(new TimeSpan(begin, end))).filter(Boolean).filter(event => event.part.begin.equals(event.whole.begin));
+          onQuery == null ? void 0 : onQuery(events);
+        }, 0);
+      }
+    }
+
+    callback(ctx, events, t, time2);
+    window.strudelAnimation = requestAnimationFrame(animate);
+  };
+
+  requestAnimationFrame(animate);
+  return this;
 };
 
-var gist = (route, cache = true) => fetch(`https://gist.githubusercontent.com/${route}?cachebust=${cache ? "" : Date.now()}`).then(res => res.text()).then(code => eval(code));
+var createParams = controls.createParams;
+var clearColor = "#22222210";
 
-console.log("%c // \uD83C\uDF00 @strudel.cycles/core loaded \uD83C\uDF00", "background-color: black;color:white;padding:4px;border-radius:15px");
+Pattern.prototype.animate = function ({
+  callback,
+  sync = false,
+  smear: smear2 = 0.5
+} = {}) {
+  window.frame && cancelAnimationFrame(window.frame);
+  const ctx = getDrawContext();
+  const {
+    clientWidth: ww,
+    clientHeight: wh
+  } = ctx.canvas;
+  let smearPart = smear2 === 0 ? "99" : Number((1 - smear2) * 100).toFixed(0);
+  smearPart = smearPart.length === 1 ? `0${smearPart}` : smearPart;
+  clearColor = `#200010${smearPart}`;
+
+  const render = t => {
+    let frame;
+    t = Math.round(t);
+    frame = this.slow(1e3).queryArc(t, t);
+    ctx.fillStyle = clearColor;
+    ctx.fillRect(0, 0, ww, wh);
+    frame.forEach(f => {
+      let {
+        x: x2,
+        y: y2,
+        w: w2,
+        h: h2,
+        s,
+        r: r2,
+        a: a2 = 0,
+        fill: fill2 = "darkseagreen"
+      } = f.value;
+      w2 *= ww;
+      h2 *= wh;
+
+      if (r2 !== void 0 && a2 !== void 0) {
+        const radians = a2 * 2 * Math.PI;
+        const [cx, cy] = [(ww - w2) / 2, (wh - h2) / 2];
+        x2 = cx + Math.cos(radians) * r2 * cx;
+        y2 = cy + Math.sin(radians) * r2 * cy;
+      } else {
+        x2 *= ww - w2;
+        y2 *= wh - h2;
+      }
+
+      const val = { ...f.value,
+        x: x2,
+        y: y2,
+        w: w2,
+        h: h2
+      };
+      ctx.fillStyle = fill2;
+
+      if (s === "rect") {
+        ctx.fillRect(x2, y2, w2, h2);
+      } else if (s === "ellipse") {
+        ctx.beginPath();
+        ctx.ellipse(x2 + w2 / 2, y2 + h2 / 2, w2 / 2, h2 / 2, 0, 0, 2 * Math.PI);
+        ctx.fill();
+      }
+
+      callback && callback(ctx, val, f);
+    });
+    window.frame = requestAnimationFrame(render);
+  };
+
+  window.frame = requestAnimationFrame(render);
+  return silence;
+};
+
+var _createParams = createParams("x", "y", "w", "h", "a", "r", "fill", "smear"),
+    x = _createParams.x,
+    y = _createParams.y,
+    w = _createParams.w,
+    h$1 = _createParams.h,
+    a = _createParams.a,
+    r = _createParams.r,
+    fill = _createParams.fill,
+    smear = _createParams.smear;
+
+register("rescale", function (f, pat) {
+  return pat.mul(x(f).w(f).y(f).h(f));
+});
+register("moveXY", function (dx, dy, pat) {
+  return pat.add(x(dx).y(dy));
+});
+register("zoomIn", function (f, pat) {
+  const d = pure(1).sub(f).div(2);
+  return pat.rescale(f).move(d, d);
+});
+
+var scale = (normalized, min, max) => normalized * (max - min) + min;
+
+var getValue = e => {
+  let {
+    value
+  } = e;
+
+  if (typeof e.value !== "object") {
+    value = {
+      value
+    };
+  }
+
+  let {
+    note,
+    n,
+    freq,
+    s
+  } = value;
+
+  if (freq) {
+    return freqToMidi(freq);
+  }
+
+  note = note != null ? note : n;
+
+  if (typeof note === "string") {
+    return toMidi(note);
+  }
+
+  if (typeof note === "number") {
+    return note;
+  }
+
+  if (s) {
+    return "_" + s;
+  }
+
+  return value;
+};
+
+Pattern.prototype.pianoroll = function ({
+  cycles = 4,
+  playhead = 0.5,
+  overscan = 1,
+  flipTime = 0,
+  flipValues = 0,
+  hideNegative = false,
+  inactive = "#7491D2",
+  active = "#FFCA28",
+  background = "transparent",
+  smear: smear2 = 0,
+  playheadColor = "white",
+  minMidi = 10,
+  maxMidi = 90,
+  autorange = 0,
+  timeframe: timeframeProp,
+  fold = 0,
+  vertical = 0
+} = {}) {
+  const ctx = getDrawContext();
+  const w2 = ctx.canvas.width;
+  const h2 = ctx.canvas.height;
+  let from = -cycles * playhead;
+  let to = cycles * (1 - playhead);
+
+  if (timeframeProp) {
+    console.warn("timeframe is deprecated! use from/to instead");
+    from = 0;
+    to = timeframeProp;
+  }
+
+  const timeAxis = vertical ? h2 : w2;
+  const valueAxis = vertical ? w2 : h2;
+  let timeRange = vertical ? [timeAxis, 0] : [0, timeAxis];
+  const timeExtent = to - from;
+  const valueRange = vertical ? [0, valueAxis] : [valueAxis, 0];
+  let valueExtent = maxMidi - minMidi + 1;
+  let barThickness = valueAxis / valueExtent;
+  let foldValues = [];
+  flipTime && timeRange.reverse();
+  flipValues && valueRange.reverse();
+  this.draw((ctx2, events, t) => {
+    ctx2.fillStyle = background;
+    ctx2.globalAlpha = 1;
+
+    if (!smear2) {
+      ctx2.clearRect(0, 0, w2, h2);
+      ctx2.fillRect(0, 0, w2, h2);
+    }
+
+    const inFrame = event => (!hideNegative || event.whole.begin >= 0) && event.whole.begin <= t + to && event.whole.end >= t + from;
+
+    events.filter(inFrame).forEach(event => {
+      var _a, _b, _c;
+
+      const isActive = event.whole.begin <= t && event.whole.end > t;
+      ctx2.fillStyle = ((_a = event.context) == null ? void 0 : _a.color) || inactive;
+      ctx2.strokeStyle = ((_b = event.context) == null ? void 0 : _b.color) || active;
+      ctx2.globalAlpha = (_c = event.context.velocity) != null ? _c : 1;
+      const timePx = scale((event.whole.begin - (flipTime ? to : from)) / timeExtent, ...timeRange);
+      let durationPx = scale(event.duration / timeExtent, 0, timeAxis);
+      const value = getValue(event);
+      const valuePx = scale(fold ? foldValues.indexOf(value) / foldValues.length : (Number(value) - minMidi) / valueExtent, ...valueRange);
+      let margin = 0;
+      const offset = scale(t / timeExtent, ...timeRange);
+      let coords;
+
+      if (vertical) {
+        coords = [valuePx + 1 - (flipValues ? barThickness : 0), timeAxis - offset + timePx + margin + 1 - (flipTime ? 0 : durationPx), barThickness - 2, durationPx - 2];
+      } else {
+        coords = [timePx - offset + margin + 1 - (flipTime ? durationPx : 0), valuePx + 1 - (flipValues ? 0 : barThickness), durationPx - 2, barThickness - 2];
+      }
+
+      isActive ? ctx2.strokeRect(...coords) : ctx2.fillRect(...coords);
+    });
+    ctx2.globalAlpha = 1;
+    const playheadPosition = scale(-from / timeExtent, ...timeRange);
+    ctx2.strokeStyle = playheadColor;
+    ctx2.beginPath();
+
+    if (vertical) {
+      ctx2.moveTo(0, playheadPosition);
+      ctx2.lineTo(valueAxis, playheadPosition);
+    } else {
+      ctx2.moveTo(playheadPosition, 0);
+      ctx2.lineTo(playheadPosition, valueAxis);
+    }
+
+    ctx2.stroke();
+  }, {
+    from: from - overscan,
+    to: to + overscan,
+    onQuery: events => {
+      const {
+        min,
+        max,
+        values
+      } = events.reduce(({
+        min: min2,
+        max: max2,
+        values: values2
+      }, e) => {
+        const v = getValue(e);
+        return {
+          min: v < min2 ? v : min2,
+          max: v > max2 ? v : max2,
+          values: values2.includes(v) ? values2 : [...values2, v]
+        };
+      }, {
+        min: Infinity,
+        max: -Infinity,
+        values: []
+      });
+
+      if (autorange) {
+        minMidi = min;
+        maxMidi = max;
+        valueExtent = maxMidi - minMidi + 1;
+      }
+
+      foldValues = values.sort((a2, b) => String(a2).localeCompare(String(b)));
+      barThickness = fold ? valueAxis / foldValues.length : valueAxis / valueExtent;
+    }
+  });
+  return this;
+};
+
+logger("\uD83C\uDF00 @strudel.cycles/core loaded \uD83C\uDF00");
 
 if (globalThis._strudelLoaded) {
   console.warn(`@strudel.cycles/core was loaded more than once...
@@ -10987,135 +11150,8 @@ Please check with "npm ls @strudel.cycles/core".`);
 }
 
 globalThis._strudelLoaded = true;
-var strudel = /* @__PURE__ */Object.freeze( /* @__PURE__ */Object.defineProperty({
-  __proto__: null,
-  Fraction: fraction,
-  gist: gist,
-  Hap: Hap,
-  Pattern: Pattern$1,
-  silence: silence$1,
-  pure: pure$1,
-  isPattern: isPattern,
-  reify: reify$2,
-  stack: stack$1,
-  slowcat: slowcat$1,
-  slowcatPrime: slowcatPrime,
-  fastcat: _fastcat,
-  cat: _cat,
-  timeCat: timeCat$1,
-  sequence: sequence$1,
-  seq: seq,
-  polymeterSteps: polymeterSteps,
-  polymeter: polymeter,
-  pm: pm,
-  polyrhythm: polyrhythm,
-  pr: pr,
-  add: add,
-  chop: chop,
-  chunk: chunk,
-  chunkBack: chunkBack,
-  div: div,
-  early: early,
-  echo: echo,
-  every: every,
-  fast: fast,
-  inv: inv,
-  invert: invert,
-  iter: iter,
-  iterBack: iterBack,
-  jux: jux,
-  juxBy: juxBy,
-  late: late,
-  linger: linger,
-  mask: mask,
-  mul: mul,
-  off: off,
-  ply: ply,
-  range: range,
-  range2: range2,
-  rev: rev,
-  slow: slow,
-  struct: struct,
-  sub: sub,
-  superimpose: superimpose,
-  set: set,
-  when: when,
-  makeComposable: makeComposable,
-  patternify2: patternify2,
-  patternify3: patternify3,
-  patternify4: patternify4,
-  steady: steady,
-  signal: signal,
-  isaw: isaw,
-  isaw2: isaw2,
-  saw: saw,
-  saw2: saw2,
-  sine2: sine2,
-  sine: sine,
-  cosine: cosine,
-  cosine2: cosine2,
-  square: square,
-  square2: square2,
-  tri: tri,
-  tri2: tri2,
-  time: time,
-  rand: rand,
-  rand2: rand2,
-  _brandBy: _brandBy,
-  brandBy: brandBy,
-  brand: brand,
-  _irand: _irand,
-  irand: irand,
-  __chooseWith: __chooseWith,
-  chooseWith: chooseWith,
-  chooseInWith: chooseInWith,
-  choose: choose,
-  chooseCycles: chooseCycles,
-  randcat: randcat,
-  wchoose: wchoose,
-  wchooseCycles: wchooseCycles,
-  perlinWith: perlinWith,
-  perlin: perlin,
-  State: State,
-  TimeSpan: TimeSpan,
-  isNote: isNote,
-  tokenizeNote: tokenizeNote,
-  toMidi: toMidi,
-  fromMidi: fromMidi,
-  getFreq: getFreq,
-  midi2note: midi2note,
-  mod: mod,
-  getPlayableNoteValue: getPlayableNoteValue,
-  getFrequency: getFrequency,
-  rotate: rotate,
-  pipe: pipe,
-  compose: compose,
-  removeUndefineds: removeUndefineds,
-  flatten: flatten,
-  id: id,
-  constant: constant,
-  listRange: listRange,
-  curry: curry
-}, Symbol.toStringTag, {
-  value: "Module"
-}));
-var pure = strudel.pure,
-    Pattern = strudel.Pattern,
-    Fraction = strudel.Fraction,
-    stack = strudel.stack,
-    slowcat = strudel.slowcat,
-    sequence = strudel.sequence,
-    timeCat = strudel.timeCat,
-    silence = strudel.silence,
-    reify$1 = strudel.reify;
-var _seedState = 0;
-var randOffset = 2e-4;
 
-function _nextSeed() {
-  return _seedState++;
-}
-
-var applyOptions = parent => (pat, i) => {
+var applyOptions = (parent, code) => (pat, i) => {
   const ast = parent.source_[i];
   const options = ast.options_;
   const operator = options == null ? void 0 : options.operator;
@@ -11123,14 +11159,39 @@ var applyOptions = parent => (pat, i) => {
   if (operator) {
     switch (operator.type_) {
       case "stretch":
-        const speed = Fraction(operator.arguments_.amount).inverse();
-        return reify$1(pat).fast(speed);
+        {
+          const legalTypes = ["fast", "slow"];
+          const {
+            type,
+            amount
+          } = operator.arguments_;
+
+          if (!legalTypes.includes(type)) {
+            throw new Error(`mini: stretch: type must be one of ${legalTypes.join("|")} but got ${type}`);
+          }
+
+          return reify(pat)[type](patternifyAST(amount, code));
+        }
 
       case "bjorklund":
-        return pat.euclid(operator.arguments_.pulse, operator.arguments_.step, operator.arguments_.rotation);
+        if (operator.arguments_.rotation) {
+          const p1 = patternifyAST(operator.arguments_.pulse, code),
+                p2 = patternifyAST(operator.arguments_.step, code),
+                p3 = patternifyAST(operator.arguments_.rotation, code);
+          p1.ast = operator.arguments_.pulse;
+          p2.ast = operator.arguments_.step;
+          p3.ast = operator.arguments_.rotation;
+          return pat.euclidRot(p1, p2, p3);
+        } else {
+          const p1 = patternifyAST(operator.arguments_.pulse, code),
+                p2 = patternifyAST(operator.arguments_.step, code);
+          p1.ast = operator.arguments_.pulse;
+          p2.ast = operator.arguments_.step;
+          return pat.euclid(p1, p2);
+        }
 
       case "degradeBy":
-        return reify$1(pat)._degradeByWith(rand.early(randOffset * _nextSeed()).segment(1), operator.arguments_.amount);
+        return reify(pat).degradeBy(operator.arguments_.amount === null ? 0.5 : operator.arguments_.amount);
     }
 
     console.warn(`operator "${operator.type_}" not implemented`);
@@ -11150,97 +11211,93 @@ var applyOptions = parent => (pat, i) => {
 };
 
 function resolveReplications(ast) {
-  ast.source_ = ast.source_.map(child => {
+  ast.source_ = flatten(ast.source_.map(child => {
     const {
       replicate,
       ...options
     } = child.options_ || {};
 
-    if (replicate) {
-      return { ...child,
-        options_: { ...options,
-          weight: replicate
-        },
-        source_: {
-          type_: "pattern",
-          arguments_: {
-            alignment: "h"
-          },
-          source_: [{
-            type_: "element",
-            source_: child.source_,
-            location_: child.location_,
-            options_: {
-              operator: {
-                type_: "stretch",
-                arguments_: {
-                  amount: Fraction(replicate).inverse().toString()
-                }
-              }
-            }
-          }]
-        }
-      };
+    if (!replicate) {
+      return [child];
     }
 
-    return child;
-  });
+    delete child.options_.replicate;
+    return Array(replicate).fill(child);
+  }));
 }
 
-function patternifyAST(ast) {
-  let p;
-
+function patternifyAST(ast, code) {
   switch (ast.type_) {
     case "pattern":
-      resolveReplications(ast);
-      const children = ast.source_.map(patternifyAST).map(applyOptions(ast));
-      const alignment = ast.arguments_.alignment;
+      {
+        resolveReplications(ast);
+        const children = ast.source_.map(child => patternifyAST(child, code)).map(applyOptions(ast, code));
+        const alignment = ast.arguments_.alignment;
 
-      if (alignment === "v") {
-        return stack(...children);
-      }
+        if (alignment === "stack") {
+          return _stack(...children);
+        }
 
-      if (alignment === "r") {
-        return chooseInWith(rand.early(randOffset * _nextSeed()).segment(1), children);
-      }
+        if (alignment === "polymeter") {
+          const stepsPerCycle = ast.arguments_.stepsPerCycle ? patternifyAST(ast.arguments_.stepsPerCycle, code).fmap(x2 => fraction(x2)) : pure(fraction(children.length > 0 ? children[0].__weight : 1));
+          const aligned = children.map(child => child.fast(stepsPerCycle.fmap(x2 => x2.div(child.__weight || 1))));
+          return _stack(...aligned);
+        }
 
-      const weightedChildren = ast.source_.some(child => {
-        var _a;
+        if (alignment === "rand") {
+          return chooseCycles(...children);
+        }
 
-        return !!((_a = child.options_) == null ? void 0 : _a.weight);
-      });
-
-      if (!weightedChildren && alignment === "t") {
-        return slowcat(...children);
-      }
-
-      if (weightedChildren) {
-        const pat = timeCat(...ast.source_.map((child, i) => {
+        const weightedChildren = ast.source_.some(child => {
           var _a;
 
-          return [((_a = child.options_) == null ? void 0 : _a.weight) || 1, children[i]];
-        }));
+          return !!((_a = child.options_) == null ? void 0 : _a.weight);
+        });
 
-        if (alignment === "t") {
+        if (!weightedChildren && alignment === "slowcat") {
+          return _slowcat(...children);
+        }
+
+        if (weightedChildren) {
           const weightSum = ast.source_.reduce((sum, child) => {
             var _a;
 
             return sum + (((_a = child.options_) == null ? void 0 : _a.weight) || 1);
           }, 0);
-          return pat._slow(weightSum);
+          const pat2 = timeCat(...ast.source_.map((child, i) => {
+            var _a;
+
+            return [((_a = child.options_) == null ? void 0 : _a.weight) || 1, children[i]];
+          }));
+
+          if (alignment === "slowcat") {
+            return pat2._slow(weightSum);
+          }
+
+          pat2.__weight = weightSum;
+          return pat2;
         }
 
+        const pat = _sequence(...children);
+
+        pat.ast = ast;
+        pat.__weight = children.length;
         return pat;
       }
 
-      return sequence(...children);
-
     case "element":
-      if (ast.source_ === "~") {
-        return silence;
+      {
+        const pat = patternifyAST(ast.source_, code);
+        pat.ast = ast;
+        return pat;
       }
 
-      if (typeof ast.source_ !== "object") {
+    case "atom":
+      {
+        if (ast.source_ === "~") {
+          return silence;
+        }
+
         if (!ast.location_) {
           console.warn("no location for", ast);
           return ast.source_;
@@ -11251,17 +11308,13 @@ function patternifyAST(ast) {
           end
         } = ast.location_;
         const value = !isNaN(Number(ast.source_)) ? Number(ast.source_) : ast.source_;
-        return pure(value).withLocation([start.line, start.column, start.offset], [end.line, end.column, end.offset]);
+        const actual = code == null ? void 0 : code.split("").slice(start.offset, end.offset).join("");
+        const [offsetStart = 0, offsetEnd = 0] = actual ? actual.split(ast.source_).map(p => p.split("").filter(c => c === " ").length) : [];
+        return pure(value).withLocation([start.line, start.column + offsetStart, start.offset + offsetStart], [start.line, end.column - offsetEnd, end.offset - offsetEnd]);
       }
 
-      p = patternifyAST(ast.source_);
-      p.ast = ast;
-      return p;
-
     case "stretch":
-      p = patternifyAST(ast.source_).slow(ast.arguments_.amount);
-      p.ast = ast;
-      return p;
+      return patternifyAST(ast.source_, code).slow(patternifyAST(ast.arguments_.amount, code));
 
     default:
       console.warn(`node type "${ast.type_}" not implemented -> returning silence`);
@@ -11271,44 +11324,39 @@ function patternifyAST(ast) {
 
 var mini = (...strings) => {
   const pats = strings.map(str => {
-    const ast = krillParser.parse(`"${str}"`);
-    const p = patternifyAST(ast);
-    p.ast = ast;
-    return p;
+    const code = `"${str}"`;
+    const ast = peg$parse(code);
+    const pat = patternifyAST(ast, code);
+    pat.ast = ast;
+    return pat;
   });
-  const s = sequence(...pats);
+
+  const s = _sequence(...pats);
+
   s.ast = pats.map(_pat => _pat.ast);
   return s;
 };
 
 var h = string => {
-  const ast = krillParser.parse(string);
-  const p = patternifyAST(ast);
-  p.ast = ast;
-  return p;
+  const ast = peg$parse(string);
+  const pat = patternifyAST(ast, string);
+  pat.ast = ast;
+  return pat;
 };
-
-Pattern.prototype.define("mini", mini, {
-  composable: true
-});
-Pattern.prototype.define("m", mini, {
-  composable: true
-});
-Pattern.prototype.define("h", h, {
-  composable: true
-});
 
 function minify(thing) {
   if (typeof thing === "string") {
     return mini(thing);
   }
 
-  return reify$1(thing);
+  return reify(thing);
 }
 
+exports.SyntaxError = peg$SyntaxError;
 exports.h = h;
 exports.mini = mini;
 exports.minify = minify;
+exports.parse = peg$parse;
 exports.patternifyAST = patternifyAST;
 
 },{}],92:[function(require,module,exports){
@@ -11500,9 +11548,14 @@ module.exports = function (Gibberish) {
   const proxy = __proxy(Gibberish);
 
   const factory = function (ugen, graph, __name, values, cb = null, shouldProxy = true) {
-    if (Gibberish.mode === 'processor') ugen.callback = cb === null ? Gibberish.genish.gen.createCallback(graph, Gibberish.memory, false, true) : cb;else ugen.callback = {
-      out: []
-    };
+    if (Gibberish.mode === 'processor') {
+      ugen.callback = cb === null ? Gibberish.genish.gen.createCallback(graph, Gibberish.memory, false, true) : cb;
+    } else {
+      ugen.callback = {
+        out: []
+      };
+    }
+
     let name = Array.isArray(__name) ? __name[__name.length - 1] : __name;
     Object.assign(ugen, {
       //type: 'ugen',
@@ -12125,7 +12178,7 @@ module.exports = function (Gibberish) {
 
       switch (props.filterModel) {
         case 1:
-          filteredOsc = g.zd24(input, g.min(g.in('Q'), .9999), cutoff, 0); // g.max(.005, g.min( cutoff, 1 ) ) )
+          filteredOsc = g.zd24(input, g.in('Q'), cutoff, 0); // g.max(.005, g.min( cutoff, 1 ) ) )
 
           break;
 
@@ -12256,9 +12309,10 @@ module.exports = function (Gibberish) {
       } else {
         isStereo = out.input.isStereo;
         out.isStereo = isStereo;
-      }
+      } // cutoff frequency limit handled near top of makeChannel function
 
-      filter.graph = Gibberish.genish.zd24(genish.in('input'), genish.in('Q'), genish.in('cutoff'), isStereo);
+
+      filter.graph = Gibberish.genish.zd24(genish.in('input'), genish.min(1, genish.in('Q')), genish.in('cutoff'), isStereo);
     };
 
     filter.__createGraph();
@@ -13965,7 +14019,7 @@ module.exports = function (Gibberish) {
 
     const trigger = g.bang(),
           impulse = g.mul(trigger, 60),
-          _decay = g.sub(.101, g.div(decay, 10)),
+          _decay = g.sub(.101, g.div(g.min(decay, 1), 10)),
           // create range of .001 - .099
     bpf = g.svf(impulse, frequency, _decay, 2, false),
           out = g.mul(bpf, g.mul(g.mul(triggerLoudness, loudness), gain));
@@ -17415,6 +17469,7 @@ module.exports = function (Gibberish) {
       __phase: 0,
       __type: 'seq',
       __pattern: mini.mini(props.pattern),
+      //Pattern( props.pattern, { addLocations:true, addUID:true, enclose:true }),
       __events: null,
 
       tick(priority) {
@@ -17535,10 +17590,6 @@ module.exports = function (Gibberish) {
           addUID: true,
           enclose: true
         });
-      },
-
-      addFilter(filter) {
-        this.filters.push(filter);
       }
 
     };
