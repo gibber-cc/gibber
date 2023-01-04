@@ -249,7 +249,24 @@ module.exports = function( Marker ) {
 
             return
 
+          }else if( state[2] === 'seq' ) {
+            // form: s = Synth.bleep.seq( 0,1 )
+            // state: [ 'Synth', 'bleep', 'seq', 's', 'Synth' ]
+            
+            objName = state[3]
+            obj = window[ objName ]
+            let tmp = [objName, obj.__seqDefault, 'seq' ]
+
+            let seq = Marker.getObj( tmp, true, seqNumber )
+            tmp.cm = state.cm
+            const callNodes = state.nodes.filter( v => v.type === 'CallExpression' )
+            Marker.markPatternsForSeq( seq, callNodes[0].arguments, tmp, cb, callNodes[0], seqNumber )
+
+            return
+          } else {
+            console.log( 'state:', state )
           }
+
           // next, loop through our call expressions and pass in the appropriate note. the
           // nodes are added in reverse order to the listing of objects/properties/seq in state,
           // so we pop each node out of our node stack.
@@ -279,7 +296,12 @@ module.exports = function( Marker ) {
             let seqNumber = node.arguments.length > 2 ? node.arguments[2].raw : 0
 
             try{
-              seq = obj[ tree[i] ][ seqNumber ]
+              if( obj[ tree[i] ] !== undefined ) {
+                seq = obj[ tree[i] ][ seqNumber ]
+              }else{
+                // can't find sequencer, use default seq
+                seq = obj[ obj.__seqDefault ][ seqNumber ]
+              }
             }catch( e ) {
               console.log( e )
               //debugger

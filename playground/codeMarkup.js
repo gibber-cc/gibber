@@ -76,11 +76,13 @@ const Marker = {
         if( key[0] === "'" || key[0] === '"' ) {
           key = key.slice(1,-1)
         }
+        //if( obj === undefined ) debugger
         obj = obj[ key ]
         if( findSeq === true && obj !== undefined ){
           // path length check is for -2 to take into account .seq at end of path
           if( obj[ seqNumber ] !== undefined && obj[ seqNumber ].type === 'seq' && i === path.length - 2 ) {
             obj = obj[ seqNumber ]
+            if( obj === undefined ) debugger
             findSeq = false
 
             break;

@@ -1,4 +1,6 @@
 module.exports = function( Gibber, Environment ) {
+
+
   const rpad = function( value, pad ) {
     let out = value+''
     const len = (value + '').length
