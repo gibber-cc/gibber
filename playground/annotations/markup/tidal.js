@@ -42,7 +42,7 @@ module.exports = function( Marker ) {
       }
       
       
-      let   trimmedValue = value.trim(),
+      let   trimmedValue = value.source_.trim(), //value.trim(),
             lineModY = node.loc.start.line === node.loc.end.line ? -1 : 0,
             lineModX = node.loc.start.line === node.loc.end.line ? node.loc.start.column-1 : 0
 
@@ -76,7 +76,6 @@ module.exports = function( Marker ) {
     const markPattern = pattern => {
       const ast = pattern.ast[0]
       const elements = ast.source_
-      //console.log( elements[0].loc.start.column )
 
       elements.forEach( markElement )
       mod = 0
