@@ -17500,8 +17500,9 @@ module.exports = function (Gibberish) {
 
 
             if (!event.hasOnset()) continue;
+            const idx = event.context.locations.length - 1;
             let value = event.value,
-                uid = event.context.locations[0].start.column; //console.log( 'evt', uid, event.context.locations )
+                uid = event.context.locations[idx].start.column; //console.log( 'evt', uid, event.context.locations )
 
             if (typeof value === 'object') value = value.value;
             if (seq.filters !== null) value = seq.filters.reduce((currentValue, filter) => filter(currentValue, seq, uid), value);
