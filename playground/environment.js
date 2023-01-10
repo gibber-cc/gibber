@@ -85,7 +85,7 @@ window.onload = function() {
         Gibber.Seq.sequencers.forEach( s => {
           let shouldStop = true
           soloed.forEach( solo => {
-            if( s.target === solo.__wrapped__ ) shouldStop = false
+            if( s.target.__wrapped__ === solo.__wrapped__ ) shouldStop = false
           })
           if( shouldStop ) { 
             s.stop()
@@ -97,7 +97,7 @@ window.onload = function() {
         Gibber.Tidal.sequencers.forEach( s => {
           let shouldStop = true
           soloed.forEach( solo => {
-            if( s.target === solo.__wrapped__ ) shouldStop = false
+            if( s.target.__wrapped__ === solo.__wrapped__ ) shouldStop = false
           })
           if( shouldStop ) { 
             s.stop()
