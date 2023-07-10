@@ -73,7 +73,7 @@ module.exports = function( Marker ) {
       if( ele.options_ !== null ) mod++
     }
     
-    const markPattern = pattern => {
+    const markPattern = __pattern => {
       const ast = pattern.ast[0]
       const elements = ast.source_
 
@@ -94,23 +94,20 @@ module.exports = function( Marker ) {
     const clear = function() {
       for( const [ key, value ] of Object.entries( markers ) ) {
         value.marker.clear()
+        $( '.' + key ).remove( 'tidal' )
+        $( '.' + key ).remove( 'annotation' )
       }
+      Object.keys( markers ).forEach( key => delete markers[ key ] )
     }
       
-    let codestr = cm.getRange( { line:startRow, ch:startCol }, { line:endRow, ch:endCol } ) 
+    let codestr = cm.getRange( { line:startRow, ch:startCol+1 }, { line:endRow, ch:endCol-1 } ) 
     const intervalCheck = ()=> {
       const pos = marker.find()
       const current = cm.getRange( pos.from, pos.to ).slice(1,-1)
       if( current !== codestr ) {
         codestr = current//.slice(1,-1)
 
-        let valid = true
-        try{
-          Gibber.Audio.Gibberish.Tidal.Pattern( codestr )
-        }catch(e) {
-          valid = false
-        }
-        //console.log( value, numString, num, valid )
+        const valid = Gibber.Tidal.check( codestr, tidal.key, target )
 
         if( valid ) { 
           const tmp = Gibber.shouldDelay
@@ -123,7 +120,7 @@ module.exports = function( Marker ) {
           pos.horizontalOffset = pos.from.ch
 
           clear()
-          markPattern( tidal.__pattern.__data )
+          markPattern( tidal.__pattern )
 
           const els = Array.from( document.querySelectorAll( '.' + cssName ) )
           els.forEach( (el,i) => { 
@@ -136,6 +133,7 @@ module.exports = function( Marker ) {
             el.classList.remove( 'patternEdit' )
             el.classList.add( 'patternEditError' )
           })  
+          clear()
         }
       }
     }
