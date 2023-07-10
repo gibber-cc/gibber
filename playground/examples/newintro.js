@@ -20,7 +20,7 @@ kik = Kick()
   .trigger.seq( 1,1/4 )
  
 hat = Hat({ decay:.0125 })
-  .trigger.seq( [1,.5], 1/4, 0, 1/8 )
+  .trigger.seq( [ _, 1, _, .5 ], 1/8 )
  
 bass = Synth( 'bass.hollow' )
   .note.seq( [0,1,2,-1], 1 )
