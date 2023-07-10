@@ -39,6 +39,8 @@
   object-fit:cover
 }
 
+html { height: 100% }
+
 body { 
   height:100%; /* needed for calls to calc() in child elements */
   margin: 0;
@@ -47,6 +49,19 @@ body {
   background:var(--background);
   box-sizing:border-box !important;
 }
+
+::-webkit-scrollbar {
+  width: 9px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.5);
+  border-radius: 15px;
+  border: transparent;
+}
+
 
 #thememenu ul { 
   list-style:none;
