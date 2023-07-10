@@ -10,7 +10,7 @@ const Gibber        = require( 'gibber.core.lib' ),
       Storage       = require( './storage.js' ),
       Collab        = require( './collab.js' ),
       setupExamples = require( './examples.js' ),
-      __Console       = require( './console.js' )
+      __Console     = require( './console.js' )
       //Gibberwocky   = require( 'gibberwocky' )
 
 let cm, environment, cmconsole, exampleCode, 
@@ -207,11 +207,11 @@ window.onload = function() {
           Gibberish.scheduler.queue.length--
         }
       }
-      const objs = [${keys.map( key => typeof dict[key] === 'object' 
+      const objs = [${keys.map( key => typeof dict[key] === 'object' || typeof dict[key] === 'function' 
         ? dict[ key ].id !== undefined 
           ? 'Gibberish.ugens.get(' + dict[ key ].id + ')'
           : JSON.stringify( dict[ key ] )
-        : `'${dict[ key]}'` ).join(',')
+        : `'${dict[ key ]}'` ).join(',')
 }]
       ;(global.recursions['${name}'] = function ${name} (${keys}) { 
         let __nexttime__ = ( ${code} )(${keys})
@@ -368,9 +368,6 @@ window.onload = function() {
   Gibber.Environment = environment
 
   Collab( Gibber, environment )
-
-  
-  
 
   setupExamples()
   setupThemeMenu()
@@ -741,7 +738,7 @@ window.__use = function( lib ) {
 
       document.querySelector( 'head' ).appendChild( hydrascript )
     } else if( lib === 'p5' ) {
-      if( libs.P5 !== undefined ) { res( libs.P5 ); return }
+      //if( libs.P5 !== undefined ) { res( libs.P5 ); return }
 
       // mute console error messages that are related to 
       // namespace clashes, log function is restored after
