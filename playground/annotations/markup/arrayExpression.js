@@ -59,21 +59,14 @@ module.exports = function( Marker ) {
             pos.end = pos.to
             pos.horizontalOffset = pos.from.ch
             const __patternNode = Environment.Annotations.process( value, pos, Environment.editor ).body[0].expression 
-            patternObject.clear()
+            
+            // clearing pattern causes bugs after initial edits
+            // and it doesn't seem to hurt to not clear it
+            // patternObject.clear()
+            
             patternNode = __patternNode
             makeMarkers()
  
-            // XXX using markText would be better clearly, but
-            // for some reason I can't get it to work? marking
-            // the individual spans does work though
-
-            //patternObject.__editMark = cm.markText( 
-            //  pos.from, pos.to, 
-            //  { 
-            //    className:'patternEdit'
-            //  }
-            //)
-
             const els = Array.from( document.querySelectorAll( '.' + cssName ) )
             els.forEach( (el,i) => { 
               el.classList.add( 'patternEdit' )
@@ -91,11 +84,16 @@ module.exports = function( Marker ) {
     }
 
     patternObject.__onclick = e => {
+      // lock current state of pattern in place
+      // and ignore subsequent pattern transformations
+      // until unfrozen
       if( e.shiftKey == true ) {
         //patternObject.freeze()
         patternObject.__frozen = !patternObject.__frozen
         //annotationsAreFrozen = true 
       }
+
+      // enter live edit mode
       if( e.altKey == true ) {
         if( !patternObject.__isEditing ) {
           annotationsAreFrozen = true
@@ -116,7 +114,13 @@ module.exports = function( Marker ) {
         patternObject.__isEditing = !patternObject.__isEditing
       }
 
-      if( e.metaKey == true ) {
+
+      // wtf is this
+      // ok this seems like some attempt to record all
+      // transformations to a pattern. if the pattern is
+      // changed by user edit, recorded transformations
+      // are then applied to the new pattern
+      if( e.altKey == true && e.shiftKey == true ) {
         patternObject.__isRecording = !patternObject.__isRecording
 
         if( patternObject.__isRecording ) {
@@ -167,8 +171,10 @@ module.exports = function( Marker ) {
     // globally so that we can use a closure. 
     const arrayMarker = cm.markText( start, end, { 
       className:cssName,
+      inclusiveLeft:true,
+      inclusiveRight:true,
       attributes:{
-        onclick: `Environment.codeMarkup.arrayPatterns['${cssName}']( event )`
+        onclick: `Environment.codeMarkup.arrayPatterns['${cssName}']( event )`,
       }
     })
     target.markup.textMarkers[ cssName ] = arrayMarker
@@ -190,7 +196,7 @@ module.exports = function( Marker ) {
             'className': cssClassName + ' annotation',
              startStyle: 'annotation-no-right-border',
              endStyle: 'annotation-no-left-border',
-             //inclusiveLeft:true, inclusiveRight:true
+             inclusiveLeft:true, inclusiveRight:true
           })
 
           // create specific border for operator: top, bottom, no sides
@@ -207,29 +213,29 @@ module.exports = function( Marker ) {
         }else if (element.type === 'UnaryExpression' ) {
           marker = cm.markText( elementStart, elementEnd, { 
             'className': cssClassName + ' annotation', 
-            //inclusiveLeft: true,
-            //inclusiveRight: true
+            inclusiveLeft: true,
+            inclusiveRight: true
           })
 
           let start2 = Object.assign( {}, elementStart )
           start2.ch += 1
           let marker2 = cm.markText( elementStart, start2, { 
             'className': cssClassName + ' annotation-no-right-border', 
-            //inclusiveLeft: true,
-            //inclusiveRight: true
+            inclusiveLeft: true,
+            inclusiveRight: true
           })
 
           let marker3 = cm.markText( start2, elementEnd, { 
             'className': cssClassName + ' annotation-no-left-border', 
-            //inclusiveLeft: true,
-            //inclusiveRight: true
+            inclusiveLeft: true,
+            inclusiveRight: true
           })
 
           patternObject.markers.push( marker, marker2, marker3 )
         }else if( element.type === 'ArrayExpression' ) {
            marker = cm.markText( elementStart, elementEnd, { 
             'className': cssClassName + ' annotation',
-            //inclusiveLeft:true, inclusiveRight:true,
+            inclusiveLeft:true, inclusiveRight:true,
             startStyle:'annotation-left-border-start',
             endStyle: 'annotation-right-border-end',
            })
@@ -252,7 +258,7 @@ module.exports = function( Marker ) {
         }else{
           marker = cm.markText( elementStart, elementEnd, { 
             'className': cssClassName + ' annotation',
-            //inclusiveLeft:true, inclusiveRight:true
+            inclusiveLeft:true, inclusiveRight:true
           })
 
           patternObject.markers.push( marker )
