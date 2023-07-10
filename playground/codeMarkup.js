@@ -136,9 +136,145 @@ const Marker = {
 
     return parsed
   },
+
+  processConstructor( left, right, state ) {
+    const cm = state.cm
+    const start = { line: left.loc.start.line + Marker.offset.vertical - 1, ch: left.loc.start.column }
+    const end   = { line: left.loc.end.line   + Marker.offset.vertical - 1, ch: left.loc.end.column   }
+
+    const instrument = window[ left.name ]
+    if( instrument !== undefined && instrument.type === 'audio' ) {
+      cm.markText(
+        start, end, 
+        { 
+          className:`audio${instrument.id}`,
+        }
+      )
+
+      let ele
+      let toggle = true
+      let toggleSolo = false
+
+      const clearFnc = e => {
+        if( e.altKey == true ) {
+          if( e.shiftKey == true ) {
+            instrument.clear()
+            // TODO this doesn't work when the assignemnt and a sequence are on the same line
+            // e.g. kick = Kick().seq( .5,1/4 )
+            // but if the assignment / seq are on separate lines it works fine
+            setTimeout( ()=> { 
+              ele.style['text-decoration'] = 'line-through red' 
+            }, 50 )
+            ele.removeEventListener( 'click', clearFnc )
+          }else{
+            toggle = !toggle
+
+            if( toggle === false ) {
+              instrument.stop()
+              if( Array.isArray( instrument.eles ) ) {
+                instrument.eles.forEach( e => {
+                  e.style['background-color'] = 'var(--b_high)'
+                  e.toggle = 0
+                })
+              }
+            }else{
+              instrument.play()
+              if( Array.isArray( instrument.eles ) ) {
+                instrument.eles.forEach( e => {
+                  e.style['background-color'] = 'transparent'
+                  e.toggle = 1
+                })
+              }
+            }
+          }
+        }else if( e.ctrlKey == true ) {
+          // solo with flashing border / bolding
+          if( !toggleSolo ) {
+            solo( instrument )
+            ele.style['font-weight'] = 'bolder'
+            let state = false
+            ele.style.border = '1px solid var(--b_high)'
+
+            const cb = ()=> {
+              state = !state
+              const color = state === true ? 'var(--b_low)' : 'var(--b_high)'
+              ele.style['font-weight'] = state ? 'normal' : 'bolder' 
+              ele.style.border = '1px solid '+color
+            }
+
+            Gibber.subscribe( 'metronome.tick', cb )
+
+            const clear = ()=> Gibber.unsubscribe( 'metronome.tick', cb )
+            Gibber.once( 'clear', clear )
+          }else{
+            solo()
+          }
+          toggleSolo = !toggleSolo
+        }
+      }
+
+      setTimeout( ()=> {
+        ele = document.querySelector( `.audio${instrument.id}` )
+        ele.addEventListener( 'click', clearFnc )
+      }, 500 )
+
+    }
+  },
+
+  // while the entire sequence is marked, currently
+  // only the .seq text can be alt-clicked to start/stop
+  // the associated sequence
+  markSeq( seq, container, state ) {
+    const cm = state.cm
+    const start = { line: container.loc.start.line + Marker.offset.vertical - 1, ch: container.loc.start.column }
+    const end   = { line: container.loc.end.line   + Marker.offset.vertical - 1, ch: container.loc.end.column   }
+
+    cm.markText(
+      start, end, 
+      { 
+        className:`seq${seq.id}`,
+      }
+    )
+
+    if( seq.target.eles === undefined ) seq.target.eles = []
+
+    // setup alt click on seq text to stop or start
+    setTimeout( ()=> {
+      const eles = document.querySelectorAll( `.seq${seq.id}` )
+      let ele = null
+
+      eles.forEach( e => {
+        if( e.innerText === 'seq' ) ele = e
+      })
+
+      ele.toggle = true
+
+      ele.addEventListener( 'click',  e => {
+        if( e.altKey == true ) {
+          ele.toggle = !ele.toggle
+
+          if( ele.toggle === false ) { 
+            seq.stop()
+          }else{
+            seq.start()
+          }
+
+          ele.style['background-color'] = ele.toggle === true 
+            ? 'transparent' 
+            : 'var(--b_high)'
+        }
+          
+        return true
+      })
+
+      seq.target.eles.push( ele )
+    }, 1000 )
+  },
   
   markPatternsForSeq( seq, nodes, state, cb, container, seqNumber = 0 ) {
     if( seq === undefined ) return
+    Marker.markSeq( seq, container, state )
+
     let valuesNode = nodes[0]
     if( valuesNode.type === 'AssignmentExpression' ) valuesNode = valuesNode.right
     valuesNode.offset = Marker.offset

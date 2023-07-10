@@ -212,6 +212,31 @@ for( let instrument of gibberDef.instruments ) {
       "!doc"  : `${prop.default !== undefined ? `default: ${prop.default}`:''}${prop.min !== undefined ? `, range:${prop.min}-${prop.max}`:''}${shouldUseDelimiter ? '. ':''}${prop.doc}`
     }
   }
+
+  const methods = {}
+  for( let methodName in instrument.methods ) {
+    const method = {
+      ['!doc']: instrument.methods[ methodName ].doc
+    }
+
+    // create Tern function signature
+    let funcstr = 'fn(', count = 0
+    for( let arg of instrument.methods[ methodName ].args ) {
+      funcstr += `${arg.name}${arg.optional===true?'?':''}: ${arg.type}`
+      if( count++ < instrument.methods[ methodName ].args.length - 1 ) funcstr += ', '
+    }
+    funcstr += ')'
+    method['!type'] = funcstr
+
+    // copy .seq / .tidal / .start etc.
+    if( instrument.methods[ methodName ].isa === 'method(sequencable)' ) {
+      Object.assign( method, def[ "!define" ][ 'method__sequencable' ] )
+    }
+
+    methods[ methodName ] = method
+  }
+  Object.assign( e, methods )
+
   def[ name.toLowerCase() ] = e
 
   def[ name ] = {

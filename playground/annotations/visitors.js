@@ -56,6 +56,7 @@ module.exports = function( Marker ) {
             if( expression.right.callee.object.callee === undefined ) {
               if( expression.right.callee.object.object !== undefined ) {
                 if( expression.right.callee.object.object.type === 'CallExpression' ) {
+                  Marker.processConstructor( expression.left, expression.right, state )
                   Marker.globalIdentifiers[ expression.left.name ] = expression.right 
                   visitors.CallExpression( expression.right, state, cb, window[ expression.left.name ], expression.left.name )
                   return
@@ -103,6 +104,11 @@ module.exports = function( Marker ) {
                 leftName = left.object.object.name + '.' + left.object.property.name + '.' + left.property.name
               }
             }
+          }else{
+            // only one level deep, should be identifier
+            if( left.type === 'Identifier' ) {
+              Marker.processConstructor( left, right, state )
+            }
           }
           
           Marker.globalIdentifiers[ leftName ] = right
@@ -138,6 +144,7 @@ module.exports = function( Marker ) {
               //w.target = leftName
             }
           }
+
           state.push( leftName )
 
           cb( right, state )

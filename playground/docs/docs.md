@@ -526,6 +526,30 @@ The EDrums object is many of the synthetic drums sounds inspired by the 808 grou
 *number__sequencable* default: 0.5, range: 0-1.  Controls the position of the drus between the left / right speakers or headphones. A value of 0 means the sound is panned to the left, a value of 1 meanns the sound is panned to the right, while .5 is centered.
 ### EDrums.gain ###
 *number(sequencable)* default: 0.5, range: 0-1.  This linearly controls the overall output (sometimes known as volume) of the instrument.
+Sampler
+----
+*Prototype: [instrument](#prototypes-instrument)*
+
+Plays audio files at adjustable speeds, with control over start and end points and looping.
+
+
+#### Properties ####
+### Sampler.start ###
+*number(sequencable)* default: 0, range: 0-1.  The starting point for playback of the audiofile, measured from 0-1, where 0 is the absolute start of the file and 1 is the end.
+### Sampler.end ###
+*number(sequencable)* default: 1, range: 0-1.  The ending point for playback of the audiofile, measured from 0-1, where 0 is the absolute start of the file and 1 is the end.
+### Sampler.loops ###
+*number(sequencable)* default: 0, range: 0-1.  If a value of 1 is assigned to this property the audiofile will loop between its start and end points indefinitely.
+### Sampler.loudness ###
+*number(sequencable)* default: 1, range: 0-1.  Loudness linearly controls the output of the signal. In this instrument, there is no difference between loudness and gain.
+### Sampler.rate ###
+*number(sequencable)* default: 1, range: -1000-1000.  Controls the playback speed of the sample, with negative values playing the sample in reverse. This property is also affected by the .note() method of the sampler.
+### Sampler.gain ###
+*number(sequencable)* default: 0.5, range: 0-1.  This linearly controls the overall output (sometimes known as volume) of the instrument.
+### Sampler.panVoices ###
+*boolean* default: true.  When set to true the instrument can be panned through the stereo sound image, adding a slight amount of computational expense.
+### Sampler.pan ###
+*number__sequencable* default: 0.5, range: 0-1.  Controls the position of the sound between the left / right speakers or headphones. A value of 0 means the sound is panned to the left, a value of 1 meanns the sound is panned to the right, while .5 is centered.
 
 # Audio Effects
 BitCrusher

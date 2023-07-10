@@ -4906,6 +4906,7 @@ const Audio = {
   effects: {},
   exportTarget: null,
   memoryLimit: 44100 * 60 * 20,
+  latencyHint: .05,
 
   export(obj) {
     if (Audio.initialized) {
@@ -4958,7 +4959,7 @@ const Audio = {
     this.createPubSub();
     const p = new Promise((resolve, reject) => {
       Gibberish.init(Audio.memoryLimit, ctx, 'worklet', {
-        latencyHint
+        latencyHint: Audio.latencyHint
       }).then(processorNode => {
         // XXX remove once gibber.core.lib has been properly integrated 
         Audio.Core.Audio = Audio.Core.audio = Audio;
@@ -6555,6 +6556,7 @@ const Gen  = {
     Gen.names.push( ...Object.keys( Gen.functions ) )
     //Gen.names.push( ...Object.keys( Gen.composites ) )
     Gen.names.push( 'gen' )
+    Gen.names.push( 'line')
     Gen.names.push( 'lfo' )
     Gen.names.push( 'sine' )
     Gen.names.push( 'square' )
@@ -6831,6 +6833,11 @@ const Gen  = {
   },
 
   composites: { 
+    line( period=4, min=0, max=1 ) {
+      const range = max - min
+      // XXX 4 is magic number, only works as long as we're in 4/4
+      return Gen.make( Gen.ugens.add( min, Gen.ugens.mul( Gen.ugens.phasor( Audio.Utilities.btof( period * 4 ), 0, { min:0 } ), range )))
+    },
     sine( frequency=2, amp=4, center=0, shouldRound=false ) {
       return Gen.composites.lfo( 'sine', frequency, amp, center, shouldRound )
     },
@@ -7336,6 +7343,7 @@ module.exports = Instruments
 module.exports = function( Audio ) {
   const Gibberish = Audio.Gibberish
 
+  // make async?
   const fnc = function( props ){
     const name = props.name
     const type = props.type
@@ -7344,10 +7352,20 @@ module.exports = function( Audio ) {
     const ugen = Object.create( Gibberish.prototypes[ '${type}' ] )
     const graphfnc = ${props.constructor.toString()}
 
-    const proxy = Gibberish.factory( ugen, graphfnc(), '${name}', ${JSON.stringify(properties)} )
-    return proxy`
+    // XXX what if graphfnc() returns a promise? this is the case
+    // when attempting to return a graph create inside a promise made
+    // by calling g.data, for example. 
+    // can we make the final function async and wait for the resulting
+    // graph to be full generated?
+    let value = graphfnc()
+    if( value.then !== undefined ) {
+      // promise
+      value = value()
+    }
+    const proxy = Gibberish.factory( ugen, value, '${name}', ${JSON.stringify(properties)} );
+    return proxy;`
 
-    Gibberish[ name ] = new Function( block )
+    Gibberish[ name ] = new Function( block )//function() { eval( block ) }
 
     Gibberish.worklet.port.postMessage({
       name,
@@ -9652,18 +9670,18 @@ const Ugen = function( gibberishConstructor, description, Audio, shouldUsePool =
             address:'addMethod',
             id:__wrappedObject.id,
             key:'notef',
-            function:`function( note, __loudness=null ){
+            function:`function( note, __loudness=null, decay=null ){
               const loudness = __loudness = null ? this.__triggerLoudness : __loudness
-              this.___note( note, loudness ) 
+              this.___note( note, loudness, decay ) 
             }`
           })
           Gibberish.worklet.port.postMessage({
             address:'addMethod',
             id:__wrappedObject.id,
             key:'notec',
-            function:`function( note, __loudness=null ){
+            function:`function( note, __loudness=null, decay=null ){
               const loudness = __loudness = null ? this.__triggerLoudness : __loudness
-              this.note( note, loudness, false ) 
+              this.note( note, loudness, decay, false ) 
             }`
           })
           // when a message is received at the address 'monkeyPatch',
@@ -9676,7 +9694,7 @@ const Ugen = function( gibberishConstructor, description, Audio, shouldUsePool =
             address:'monkeyPatch',
             id:__wrappedObject.id,
             key:'note',
-            function:`function( note, __loudness, round=true ){ 
+            function:`function( note, __loudness, decay=null, round=true ){ 
               const octave = this.octave || 0
               let notesInOctave = 7
               const mode = Gibberish.Theory.mode
@@ -9691,7 +9709,7 @@ const Ugen = function( gibberishConstructor, description, Audio, shouldUsePool =
               let __note = Gibberish.Theory.note( note + offset, 0, round )
 
               const loudness = __loudness = null ? this.__triggerLoudness : __loudness
-              this.___note( __note, loudness ) 
+              return this.___note( __note, loudness, decay ) 
             }`
           })
           
@@ -10957,6 +10975,15 @@ const Gibber = {
         arr.forEach(v => v(data));
       }
     };
+
+    obj.once = function (key, fnc) {
+      const __once = () => {
+        fnc();
+        obj.unsubscribe(key, __once);
+      };
+
+      obj.subscribe(key, __once);
+    };
   },
 
   // When a property is created, a proxy-ish object is made that is
@@ -11527,6 +11554,20 @@ const patternWrapper = function( Gibber ) {
    //
    //      return this
    //    },
+      random( ...repeats ) {
+        const filter = function( args, __ptrn ) {
+          args[2] = Math.floor( Math.random() * __ptrn.values.length )
+          args[0] = __ptrn.values[ args[2] ]
+
+          return args
+        }
+
+        fnc.filters.push( filter )
+
+        if( repeats.length > 0 ) fnc.repeat( ...repeats )
+
+        return fnc
+      },
       //  TODO how do we make this run in the audio thread?
       //  syn.note.seq( [0,1,2,3].rnd( 1/16,2, 1/3,3 )
       repeat( ...args ) {
@@ -11534,6 +11575,38 @@ const patternWrapper = function( Gibber ) {
           this.__rendered.repeat(...args)
           return this
         }
+
+        let filter = function( args, _ ) {
+          let value = args[ 0 ], phaseModifier = args[ 1 ], output = args
+          
+          //console.log( args, counts )
+          if( _.repeating === false && _.repeats[ value ] ) {
+            _.repeating = true
+            _.repeatValue = value
+            _.repeatIndex = args[2]
+          }
+          
+          if( _.repeating === true ) {
+            if( _.repeats[ _.repeatValue ].phase !== _.repeats[ _.repeatValue ].target ) {
+              output[ 0 ] = _.repeatValue            
+              output[ 1 ] = 0
+              output[ 2 ] = _.repeatIndex
+              //[ val, 1, idx ]
+              _.repeats[ _.repeatValue ].phase++
+            }else{
+              _.repeats[ _.repeatValue ].phase = 0
+              output[ 1 ] = 1
+              if( value !== _.repeatValue ) { 
+                _.repeating = false
+              }else{
+                _.repeats[ _.repeatValue ].phase++
+              }
+            }
+          }
+        
+          return output
+        }
+
         for( let i = 0; i < arguments.length; i +=2 ) {
           fnc.repeats[ arguments[ i ] ] = {
             phase: 0,
@@ -11541,38 +11614,10 @@ const patternWrapper = function( Gibber ) {
           }
         }
         
-        let repeating = false, repeatValue = null, repeatIndex = null
-        let filter = function( args ) {
-          let value = args[ 0 ], phaseModifier = args[ 1 ], output = args
-          
-          //console.log( args, counts )
-          if( repeating === false && fnc.repeats[ value ] ) {
-            repeating = true
-            repeatValue = value
-            repeatIndex = args[2]
-          }
-          
-          if( repeating === true ) {
-            if( fnc.repeats[ repeatValue ].phase !== fnc.repeats[ repeatValue ].target ) {
-              output[ 0 ] = repeatValue            
-              output[ 1 ] = 0
-              output[ 2 ] = repeatIndex
-              //[ val, 1, idx ]
-              fnc.repeats[ repeatValue ].phase++
-            }else{
-              fnc.repeats[ repeatValue ].phase = 0
-              output[ 1 ] = 1
-              if( value !== repeatValue ) { 
-                repeating = false
-              }else{
-                fnc.repeats[ repeatValue ].phase++
-              }
-            }
-          }
-        
-          return output
-        }
-      
+        fnc.repeating = false
+        fnc.repeatValue = null
+        fnc.repeatIndex = null
+
         fnc.filters.push( filter )
       
         return fnc
@@ -12504,6 +12549,60 @@ return Steps.create
 },{}],128:[function(require,module,exports){
 module.exports = function( Gibber ) {
 
+  const buildAndCheckPattern = function( pattern, key, target ) {
+    try {
+      p = Gibber.Audio.Gibberish.Tidal.Pattern( pattern ) 
+    } catch(e) {
+      Gibber.publish( 'error', `Your Tidal pattern ${pattern} used invalid syntax.` )
+      return null
+    }
+
+
+    // we assume if the key is play or pickplay then some type of
+    // multisampler / ensemble is being used, and that valid tokens
+    // will also be properties of the target object
+    if( key === 'play' || key === 'pickplay' ) {
+      const tokens = [...pattern.matchAll(/[a-zA-Z]+/g)].map( v=>v[0] )
+      let tokenNotFound = false
+      tokens.forEach( t => {
+        if( t !== '~' ) {
+          if( target[ t ] === undefined ) {
+            Gibber.publish( 'error', `\nYour Tidal pattern is using a token (${t}) that can't be found on the targeted instrument.\n` )
+            tokenNotFound = true
+          }
+        }
+      })
+
+      if( tokenNotFound === true ) return null
+    }else{
+      // more common case... sequencing a number
+      // for note / trigger / some other property
+      // NOTE THAT THIS FAILS FOR PATTERNING CHORD
+      // PROGRESSIONS WITH TIDAL... this is the only 
+      // use case I think of besides ensembles where you
+      // sequence with strings.
+      const numbersRegEx = /[-]{0,1}[\d]*[.]{0,1}[\d]+/g
+      const tokens = pattern.split(' ')
+
+      //const tokens = [...pattern.matchAll( numbersRegEx )].map( v=>v[0] )
+      let tokenNotNumber = false
+      tokens.forEach( t => {
+        if( t !== '~' ) {
+          if( t.match( numbersRegEx ) === null ) {
+            tokenNotNumber = true
+            Gibber.publish( 'error', `\nYour Tidal pattern is using a token (${t}) that isn't a valid value for what you are sequencing.\n` )
+         
+          }
+        }
+      })
+
+      if( tokenNotNumber === true ) return null
+
+    }
+
+    return p
+  }
+
   const Seq = function( props ) { 
     const pattern   = props.pattern
     const target    = props.target
@@ -12514,7 +12613,6 @@ module.exports = function( Gibber ) {
     let   rate      = props.rate || 1
     let   density   = props.density || 1
     let   autotrig  = false
-
 
     const render    = target.type !== undefined ? target.type.toLowerCase() : 'audio'
     //const Gibber.Audio.Gibberish = Gibber.Gibber.Audio.Gibberish !== undefined ? Gibber.Gibber.Audio.Gibberish : null
@@ -12564,31 +12662,9 @@ module.exports = function( Gibber ) {
       })
     }
 
-    let p
-    try {
-      p = Gibber.Audio.Gibberish.Tidal.Pattern( pattern ) 
-    } catch(e) {
-      Gibber.publish( 'error', `Your Tidal pattern ${pattern} used invalid syntax.` )
-      return null
-    }
-
-    if( key !== 'degree' ) {
-      const tokens = [...pattern.matchAll(/[a-zA-Z]+/g)].map( v=>v[0] )
-      let tokenNotFound = false
-      tokens.forEach( t => {
-        if( target[ t ] === undefined ) {
-          //console.error(
-          //  `%c\nYour Tidal pattern is using a token (${t}) that can't be found on the targeted instrument.`, 
-          //  `color:white;background:#900` 
-          //  ) 
-          
-          Gibber.publish( 'error', `\nYour Tidal pattern is using a token (${t}) that can't be found on the targeted instrument.\n` )
-          tokenNotFound = true
-        }
-      })
-
-      if( tokenNotFound === true ) return null
-    }
+    let p = buildAndCheckPattern( pattern, key, target )
+    
+    if( p === null ) return null
 
     const seq = Gibber.Audio.Gibberish.Tidal({ pattern, target, key, priority, filters, mainthreadonly:props.mainthreadonly })
     seq.clear = clear
@@ -12637,6 +12713,7 @@ module.exports = function( Gibber ) {
     Seq.sequencers = []
   }
   Seq.DNR = -987654321
+  Seq.check = buildAndCheckPattern
 
   let val = 1 
   Object.defineProperty( Seq, 'cps', {
@@ -75042,21 +75119,14 @@ module.exports = function( Marker ) {
             pos.end = pos.to
             pos.horizontalOffset = pos.from.ch
             const __patternNode = Environment.Annotations.process( value, pos, Environment.editor ).body[0].expression 
-            patternObject.clear()
+            
+            // clearing pattern causes bugs after initial edits
+            // and it doesn't seem to hurt to not clear it
+            // patternObject.clear()
+            
             patternNode = __patternNode
             makeMarkers()
  
-            // XXX using markText would be better clearly, but
-            // for some reason I can't get it to work? marking
-            // the individual spans does work though
-
-            //patternObject.__editMark = cm.markText( 
-            //  pos.from, pos.to, 
-            //  { 
-            //    className:'patternEdit'
-            //  }
-            //)
-
             const els = Array.from( document.querySelectorAll( '.' + cssName ) )
             els.forEach( (el,i) => { 
               el.classList.add( 'patternEdit' )
@@ -75074,11 +75144,16 @@ module.exports = function( Marker ) {
     }
 
     patternObject.__onclick = e => {
+      // lock current state of pattern in place
+      // and ignore subsequent pattern transformations
+      // until unfrozen
       if( e.shiftKey == true ) {
         //patternObject.freeze()
         patternObject.__frozen = !patternObject.__frozen
         //annotationsAreFrozen = true 
       }
+
+      // enter live edit mode
       if( e.altKey == true ) {
         if( !patternObject.__isEditing ) {
           annotationsAreFrozen = true
@@ -75099,7 +75174,13 @@ module.exports = function( Marker ) {
         patternObject.__isEditing = !patternObject.__isEditing
       }
 
-      if( e.metaKey == true ) {
+
+      // wtf is this
+      // ok this seems like some attempt to record all
+      // transformations to a pattern. if the pattern is
+      // changed by user edit, recorded transformations
+      // are then applied to the new pattern
+      if( e.altKey == true && e.shiftKey == true ) {
         patternObject.__isRecording = !patternObject.__isRecording
 
         if( patternObject.__isRecording ) {
@@ -75150,8 +75231,10 @@ module.exports = function( Marker ) {
     // globally so that we can use a closure. 
     const arrayMarker = cm.markText( start, end, { 
       className:cssName,
+      inclusiveLeft:true,
+      inclusiveRight:true,
       attributes:{
-        onclick: `Environment.codeMarkup.arrayPatterns['${cssName}']( event )`
+        onclick: `Environment.codeMarkup.arrayPatterns['${cssName}']( event )`,
       }
     })
     target.markup.textMarkers[ cssName ] = arrayMarker
@@ -75173,7 +75256,7 @@ module.exports = function( Marker ) {
             'className': cssClassName + ' annotation',
              startStyle: 'annotation-no-right-border',
              endStyle: 'annotation-no-left-border',
-             //inclusiveLeft:true, inclusiveRight:true
+             inclusiveLeft:true, inclusiveRight:true
           })
 
           // create specific border for operator: top, bottom, no sides
@@ -75190,29 +75273,29 @@ module.exports = function( Marker ) {
         }else if (element.type === 'UnaryExpression' ) {
           marker = cm.markText( elementStart, elementEnd, { 
             'className': cssClassName + ' annotation', 
-            //inclusiveLeft: true,
-            //inclusiveRight: true
+            inclusiveLeft: true,
+            inclusiveRight: true
           })
 
           let start2 = Object.assign( {}, elementStart )
           start2.ch += 1
           let marker2 = cm.markText( elementStart, start2, { 
             'className': cssClassName + ' annotation-no-right-border', 
-            //inclusiveLeft: true,
-            //inclusiveRight: true
+            inclusiveLeft: true,
+            inclusiveRight: true
           })
 
           let marker3 = cm.markText( start2, elementEnd, { 
             'className': cssClassName + ' annotation-no-left-border', 
-            //inclusiveLeft: true,
-            //inclusiveRight: true
+            inclusiveLeft: true,
+            inclusiveRight: true
           })
 
           patternObject.markers.push( marker, marker2, marker3 )
         }else if( element.type === 'ArrayExpression' ) {
            marker = cm.markText( elementStart, elementEnd, { 
             'className': cssClassName + ' annotation',
-            //inclusiveLeft:true, inclusiveRight:true,
+            inclusiveLeft:true, inclusiveRight:true,
             startStyle:'annotation-left-border-start',
             endStyle: 'annotation-right-border-end',
            })
@@ -75235,7 +75318,7 @@ module.exports = function( Marker ) {
         }else{
           marker = cm.markText( elementStart, elementEnd, { 
             'className': cssClassName + ' annotation',
-            //inclusiveLeft:true, inclusiveRight:true
+            inclusiveLeft:true, inclusiveRight:true
           })
 
           patternObject.markers.push( marker )
@@ -75725,10 +75808,9 @@ module.exports = function( Marker ) {
       if( ele.options_ !== null ) mod++
     }
     
-    const markPattern = pattern => {
+    const markPattern = __pattern => {
       const ast = pattern.ast[0]
       const elements = ast.source_
-      //console.log( elements[0].loc.start.column )
 
       elements.forEach( markElement )
       mod = 0
@@ -75747,23 +75829,20 @@ module.exports = function( Marker ) {
     const clear = function() {
       for( const [ key, value ] of Object.entries( markers ) ) {
         value.marker.clear()
+        $( '.' + key ).remove( 'tidal' )
+        $( '.' + key ).remove( 'annotation' )
       }
+      Object.keys( markers ).forEach( key => delete markers[ key ] )
     }
       
-    let codestr = cm.getRange( { line:startRow, ch:startCol }, { line:endRow, ch:endCol } ) 
+    let codestr = cm.getRange( { line:startRow, ch:startCol+1 }, { line:endRow, ch:endCol-1 } ) 
     const intervalCheck = ()=> {
       const pos = marker.find()
       const current = cm.getRange( pos.from, pos.to ).slice(1,-1)
       if( current !== codestr ) {
         codestr = current//.slice(1,-1)
 
-        let valid = true
-        try{
-          Gibber.Audio.Gibberish.Tidal.Pattern( codestr )
-        }catch(e) {
-          valid = false
-        }
-        //console.log( value, numString, num, valid )
+        const valid = Gibber.Tidal.check( codestr, tidal.key, target )
 
         if( valid ) { 
           const tmp = Gibber.shouldDelay
@@ -75776,7 +75855,7 @@ module.exports = function( Marker ) {
           pos.horizontalOffset = pos.from.ch
 
           clear()
-          markPattern( tidal.__pattern.__data )
+          markPattern( tidal.__pattern )
 
           const els = Array.from( document.querySelectorAll( '.' + cssName ) )
           els.forEach( (el,i) => { 
@@ -75789,6 +75868,7 @@ module.exports = function( Marker ) {
             el.classList.remove( 'patternEdit' )
             el.classList.add( 'patternEditError' )
           })  
+          clear()
         }
       }
     }
@@ -75847,7 +75927,6 @@ module.exports = function( Marker ) {
 
     tidal.update = function( val ) {
       const name = `tidal-${tidal.uid}-${tidal.update.uid}`
-      console.log( 'name:', name )
 
       $( '.' + name ).add( 'tidal-bright' ) 
 
@@ -76923,6 +77002,7 @@ module.exports = function( Marker ) {
             if( expression.right.callee.object.callee === undefined ) {
               if( expression.right.callee.object.object !== undefined ) {
                 if( expression.right.callee.object.object.type === 'CallExpression' ) {
+                  Marker.processConstructor( expression.left, expression.right, state )
                   Marker.globalIdentifiers[ expression.left.name ] = expression.right 
                   visitors.CallExpression( expression.right, state, cb, window[ expression.left.name ], expression.left.name )
                   return
@@ -76970,6 +77050,11 @@ module.exports = function( Marker ) {
                 leftName = left.object.object.name + '.' + left.object.property.name + '.' + left.property.name
               }
             }
+          }else{
+            // only one level deep, should be identifier
+            if( left.type === 'Identifier' ) {
+              Marker.processConstructor( left, right, state )
+            }
           }
           
           Marker.globalIdentifiers[ leftName ] = right
@@ -77005,6 +77090,7 @@ module.exports = function( Marker ) {
               //w.target = leftName
             }
           }
+
           state.push( leftName )
 
           cb( right, state )
@@ -77714,7 +77800,6 @@ const Marker = {
         if( key[0] === "'" || key[0] === '"' ) {
           key = key.slice(1,-1)
         }
-        
         //if( obj === undefined ) debugger
         obj = obj[ key ]
         if( findSeq === true && obj !== undefined ){
@@ -77775,9 +77860,145 @@ const Marker = {
 
     return parsed
   },
+
+  processConstructor( left, right, state ) {
+    const cm = state.cm
+    const start = { line: left.loc.start.line + Marker.offset.vertical - 1, ch: left.loc.start.column }
+    const end   = { line: left.loc.end.line   + Marker.offset.vertical - 1, ch: left.loc.end.column   }
+
+    const instrument = window[ left.name ]
+    if( instrument !== undefined && instrument.type === 'audio' ) {
+      cm.markText(
+        start, end, 
+        { 
+          className:`audio${instrument.id}`,
+        }
+      )
+
+      let ele
+      let toggle = true
+      let toggleSolo = false
+
+      const clearFnc = e => {
+        if( e.altKey == true ) {
+          if( e.shiftKey == true ) {
+            instrument.clear()
+            // TODO this doesn't work when the assignemnt and a sequence are on the same line
+            // e.g. kick = Kick().seq( .5,1/4 )
+            // but if the assignment / seq are on separate lines it works fine
+            setTimeout( ()=> { 
+              ele.style['text-decoration'] = 'line-through red' 
+            }, 50 )
+            ele.removeEventListener( 'click', clearFnc )
+          }else{
+            toggle = !toggle
+
+            if( toggle === false ) {
+              instrument.stop()
+              if( Array.isArray( instrument.eles ) ) {
+                instrument.eles.forEach( e => {
+                  e.style['background-color'] = 'var(--b_high)'
+                  e.toggle = 0
+                })
+              }
+            }else{
+              instrument.play()
+              if( Array.isArray( instrument.eles ) ) {
+                instrument.eles.forEach( e => {
+                  e.style['background-color'] = 'transparent'
+                  e.toggle = 1
+                })
+              }
+            }
+          }
+        }else if( e.ctrlKey == true ) {
+          // solo with flashing border / bolding
+          if( !toggleSolo ) {
+            solo( instrument )
+            ele.style['font-weight'] = 'bolder'
+            let state = false
+            ele.style.border = '1px solid var(--b_high)'
+
+            const cb = ()=> {
+              state = !state
+              const color = state === true ? 'var(--b_low)' : 'var(--b_high)'
+              ele.style['font-weight'] = state ? 'normal' : 'bolder' 
+              ele.style.border = '1px solid '+color
+            }
+
+            Gibber.subscribe( 'metronome.tick', cb )
+
+            const clear = ()=> Gibber.unsubscribe( 'metronome.tick', cb )
+            Gibber.once( 'clear', clear )
+          }else{
+            solo()
+          }
+          toggleSolo = !toggleSolo
+        }
+      }
+
+      setTimeout( ()=> {
+        ele = document.querySelector( `.audio${instrument.id}` )
+        ele.addEventListener( 'click', clearFnc )
+      }, 500 )
+
+    }
+  },
+
+  // while the entire sequence is marked, currently
+  // only the .seq text can be alt-clicked to start/stop
+  // the associated sequence
+  markSeq( seq, container, state ) {
+    const cm = state.cm
+    const start = { line: container.loc.start.line + Marker.offset.vertical - 1, ch: container.loc.start.column }
+    const end   = { line: container.loc.end.line   + Marker.offset.vertical - 1, ch: container.loc.end.column   }
+
+    cm.markText(
+      start, end, 
+      { 
+        className:`seq${seq.id}`,
+      }
+    )
+
+    if( seq.target.eles === undefined ) seq.target.eles = []
+
+    // setup alt click on seq text to stop or start
+    setTimeout( ()=> {
+      const eles = document.querySelectorAll( `.seq${seq.id}` )
+      let ele = null
+
+      eles.forEach( e => {
+        if( e.innerText === 'seq' ) ele = e
+      })
+
+      ele.toggle = true
+
+      ele.addEventListener( 'click',  e => {
+        if( e.altKey == true ) {
+          ele.toggle = !ele.toggle
+
+          if( ele.toggle === false ) { 
+            seq.stop()
+          }else{
+            seq.start()
+          }
+
+          ele.style['background-color'] = ele.toggle === true 
+            ? 'transparent' 
+            : 'var(--b_high)'
+        }
+          
+        return true
+      })
+
+      seq.target.eles.push( ele )
+    }, 1000 )
+  },
   
   markPatternsForSeq( seq, nodes, state, cb, container, seqNumber = 0 ) {
     if( seq === undefined ) return
+    Marker.markSeq( seq, container, state )
+
     let valuesNode = nodes[0]
     if( valuesNode.type === 'AssignmentExpression' ) valuesNode = valuesNode.right
     valuesNode.offset = Marker.offset
@@ -78443,7 +78664,7 @@ module.exports = function( environment ) {
     },
 
     error( msg, e ) {
-      console.log( `%c${msg}`, 'color:white;background:#300;border:#900 solid 1px; padding:5px'  )
+      console.log( `%c${msg}`, 'color:white;background:#400; padding:0px'  )
    
       if( e !== undefined ) {
         if( !Console.revealErrors ) console.groupCollapsed( 'error trace:' )
@@ -78453,7 +78674,7 @@ module.exports = function( environment ) {
     },
 
     warn( msg ) {
-      console.log( `%c${msg}`, 'color:white;background:#330;border:#990 solid 1px; padding:5px' )
+      console.log( `%c${msg}`, 'color:white;background:#330; padding:0px' )
     },
 
     log( msg, css ) {
@@ -78676,12 +78897,30 @@ module.exports = function( Gibber, element = '#editor', userEditable=true ) {
     autoCloseBrackets:true,
     tabSize:2,
     extraKeys:{ 'Ctrl-Space':'autocomplete' },
-    hintOptions:{ hint:CodeMirror.hint.javascript }
+    hintOptions:{ hint:CodeMirror.hint.javascript },
+    configureMouse: (cm, repeat, ev) => { 
+      return { addNew : false };
+    },
+    cursorBlinkRate: 0
   })
 
-  Babel.registerPlugin( 'jsdsp', jsdsp )
-
   cm.setSize( null, '100%' )
+
+  // cursor blink
+  setTimeout( ()=> {
+    let state = false
+    const blink = ()=> {
+      const cursor = document.getElementsByClassName('CodeMirror-cursor')[0]
+      if( cursor === undefined ) return
+      state = !state
+      cursor.style.color = state ? 'transparent' : 'var(--f_med)'
+      cursor.style.background = state ? 'transparent' : 'var(--f_med)'
+    }
+
+    Gibber.subscribe( 'metronome.tick', blink )
+  }, 1000 )
+
+  Babel.registerPlugin( 'jsdsp', jsdsp )
   
   let hidden = false
   const toggleGUI = function() {
@@ -78730,7 +78969,7 @@ kik = Kick()
   .trigger.seq( 1,1/4 )
  
 hat = Hat({ decay:.0125 })
-  .trigger.seq( [1,.5], 1/4, 0, 1/8 )
+  .trigger.seq( [ _, 1, _, .5 ], 1/8 )
  
 bass = Synth( 'bass.hollow' )
   .note.seq( [0,1,2,-1], 1 )
@@ -78989,7 +79228,7 @@ window.onload = function () {
         Gibber.Seq.sequencers.forEach(s => {
           let shouldStop = true;
           soloed.forEach(solo => {
-            if (s.target === solo.__wrapped__) shouldStop = false;
+            if (s.target.__wrapped__ === solo.__wrapped__) shouldStop = false;
           });
 
           if (shouldStop) {
@@ -79001,7 +79240,7 @@ window.onload = function () {
         Gibber.Tidal.sequencers.forEach(s => {
           let shouldStop = true;
           soloed.forEach(solo => {
-            if (s.target === solo.__wrapped__) shouldStop = false;
+            if (s.target.__wrapped__ === solo.__wrapped__) shouldStop = false;
           });
 
           if (shouldStop) {
@@ -79121,7 +79360,7 @@ window.onload = function () {
           Gibberish.scheduler.queue.length--
         }
       }
-      const objs = [${keys.map(key => typeof dict[key] === 'object' ? dict[key].id !== undefined ? 'Gibberish.ugens.get(' + dict[key].id + ')' : JSON.stringify(dict[key]) : `'${dict[key]}'`).join(',')}]
+      const objs = [${keys.map(key => typeof dict[key] === 'object' || typeof dict[key] === 'function' ? dict[key].id !== undefined ? 'Gibberish.ugens.get(' + dict[key].id + ')' : JSON.stringify(dict[key]) : `'${dict[key]}'`).join(',')}]
       ;(global.recursions['${name}'] = function ${name} (${keys}) { 
         let __nexttime__ = ( ${code} )(${keys})
         if( isNaN( __nexttime__ ) === false && __nexttime__ <= 0 ) {
@@ -79650,75 +79889,62 @@ window.__use = function (lib) {
 
       document.querySelector('head').appendChild(hydrascript);
     } else if (lib === 'p5') {
-      if (libs.P5 !== undefined) {
-        res(libs.P5);
-        return;
-      } // mute console error messages that are related to 
+      //if( libs.P5 !== undefined ) { res( libs.P5 ); return }
+      // mute console error messages that are related to 
       // namespace clashes, log function is restored after
       // p5 script has been loaded.
-
-
       console.__log = console.log;
 
       console.log = function () {};
 
       const p5script = document.createElement('script');
-      p5script.src = 'https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.1.9/p5.js';
-
-      window.setup = function () {
-        if (Gibber.Environment) {
-          Gibber.Graphics.addCodeBackground();
-        }
-
-        createCanvas(window.innerWidth, window.innerHeight); // manage the draw loop ourselves so we can handle errors
-
-        noLoop();
-        window.__userDraw = window.draw;
-        window.__broken = false;
-
-        window.__draw = function () {
-          // if the current draw function isn't broken...
-          if (!window.__broken) {
-            try {
-              // try to redraw
-              redraw();
-            } catch (e) {
-              // if redraw fails print error and set broken flag
-              console.log(e);
-              window.__broken = true;
-            }
-          } // if the user has created a new draw function...
-
-
-          if (window.__userDraw !== window.draw) {
-            // store the new draw function...
-            window.__userDraw = window.draw; // ...and set the broken flag to false so that we 
-            // try to resume drawing.
-
-            window.__broken = false;
-          }
-
-          window.__cancel = window.requestAnimationFrame(window.__draw);
-        };
-
-        window.__draw();
-      };
+      p5script.src = 'https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.1.9/p5.js'; //window.setup = function(){
+      //  if( Gibber.Environment ) {
+      //    Gibber.Graphics.addCodeBackground()
+      //  }
+      //  createCanvas( window.innerWidth,window.innerHeight )
+      //  // manage the draw loop ourselves so we can handle errors
+      //  noLoop()
+      //  window.__userDraw = window.draw
+      //  window.__broken = false
+      //  window.__draw = function() {
+      //    // if the current draw function isn't broken...
+      //    if( !window.__broken ) {
+      //      try {
+      //        // try to redraw
+      //        redraw()
+      //      }catch(e) {
+      //        // if redraw fails print error and set broken flag
+      //        console.log( e )
+      //        window.__broken = true
+      //      }
+      //    }
+      //    // if the user has created a new draw function...
+      //    if( window.__userDraw !== window.draw ) {
+      //      // store the new draw function...
+      //      window.__userDraw = window.draw
+      //      // ...and set the broken flag to false so that we 
+      //      // try to resume drawing.
+      //      window.__broken = false
+      //    }
+      //    window.__cancel = window.requestAnimationFrame( window.__draw )
+      //  }
+      //  window.__draw()
+      //}
 
       p5script.onload = function () {
         Gibber.subscribe('clear', () => {
           clear();
         }); // .out() from ugens returns scalar, not function
 
-        Gibber.Audio.Ugen.OUTPUT = 1;
-        libs.P5 = window.P5;
-        window.p5 = window.p5.instance;
-
-        window.p5.hydra = function () {
-          s0.init({
-            src: document.querySelector('.p5Canvas'),
-            dynamic: true
-          });
-        };
+        Gibber.Audio.Ugen.OUTPUT = 1; //libs.P5 = window.P5
+        //window.p5 = window.p5.instance
+        //window.p5.hydra = function() {
+        //  s0.init({ 
+        //    src:document.querySelector('.p5Canvas'), 
+        //    dynamic:true 
+        //  })
+        //}
 
         res(window.P5);
         console.log = console.__log;
@@ -90692,6 +90918,8 @@ _d = data( __ab )
 play( peek( _d, phasor(1,0,{min:0}) ) )
 */
 
+const SHOULD_SUSTAIN = false
+
 const g = require( 'genish.js' ),
       instrument = require( './instrument.js' )
 
@@ -90728,36 +90956,44 @@ module.exports = function( Gibberish ) {
       this.currentSample = key
       return this.trigger()
     },
-    __note( rate, loudness=null ) {
+    __note( rate, loudness=null, decay=null ) {
       // soundfont measures pitch in cents
       // originalPitch = findMidiForHz( hz ) * 100 // (100 cents per midi index)
       // rate = Math.pow(2, (100.0 * pitch - originalPitch) / 1200.0) // 1200 cents per octave
-      return this.trigger( loudness, rate )
+      return this.trigger( loudness, rate, decay )
     },
-    note( freq, loudness=null ) {
+    note( freq, loudness=null, decay=null ) {
       'no jsdsp'
       const midinote = 69 + 12 * Math.log2( freq/440 )
-      this.midinote( midinote, loudness )
+      return this.midinote( midinote, loudness, decay )
     },
     midipick( midinote, loudness ) {
       // loop through zones to find correct sample #
-      let idx = 0, pitch = 0
+      let idx = 0, pitch = 0 
+
       for( let zone of this.zones ) {
-        if( midinote >= zone.keyRangeLow && midinote <= zone.keyRangeHigh ) {
+        const inzone  = midinote >= zone.keyRangeLow && midinote <= zone.keyRangeHigh 
+
+        // in case floating-point "midinote" falls between two zones, which are integers
+        const rounded = midinote - zone.keyRangeHigh < 1
+        
+        if( inzone || rounded ) { 
           pitch = zone.originalPitch
-          break;
+          break
         }
+
         idx++
       }
+
       this.pick( idx )
       return pitch
     },
-    midinote( midinote, loudness=null ) {
+    midinote( midinote, loudness=null, decay=null ) {
       'no jsdsp'
       const samplePitch = this.midipick( midinote )
       const pitch = Math.pow( 2, (100 * midinote - samplePitch ) / 1200 ) 
       //const pitch = 1//Math.pow( 2, (samplePitch ) ) 
-      this.__note( pitch, loudness )
+      return this.__note( pitch, loudness, decay )
     }, 
     midichord( frequencies ) {
       if( Gibberish !== undefined && Gibberish.mode !== 'worklet' ) {
@@ -90765,9 +91001,26 @@ module.exports = function( Gibberish ) {
         this.triggerChord = frequencies
       }
     },
-    chord( frequencies ) {
+    chord( frequencies, loudnesses=null, durations=null ) {
       if( Gibberish !== undefined && Gibberish.mode !== 'worklet' ) {
-        frequencies.forEach( v => this.note( v ) )
+        if( loudnesses === null && durations === null ) {
+          frequencies.forEach( v => this.note( v ) )
+        }else if( durations === null ) {
+          frequencies.forEach( (v,i) => 
+            this.note( 
+              v, 
+              typeof loudnesses === 'object' ? loudnesses[i] : loudnesses 
+            )
+          )
+        }else{
+          frequencies.forEach( (v,i) => 
+            this.note( 
+              v, 
+              typeof loudnesses === 'object' ? loudnesses[i] : loudnesses, 
+              typeof durations  === 'object' ? durations[i]  : durations
+            ) 
+          )
+        }
         this.triggerChord = frequencies
       }
     },
@@ -90788,7 +91041,7 @@ module.exports = function( Gibberish ) {
         voice.rate = value
       }
     },
-    trigger( volume=null, rate=null ) {
+    trigger( volume=null, rate=null, decay=null ) {
       'no jsdsp'
       //if( volume !== null ) this.__triggerLoudness = volume
 
@@ -90797,23 +91050,56 @@ module.exports = function( Gibberish ) {
         const sampler = this.samplers[ this.currentSample ]
 
         // if sample isn't loaded...
-        if( sampler === undefined ) return
+        if( sampler === undefined ) {
+          console.warn( 'no sampler found...', sampler, this.currentSample, this.samplers )
+          return
+        }
 
         voice = this.__getVoice__()
 
+        const sampleRateRatio = Gibberish.ctx.sampleRate / sampler.zone.sampleRate
+        const loopStart = sampler.zone.loopStart * sampleRateRatio
+        const loopEnd   = sampler.zone.loopEnd   * sampleRateRatio
+
+        if( rate !== null ) {
+          voice.rate = rate
+        }
+        voice.decay = decay !== null ? decay : 1
+
         // set voice buffer length
-        g.gen.memory.heap[ voice.bufferLength.memory.values.idx ] = sampler.dataLength
+        g.gen.memory.heap[ voice.bufferLength.memory.values.idx ] = sampler.dataLength 
 
         // set voice data index
         g.gen.memory.heap[ voice.bufferLoc.memory.values.idx ] = sampler.dataIdx
 
-        g.gen.memory.heap[ voice.__loopStart.memory.values.idx ] = sampler.zone.loopStart
-        g.gen.memory.heap[ voice.__loopEnd.memory.values.idx   ] = sampler.zone.loopEnd
+        g.gen.memory.heap[ voice.__playing.memory.values.idx   ] = 1
+        g.gen.memory.heap[ voice.__loopStart.memory.values.idx ] = loopStart
+        g.gen.memory.heap[ voice.__loopEnd.memory.values.idx   ] = loopEnd
 
         if( volume !== null )
-          g.gen.memory.heap[ voice.loudness.memory.values.idx   ] = volume
+          g.gen.memory.heap[ voice.__loudness.memory.values.idx ] = volume
 
-        if( rate !== null ) voice.rate = rate 
+        if( voice.cb !== null ) 
+          Gibberish.scheduler.remove( voice.cb )
+
+        // don't trigger this immediately if sustain
+        // is being attempted
+        if( !SHOULD_SUSTAIN ) voice.__decay.trigger()
+
+        // XXX re-enable callback for sustain
+        // have to also set it up in envelope later in code
+
+        if( SHOULD_SUSTAIN ) {
+          voice.cb = ()=> {
+            voice.__decay.trigger() 
+          }
+          
+          Gibberish.scheduler.add( 
+            this.sustain, 
+            voice.cb,
+            0
+          )
+        }
         
         voice.trigger()
       }
@@ -90835,6 +91121,8 @@ module.exports = function( Gibberish ) {
     const start = g.in( 'start' ), end = g.in( 'end' ), 
           rate = g.in( 'rate' ), shouldLoop = g.in( 'loops' ),
           loudness = g.in( 'loudness' ),
+          sustain  = g.in( 'sustain' ),
+          decay    = g.in( 'decay' ),
           triggerLoudness = g.in( '__triggerLoudness' ),
           // rate storage is used to determine whether we're playing
           // the sample forward or in reverse, for use in the 'trigger' method.
@@ -90861,18 +91149,23 @@ module.exports = function( Gibberish ) {
       'use jsdsp'
 
       const voice = {
+        bang:         g.bang(),
         bufferLength: g.data( [1], 1, { meta:true }),
         bufferLoc:    g.data( [1], 1, { meta:true }),
-        bang: g.bang(),
-        // XXX how do I change this from main thread?
-        __pan: g.data( [.5], 1, { meta:true }),
-        __rate: g.data( [1], 1, { meta:true }),
-        __shouldLoop: g.data( [1], 1, { meta:true }),
-        __loopStart: g.data( [1], 1, { meta:true }),
-        __loopEnd:   g.data( [1], 1, { meta:true }),
-        __loudness:  g.data( [1], 1, { meta:true }),
+        __pan:        g.data( [.5], 1, { meta:true }),
+        __playing:    g.data( [0],  1, { meta:true }),
+        __decaying:   g.data( [0],  1, { meta:true }),
+        __rate:       g.data( [1],  1, { meta:true }),
+        __decayV:     g.data( [1],  1, { meta:true }),
+        __shouldLoop: g.data( [1],  1, { meta:true }),
+        __loopStart:  g.data( [1],  1, { meta:true }),
+        __loopEnd:    g.data( [1],  1, { meta:true }),
+        __loudness:   g.data( [1],  1, { meta:true }),
+
+        cb: null,
+
         get loudness() { 
-          return g.gen.memory.heap[ this.__loudness.memory.values.idx   ]
+          return g.gen.memory.heap[ this.__loudness.memory.values.idx ]
         },
         set loudness( v ) {
           g.gen.memory.heap[ this.__loudness.memory.values.idx ] = v
@@ -90883,76 +91176,72 @@ module.exports = function( Gibberish ) {
         set rate(v) {
           g.gen.memory.heap[ this.__rate.memory.values.idx ] = v
         },
+        set decay(v) {
+          g.gen.memory.heap[ this.__decayV.memory.values.idx ] = v
+        },
       }
+
+      voice.__decay = g.decay( decay * voice.__decayV[0] )
 
       voice.phase = g.counter( 
         rate * voice.__rate[0], 
-        start * voice.bufferLength[0],
-        end * voice.bufferLength[0], 
+        0,
+        Infinity,
         voice.bang,
-        shouldLoop, 
+        0, 
         { shouldWrap:false, initialValue:9999999 }
+      )
+
+      const phaseOffset = voice.phase - voice.__loopStart[0]
+      const loopLength  = 1 + voice.__loopEnd[0] - voice.__loopStart[0]
+      const loopPos     = phaseOffset % loopLength
+      const loopPhase   = voice.__loopStart[0] + loopPos 
+
+      const phase = g.ifelse( 
+        g.and( 
+          voice.__playing[0], 
+          g.lt( voice.phase, voice.__loopStart[0] ) 
+        ), 
+
+        voice.phase,
+
+        loopPhase
+        //g.ifelse( 
+        //  voice.__decaying[0],
+        //  loopPhase,//voice.phase,
+        //  loopPhase
+        //)
       )
 
       voice.trigger = voice.bang.trigger
 
-      voice.graph = g.ifelse(
-        // if phase is greater than start and less than end... 
-        g.and( 
-          g.gte( voice.phase, start * voice.bufferLength[0] ), 
-          g.lt(  voice.phase, end   * voice.bufferLength[0] ) 
-        ),
-        // ...read data
-        voice.peek = g.peekDyn( 
-          voice.bufferLoc[0], 
-          voice.bufferLength[0],
-          voice.phase,
-          { mode:'samples' }
-        ),
-        // ...else return 0
-        0
-      ) 
-      * loudness 
-      * voice.__loudness[0] 
+      const state = g.peekDyn( 
+        voice.bufferLoc[0],  
+        voice.bufferLength[0],
+        phase,
 
-      // start of attempt to loop sustain...
-      //voice.graph = g.ifelse(
-      //  // if phase is greater than start and less than end... 
-      //  g.and( 
-      //    g.gte( voice.phase, start * voice.bufferLength[0] ), 
-      //    g.lt(  voice.phase, end   * voice.bufferLength[0] ) 
-      //  ),
-      //  // ...read data
-      //  voice.peek = g.peekDyn( 
-      //    voice.bufferLoc[0], 
-      //    voice.bufferLength[0],
-      //    voice.phase,
-      //    { mode:'samples' }
-      //  ),
-      //  // ...else return 0
-      //  g.ifelse(
-      //    g.and(
-      //      voice.__shouldLoop[0],
-      //      g.gt( voice.phase, voice.__loopEnd[0] )
-      //    ),
-      //    g.peekDyn( 
-      //      voice.bufferLoc[0], 
-      //      voice.bufferLength[0],
-      //      g.add( 
-      //        voice.__loopStart[0],
-      //        g.mod(
-      //          voice.phase,
-      //          //g.sub( voice.phase, voice.__loopStart[0] ),
-      //          g.sub( voice.__loopEnd[0], voice.__loopStart[0] )
-      //        )
-      //      ),
-      //      { mode:'samples' }
-      //    ),
-      //    0
-      //  )
-      //) 
-      //* loudness 
-      //* triggerLoudness 
+        { mode:'samples' }
+      )
+
+      // XXX giving up on sustain for now
+      // it works for some samples but causes glitches/clicks in others
+      // when the decay is triggered and i have no idea why
+        
+      const env = SHOULD_SUSTAIN 
+        ? g.ifelse(
+          // if voice is playing and phase is less than sustain 
+            g.lt( voice.phase, sustain ),
+            1,
+            voice.__decay
+          )
+        : voice.__decay
+      
+      
+      voice.graph = state 
+        * env
+        * voice.__playing[0]
+        * loudness 
+        * voice.__loudness[0]
       
       const pan = g.pan( voice.graph, voice.graph, voice.__pan[0] )
       voice.graph = [ pan.left, pan.right ]
@@ -91060,7 +91349,7 @@ module.exports = function( Gibberish ) {
           __soundNumber = 0
           console.warn( `The ${soundNumber} Soundfont can't be found. Using Piano instead.` )
         }
-        soundNumber = __soundNumber
+        soundNumber = __soundNumber   
       }
 
       let num = (soundNumber) + '0'
@@ -91131,6 +91420,8 @@ module.exports = function( Gibberish ) {
     end:1,
     bufferLength:-999999999,
     loudness:1,
+    sustain: 44100,
+    decay: 44100,
     maxVoices:5, 
     __triggerLoudness:1
   }
@@ -92363,6 +92654,16 @@ const Scheduler = {
     return this.phase
   },
 
+  remove( __func ) {
+    for( let i = 0; i < this.queue.data.length; i++ ) {
+      const func = this.queue.data[i].func
+      if( func === __func ) {
+        this.queue.data.splice( i, 1 )
+        break
+      }
+    }
+  },
+
   tick( usingSync = false ) {
     if( this.shouldSync === usingSync ) {
       if( this.queue.length ) {
@@ -93015,11 +93316,7 @@ module.exports = function( Gibberish ) {
       },
 
       set(patternString) {
-        seq.__pattern = Pattern(patternString, {
-          addLocations: true,
-          addUID: true,
-          enclose: true
-        });
+        seq.__pattern = Sequencer.Pattern(patternString);
       }
 
     };
