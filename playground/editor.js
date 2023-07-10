@@ -209,12 +209,30 @@ module.exports = function( Gibber, element = '#editor', userEditable=true ) {
     autoCloseBrackets:true,
     tabSize:2,
     extraKeys:{ 'Ctrl-Space':'autocomplete' },
-    hintOptions:{ hint:CodeMirror.hint.javascript }
+    hintOptions:{ hint:CodeMirror.hint.javascript },
+    configureMouse: (cm, repeat, ev) => { 
+      return { addNew : false };
+    },
+    cursorBlinkRate: 0
   })
 
-  Babel.registerPlugin( 'jsdsp', jsdsp )
-
   cm.setSize( null, '100%' )
+
+  // cursor blink
+  setTimeout( ()=> {
+    let state = false
+    const blink = ()=> {
+      const cursor = document.getElementsByClassName('CodeMirror-cursor')[0]
+      if( cursor === undefined ) return
+      state = !state
+      cursor.style.color = state ? 'transparent' : 'var(--f_med)'
+      cursor.style.background = state ? 'transparent' : 'var(--f_med)'
+    }
+
+    Gibber.subscribe( 'metronome.tick', blink )
+  }, 1000 )
+
+  Babel.registerPlugin( 'jsdsp', jsdsp )
   
   let hidden = false
   const toggleGUI = function() {
