@@ -86,7 +86,7 @@ module.exports = function( environment ) {
     },
 
     error( msg, e ) {
-      console.log( `%c${msg}`, 'color:white;background:#300;border:#900 solid 1px; padding:5px'  )
+      console.log( `%c${msg}`, 'color:white;background:#400; padding:0px'  )
    
       if( e !== undefined ) {
         if( !Console.revealErrors ) console.groupCollapsed( 'error trace:' )
@@ -96,7 +96,7 @@ module.exports = function( environment ) {
     },
 
     warn( msg ) {
-      console.log( `%c${msg}`, 'color:white;background:#330;border:#990 solid 1px; padding:5px' )
+      console.log( `%c${msg}`, 'color:white;background:#330; padding:0px' )
     },
 
     log( msg, css ) {
