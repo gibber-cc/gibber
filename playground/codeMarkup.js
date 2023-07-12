@@ -52,9 +52,9 @@ const Marker = {
           }
         })
       }
-      m.clear()
+      if( m.markdown !== true ) m.clear()
     }) 
-    Gibber.Environment.editor.getAllMarks().forEach( m => m.clear() )
+    Gibber.Environment.editor.getAllMarks().forEach( m => { if( m.markdown !== true ) m.clear() })
   },
   
   prepareObject( obj ) {
@@ -246,6 +246,8 @@ const Marker = {
       eles.forEach( e => {
         if( e.innerText === 'seq' ) ele = e
       })
+
+      if( ele === null ) return
 
       ele.toggle = true
 
