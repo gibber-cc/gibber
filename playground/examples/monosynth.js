@@ -25,7 +25,7 @@ unique.
 // oscillators 2 & 3 are determined by the
 // following formula:
 //
-// frequency = oscillator1.frequency + (oscillator1.frequency) * detuneValue)
+// frequency = oscillator1.frequency + (oscillator1.frequency * detuneValue)
 //
 // So if our main oscillator has a frequency of
 // 220, our detune2 value is 1 and our detune3 value
@@ -64,8 +64,8 @@ m = Monosynth({
   detune2:-.7525, detune3:-.5025, antialias:true, octave:-1, decay:1/8
 }).note.seq( sine(btof(3.5),5) , Euclid(5,8)  )
 
-// last but not least, we can use the detuning to play multiple
-// notes at once. For example, the 'bass.stab' preset has a detune2
+// we can use the detuning to play multiple notes at once.
+// For example, the 'bass.stab' preset has a detune2
 // value of 1.5 and a detune3 value of .5.
 
 bass = Monosynth('bass.stab')
@@ -83,6 +83,6 @@ bass = Monosynth('bass.stab')
 // is named PolyMono, a tongue-in-cheek reference to
 // the classic Korg MonoPoly analog synth.
 
-verb = Bus2().fx.add( Freeverb() )
+verb = Bus2().fx.add( Reverb() )
 pad = PolyMono('lead').connect( verb, .15 )
 pad.chord.seq( Rndi(-7,7,4), 1 )

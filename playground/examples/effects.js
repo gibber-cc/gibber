@@ -32,7 +32,7 @@ syn.note(0)
 // output. We could also manually do this:
 
 syn  = Synth('bleep')
-verb = Freeverb({ input:syn }).connect()
+verb = Reverb({ input:syn }).connect()
 syn.note(0)
 
 // ... but the fx chain is perhaps more
@@ -43,7 +43,7 @@ syn = Synth()
   .fx.add(
     Distortion('earshred'),
     Delay({ time:1/8, feedback:.8 }),
-    Freeverb()
+    Reverb()
   )
 
 syn.note(0)
@@ -61,7 +61,7 @@ syn.note(0)
 // We can do this using a Bus, or Bus2 for
 // stereo fx and inputs:
 
-verb = Bus2().fx.add( Freeverb() )
+verb = Bus2().fx.add( Reverb() )
 syn  = Synth('square.perc', { pan:0 })
 syn2 = Synth('square.perc', { pan:1 })
 syn.connect( verb, .5 )

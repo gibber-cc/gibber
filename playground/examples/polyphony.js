@@ -17,7 +17,7 @@ PolyConga, PolyMono, and the Multisampler.
 // minor modifications.
 Clock.bpm = 140
   
-verb = Bus2('spaceverb')
+verb = Reverb.space.bus()
  
 perc = PolySynth('square.perc').connect( verb, .5 )
  
@@ -25,6 +25,7 @@ perc.note.seq(
   gen( cycle(2) * 7 ), 
   Hex(0x8036) 
 )
+
 perc.note.seq( 
   gen( 7 + cycle(2.25) * 4 ), 
   Hex(0x4541), 

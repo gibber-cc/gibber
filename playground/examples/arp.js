@@ -20,7 +20,7 @@ some basics as well.
 ** __--__--__--__--__--__--__--__*/
 
 // start off by making our instrument
-verb = Bus2( 'spaceverb' ) 
+verb = Reverb.space.bus() 
 syn = Monosynth( 'shinybass' ).connect( verb, .25 )
 
 // OK, let's make a really slow moving ramp. We
@@ -41,13 +41,13 @@ syn.note.seq( arp, 1/4 )
 // between two notes... a 0 when it rounds down and a 1 
 // when it rounds up. We can easily change the numbers:
 
-verb = Bus2( 'spaceverb' ) 
+verb = Reverb.space.bus()
 syn = Monosynth( 'shinybass' ).connect( verb, .25 )
 arp = gen( accum(.00001) * 4 )
 syn.note.seq( arp , 1/4 )
 
 // ...or
-verb = Bus2( 'spaceverb' ) 
+verb = Reverb.space.bus() 
 syn = Monosynth( 'shinybass' ).connect( verb, .25 )
 arp = gen( 7 + accum(.00001) * 7 )
 syn.note.seq( arp, 1/8 )
@@ -73,7 +73,7 @@ arp.p3 = 14
 // Gibber has a btof() function that converts beats to a frequency;
 // let's use this to create a beat-synced arpeggiator:
 
-verb = Bus2( 'spaceverb' ) 
+verb = Reverb.space.bus()
 syn = Monosynth( 'shinybass' ).connect( verb, .25 )
 arp = gen( (1 - phasor( btof(4) )) * 8 )
 syn.note.seq( arp , 1/16 )
@@ -81,7 +81,7 @@ syn.note.seq( arp , 1/16 )
 // we can make this even shorter using beats(), which is
 // just a shorter version of saying phasor( btof() ).
 
-verb = Bus2( 'spaceverb' ) 
+verb = Reverb.space.bus()
 syn = Monosynth( 'shinybass' ).connect( verb, .25 )
 arp = gen( (1 - beats(4)) * 16 )
 syn.note.seq( arp, 1/16 )
@@ -90,7 +90,7 @@ syn.note.seq( arp, 1/16 )
 // video is to sequence changes to our frequency (the value
 // passed to beats) and our amplitude.
 
-verb = Bus2( 'spaceverb' ) 
+verb = Reverb.space.bus() 
 syn = Monosynth( 'shinybass' ).connect( verb, .25 )
 arp = gen( (1 - beats(4)) * 16 )
 syn.note.seq( arp  , 1/16 )

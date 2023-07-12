@@ -72,7 +72,7 @@ julia = Julia().render()
 camera.pos.z = 2
 onframe = t => camera.rotation = t/10
   
-verb = Bus2('spaceverb')
+verb = Reverb.space.bus()
 synth = Synth('square.perc', { decay:1/2 }).connect( verb, .5 )
 synth.note.seq( gen( cycle( beats(8) * beats(5) ) * 7 ), Euclid(5,8) )
  
