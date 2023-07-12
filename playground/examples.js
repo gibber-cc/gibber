@@ -1,3 +1,5 @@
+const showdown = require('showdown')
+
 module.exports = function() {
   const select = document.querySelector( 'select' )
   const files = [
@@ -97,8 +99,49 @@ module.exports = function() {
     req.onload = function() {
       const js = req.responseText
       window.Environment.editor.setValue( js )
+      parseMarkdown( window.Environment.editor )
     }
 
     req.send()
+  }
+
+  const processMarkdownBlock = function( cm, start, end, endLength, text ) {
+    const div = document.createElement( 'div' )
+    const converter = new showdown.Converter()
+    const html = converter.makeHtml( text )
+    div.innerHTML = html
+    div.setAttribute( 'class', 'markdown' )
+    div.style = `font-family: sans-serif;`
+
+    const marker = cm.markText(
+      { line:start, ch:0 },
+      { line:end, ch:endLength },
+      { replacedWith: div, atomic:true, selectLeft:false, selectRight:false }
+    )
+    marker.markdown = true
+  }
+
+  const parseMarkdown = function( cm ) {
+    let start = null, end = null, text = '', number = 0
+
+    cm.eachLine( line => {
+      if( line.text.indexOf('/*--md') !== -1 ) {
+        start = number
+      }else if( line.text.indexOf('--*/') !== -1 ) {
+        end = number
+        if( start !== null ) {
+          processMarkdownBlock( cm, start, end, line.text.length, text )
+          start = null
+          end = null
+          text = ''
+        }
+      }else{
+        // if we are inside a markdown block
+        if( start !== null ) {
+          text += line.text + '\n'
+        }
+      }
+      number++
+    })
   }
 }
