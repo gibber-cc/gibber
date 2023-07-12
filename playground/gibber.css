@@ -1,3 +1,33 @@
+.markdown h1 {
+  display:block; 
+  color:var(--f_high);
+  font-weight:bold;
+}
+
+.markdown p {
+  margin:0;
+}
+
+code {
+  font-size:1.25em;
+  background-color:var(--b_inv);
+  color:var(--f_inv);
+  padding:0 .25rem;
+}
+
+.markdown ul, .markdown ol { 
+  padding:0; 
+  margin:0; 
+  padding-left:2ch
+}
+
+.markdown { 
+  /*background-color:rgba(0,0,0,.5);*/
+  border:3px solid var(--f_low);
+  border-radius:3px;
+  padding:1em;
+}
+
 .CodeMirror-activeline-background {
   background:rgba(255,255,255,.2)
 }
@@ -624,3 +654,4 @@ label { margin-bottom:5px; }
 #help p { max-width: 24em; margin-top:0 }
 
 .demos { padding-left:0 }
+
