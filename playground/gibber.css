@@ -4,6 +4,15 @@
   font-weight:bold;
 }
 
+.markdown h2 { 
+  font-size:.9rem;
+  margin:0;
+}
+
+.markdown ul {
+  margin:0
+}
+
 .markdown p {
   margin:0;
 }
