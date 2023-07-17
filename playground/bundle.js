@@ -4767,6 +4767,7 @@ const Analysis = {
 module.exports = Analysis 
 
 },{"./ugen.js":117,"gibberish-dsp":291}],82:[function(require,module,exports){
+(function (global){(function (){
 "use strict";
 
 const Gibberish = require('gibberish-dsp');
@@ -4897,7 +4898,10 @@ const Audio = {
           Gibberish.worklet.port.__postMessage(dict);
         };
 
-        Audio.export(window); //const drums = Audio.Drums('x*o-')
+        Audio.export(window);
+        Audio.phase = Audio.makePhase();
+        Audio.phase.connect(Audio.Out, 0);
+        Audio.setupGlobals(); //const drums = Audio.Drums('x*o-')
         //drums.disconnect()
         //drums.stop()
         // store last location in memory... we can clear everything else in Gibber.clear9)
@@ -4946,6 +4950,8 @@ const Audio = {
 
       Audio.export(window);
       Gibber.export(window);
+      Audio.phase = Audio.makePhase();
+      Audio.phase.connect(Audio.Out, 0);
       const memIdx = Object.keys(Gibberish.memory.list).reverse()[0];
       this.__memoryEnd = parseInt(memIdx) + Gibberish.memory.list[memIdx]; // XXX this forces the gibberish scheduler to start
       // running, but it's about as hacky as it can get...
@@ -4961,13 +4967,115 @@ const Audio = {
     });
   },
 
+  setupGlobals() {
+    const run = fnc => {
+      const str = fnc.toString();
+      const idx = str.indexOf('=>') + 2;
+      const code = str.slice(idx).trim();
+
+      Gibberish.worklet.port.__postMessage({
+        address: 'eval',
+        code
+      });
+    };
+
+    run(() => {
+      global.main = function (fnc) {
+        let str = fnc.toString();
+        let idx = str.indexOf('=>') + 2;
+        Gibberish.processor.port.postMessage({
+          address: 'eval',
+          code: str.slice(idx).trim()
+        });
+      };
+
+      Clock = Gibberish.Clock;
+    });
+    run(() => {
+      global.recursions = {}; //sin = Math.sin
+      //sinn = v => .5 + Math.sin(v) * .5
+      //sinr = v => Math.round( Math.sin(v) )
+      //cos = Math.cos
+      //cosn = v => .5 + Math.cos(v) * .5
+      //cosr = v => Math.round( Math.cos(v) )
+
+      abs = Math.abs;
+      floor = Math.floor;
+      ceil = Math.ceil;
+      random = Math.random;
+      round = Math.round;
+      min = Math.min;
+      max = Math.max;
+      g = global;
+      g.phase = Gibberish.ugens.get(6);
+
+      g.line = (freq = 1, gain = 1, offset = 0) => offset + g.phase.graph.value * (1 / freq) / (Math.PI * 2) % 1 * gain;
+
+      cos = (freq = 1, gain = 1, offset = 0) => offset + Math.cos(g.phase.graph.value * (1 / freq) * 6.283185307179586) * gain;
+
+      cosn = (freq = 1, gain = 1, offset = 0) => offset + (.5 + Math.cos(g.phase.graph.value * (1 / freq) * 6.283185307179586) * .5) * gain + offset;
+
+      sin = (freq = 1, gain = 1, offset = 0) => offset + Math.sin(g.phase.graph.value * (1 / freq) * 6.283185307179586) * gain;
+
+      sinn = (freq = 1, gain = 1, offset = 0) => offset + (.5 + Math.sin(g.phase.graph.value * (1 / freq) * 6.283185307179586) * .5) * gain + offset;
+    });
+
+    const tr = function (fnc, name, dict, immediate = 0) {
+      let code = fnc.toString();
+      const keys = Object.keys(dict);
+      code = `
+      if( global.recursions['${name}'] !== undefined ) {
+        const idx = Gibberish.scheduler.queue.data.findIndex( evt => evt.func.toString().indexOf( "global.recursions['${name}']") > -1 )
+        if( idx > -1 ) {
+          Gibberish.scheduler.queue.data.splice( idx, 1 )
+          Gibberish.scheduler.queue.length--
+        }
+      }
+      const objs = [${keys.map(key => typeof dict[key] === 'object' || typeof dict[key] === 'function' ? dict[key].id !== undefined ? 'Gibberish.ugens.get(' + dict[key].id + ')' : JSON.stringify(dict[key]) : `'${dict[key]}'`).join(',')}]
+      ;(global.recursions['${name}'] = function ${name} (${keys}) {
+        let __nexttime__ = ( ${code} )(${keys})
+        if( isNaN( __nexttime__ ) === false && __nexttime__ <= 0 ) {
+          console.warn( 'temporal recursion scheduled with a time <= 0; this would create a potentially infinite loop. substituting a time of one measure.' )
+          __nexttime__ = 1
+        }
+        if( __nexttime__ && __nexttime__ > 0 ) {
+          Gibberish.scheduler.add(
+            Clock.time( __nexttime__ ),
+            (${keys})=>{
+              global.recursions['${name}'](...objs)
+            },
+            1
+          )
+        }
+      })(...objs)`;
+
+      if (immediate === 0) {
+        Gibberish.worklet.port.postMessage({
+          address: 'eval',
+          code
+        });
+      } else {
+        Gibberish.worklet.port.__postMessage({
+          address: 'eval',
+          code
+        });
+      }
+    };
+
+    Audio.globals = {
+      run,
+      tr
+    };
+  },
+
   // XXX stop clock from being cleared.
   clear() {
     Gibberish.clear();
     Audio.Out = Audio.busses.Bus2(); //Gibberish.output
 
     Audio.Out.connect(Gibberish.output);
-    Audio.Clock.init(Audio.Gen, Audio); // the idea is that we only clear memory that was filled after
+    Audio.Clock.init(Audio.Gen, Audio);
+    Audio.phase.connect(Audio.Out, 0); // the idea is that we only clear memory that was filled after
     // the initial Gibber initialization... this stops objects
     // like Clock and Theory from having their memory cleared and
     // from having to re-initialize them.
@@ -4986,6 +5094,25 @@ const Audio = {
     }
 
     Audio.publish('clear');
+  },
+
+  makePhase() {
+    const def = {
+      name: 'Phase',
+      type: 'Ugen',
+      properties: {
+        bpm: Audio.Clock.bpm,
+        sr: Gibberish.ctx.sampleRate
+      },
+      constructor: function () {
+        const gen = Gibberish.genish;
+        const graph = gen.accum(gen.div(gen.div(gen.in('bpm'), 240), gen.in('sr')), 0, {
+          max: Infinity
+        });
+        return graph;
+      }
+    };
+    return Make(def)();
   },
 
   stop() {
@@ -5284,6 +5411,7 @@ const Audio = {
 };
 module.exports = Audio;
 
+}).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"./analysis.js":81,"./binops.js":83,"./busses.js":84,"./clock.js":85,"./drums.js":87,"./effects.js":88,"./ensemble.js":89,"./envelopes.js":90,"./filters.js":92,"./freesound.js":93,"./gen.js":94,"./instruments.js":95,"./make.js":96,"./oscillators.js":97,"./presets.js":98,"./theory.js":116,"./ugen.js":117,"./utility.js":118,"./wavePattern.js":119,"gibberish-dsp":291}],83:[function(require,module,exports){
 const Gibberish = require( 'gibberish-dsp' )
 const Ugen      = require( './ugen.js' )
@@ -5453,6 +5581,8 @@ const Clock = {
           if( Gibberish.mode === 'worklet' ) {
             this.__lastBPM = v
             if( Audio.Gibber.Tidal !== undefined ) Audio.Gibber.Tidal.cps = bpm/120/2
+            if( Audio.phase !== undefined ) Audio.phase.bpm = bpm
+
             Gibberish.worklet.port.postMessage({
               address:'set',
               object:this.id,
@@ -5817,27 +5947,6 @@ const Effects = {
         effects[ replaceName ].presets = { inspect() { console.log( `${effectName} has no presets.` ) } }
       }
     }
-
-    /*
-    effects.Reverb = function( ...args ) {
-      let argprops = null
-      if( args.length === 1 ) {
-        if( typeof args[0] === 'object' ) argprops = args[0]
-      }else if( args.length === 2 ) {
-        argprops = args[1]
-      }
-      const props = Object.assign( {}, { model:0 }, argprops )
-
-      let ugen = null
-      switch( props.model ) {
-        case 0:
-        default:
-          ugen = effects.Freeverb(...args )
-          break;
-      }
-
-      return ugen
-    }*/
 
     return effects
   },
@@ -7438,14 +7547,14 @@ module.exports = {
 
   'spaceverb': {
     presetInit: function( audio ) {
-      this.fx.verb = audio.effects.Freeverb({ roomSize:.985, dry:1 })
+      this.fx.verb = audio.effects.Reverb({ roomSize:.985, dry:1 })
       this.fx.add( this.fx.verb )
     }
   },
   'echoverb.1/3': {
     presetInit: function( audio ) {
       this.fx.delay = audio.effects.Delay({ time:1/3, feedback:.35, wetdry:.5 })
-      this.fx.reverb  = audio.effects.Freeverb({ roomSize:.985, dry:1 })
+      this.fx.reverb  = audio.effects.Reverb({ roomSize:.985, dry:1 })
       this.fx.add( this.fx.delay )
       this.fx.add( this.fx.reverb )
       this.feedback = this.fx.delay.feedback
@@ -7456,7 +7565,7 @@ module.exports = {
   'echoverb.1/6': {
     presetInit: function( audio ) {
       this.fx.delay = audio.effects.Delay({ time:1/6, feedback:.35, wetdry:.5 })
-      this.fx.verb  = audio.effects.Freeverb({ roomSize:.985, dry:1 })
+      this.fx.verb  = audio.effects.Reverb({ roomSize:.985, dry:1 })
       this.fx.add( this.fx.delay, this.fx.reverb )
       this.feedback = this.fx.delay.feedback
       this.time = this.fx.delay.time
@@ -8273,7 +8382,7 @@ module.exports = {
     }
   },
   beatbox: {
-  files:[
+    files:[
       'resources/audiofiles/beatbox/^k.wav',
       'resources/audiofiles/beatbox/^p.wav',
       'resources/audiofiles/beatbox/^tss.wav',
@@ -8750,12 +8859,12 @@ module.exports = {
     decay:1/8,
     panVoices:true
   },
-  'square.bass': { 
-    waveform:'square', 
-    shape:'exponential', 
-    antialias:true, 
-    filterModel:2, 
-    cutoff:.25, 
+  'square.bass': {
+    waveform:'square',
+    shape:'exponential',
+    antialias:true,
+    filterModel:2,
+    cutoff:.25,
     decay:1/4,
     panVoices:false,
     octave:-3,
@@ -13530,9 +13639,11 @@ const Graphics = {
   clearCodeBackground() {
     const sheet = window.document.styleSheets[window.document.styleSheets.length - 1];
 
-    if (sheet.cssRules.length > 0 && Graphics.__ruleIdx !== null) {
-      sheet.deleteRule(Graphics.__ruleIdx);
-      Graphics.__ruleIdx = null;
+    if (sheet !== undefined) {
+      if (sheet.cssRules.length > 0 && Graphics.__ruleIdx !== null) {
+        sheet.deleteRule(Graphics.__ruleIdx);
+        Graphics.__ruleIdx = null;
+      }
     }
 
     Graphics.__showCodeBackground = false;
@@ -84204,7 +84315,6 @@ CodeMirror.keyMap.playground =  {
 }
 
 },{"../node_modules/acorn-loose/dist/acorn-loose.js":135,"../node_modules/acorn-walk/dist/walk.js":137,"../node_modules/acorn/dist/acorn.js":139,"../node_modules/codemirror/addon/dialog/dialog.js":144,"../node_modules/codemirror/addon/edit/closebrackets.js":145,"../node_modules/codemirror/addon/edit/matchbrackets.js":146,"../node_modules/codemirror/addon/hint/javascript-hint.js":147,"../node_modules/codemirror/addon/hint/show-hint.js":148,"../node_modules/codemirror/mode/javascript/javascript.js":151,"./proxies.js":251,"./tern.js":255,"codemirror":150}],248:[function(require,module,exports){
-(function (global){(function (){
 "use strict";
 
 const Gibber = require('gibber.core.lib'),
@@ -84363,100 +84473,8 @@ window.onload = function () {
       return out;
     };
 
-    window.run = fnc => {
-      const str = fnc.toString();
-      const idx = str.indexOf('=>') + 2;
-      const code = str.slice(idx).trim();
-
-      Gibberish.worklet.port.__postMessage({
-        address: 'eval',
-        code
-      });
-    };
-
-    window.run(() => {
-      global.main = function (fnc) {
-        let str = fnc.toString();
-        let idx = str.indexOf('=>') + 2;
-        Gibberish.processor.port.postMessage({
-          address: 'eval',
-          code: str.slice(idx).trim()
-        });
-      };
-
-      Clock = Gibberish.Clock;
-    });
-
-    const setupGlobals = function () {
-      window.run(() => {
-        global.recursions = {};
-        sin = Math.sin;
-
-        sinn = v => .5 + Math.sin(v) * .5;
-
-        sinr = v => Math.round(Math.sin(v));
-
-        cos = Math.cos;
-
-        cosn = v => .5 + Math.cos(v) * .5;
-
-        cosr = v => Math.round(Math.cos(v));
-
-        abs = Math.abs;
-        floor = Math.floor;
-        ceil = Math.ceil;
-        random = Math.random;
-        round = Math.round;
-        min = Math.min;
-        max = Math.max;
-        g = global;
-      });
-    };
-
-    setupGlobals();
-    Gibber.Audio.subscribe('restart', setupGlobals);
-
-    window.tr = function (fnc, name, dict, immediate = 0) {
-      let code = fnc.toString();
-      const keys = Object.keys(dict);
-      code = `
-      if( global.recursions['${name}'] !== undefined ) {
-        const idx = Gibberish.scheduler.queue.data.findIndex( evt => evt.func.toString().indexOf( "global.recursions['${name}']") > -1 )
-        if( idx > -1 ) {
-          Gibberish.scheduler.queue.data.splice( idx, 1 )
-          Gibberish.scheduler.queue.length--
-        }
-      }
-      const objs = [${keys.map(key => typeof dict[key] === 'object' || typeof dict[key] === 'function' ? dict[key].id !== undefined ? 'Gibberish.ugens.get(' + dict[key].id + ')' : JSON.stringify(dict[key]) : `'${dict[key]}'`).join(',')}]
-      ;(global.recursions['${name}'] = function ${name} (${keys}) { 
-        let __nexttime__ = ( ${code} )(${keys})
-        if( isNaN( __nexttime__ ) === false && __nexttime__ <= 0 ) {
-          console.warn( 'temporal recursion scheduled with a time <= 0; this would create a potentially infinite loop. substituting a time of one measure.' )
-          __nexttime__ = 1
-        }
-        if( __nexttime__ && __nexttime__ > 0 ) {
-          Gibberish.scheduler.add( 
-            Clock.time( __nexttime__ ), 
-            (${keys})=>{
-              global.recursions['${name}'](...objs)
-            }, 
-            1 
-          )
-        }
-      })(...objs)`;
-
-      if (immediate === 0) {
-        Gibberish.worklet.port.postMessage({
-          address: 'eval',
-          code
-        });
-      } else {
-        Gibberish.worklet.port.__postMessage({
-          address: 'eval',
-          code
-        });
-      }
-    };
+    Object.assign(window, Audio.globals);
+    Gibber.Audio.subscribe('restart', Audio.setupGlobals);
 
     Gibber.Audio.Gibberish.utilities.workletHandlers.eval = function (evt) {
       eval(evt.data.code);
@@ -84485,7 +84503,7 @@ window.onload = function () {
         delete Environment.sounds[key];
       }
 
-      if (shouldPrint) Console.log('%cgibber has been cleared.', 'background:#006;color:white; padding:.5em');
+      if (shouldPrint) Console.log('%cgibber has been cleared.', 'background:#006;color:white;');
     });
 
     cm.__setup();
@@ -85090,7 +85108,6 @@ window.__Gibberwocky = function () {
   }, 250);
 };
 
-}).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"./codeMarkup.js":244,"./collab.js":245,"./console.js":246,"./editor.js":247,"./examples.js":249,"./metronome.js":250,"./resources/js/theme.js":252,"./share.js":253,"./storage.js":254,"codemirror":150,"gibber.audio.lib":82,"gibber.core.lib":123,"gibber.graphics.lib":134}],249:[function(require,module,exports){
 const showdown = require('showdown')
 
@@ -85201,7 +85218,7 @@ module.exports = function() {
 
   const processMarkdownBlock = function( cm, start, end, endLength, text ) {
     const div = document.createElement( 'div' )
-    const converter = new showdown.Converter()
+    const converter = new showdown.Converter({ tables:'true' })
     const html = converter.makeHtml( text )
     div.innerHTML = html
     div.setAttribute( 'class', 'markdown' )
