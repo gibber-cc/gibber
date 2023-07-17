@@ -107,7 +107,7 @@ module.exports = function() {
 
   const processMarkdownBlock = function( cm, start, end, endLength, text ) {
     const div = document.createElement( 'div' )
-    const converter = new showdown.Converter()
+    const converter = new showdown.Converter({ tables:'true' })
     const html = converter.makeHtml( text )
     div.innerHTML = html
     div.setAttribute( 'class', 'markdown' )
