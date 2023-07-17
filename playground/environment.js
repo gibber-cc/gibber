@@ -148,101 +148,10 @@ window.onload = function() {
       return out
     }
 
-    window.run = fnc => { 
-      const str = fnc.toString()
-      const idx = str.indexOf('=>') + 2
-      const code = str.slice( idx ).trim()
-      Gibberish.worklet.port.__postMessage({ 
-        address:'eval',
-        code
-      })
-    }
+    Object.assign( window, Audio.globals )
 
-    window.run( ()=> {
-      global.main = function( fnc ) { 
-        let str = fnc.toString()
-        let idx = str.indexOf('=>') + 2
-        Gibberish.processor.port.postMessage({
-          address:'eval',
-          code:str.slice( idx ).trim()
-        })
-      }
-
-      Clock = Gibberish.Clock
-    })
-
-    const setupGlobals = function() {
-      window.run( ()=> {
-        global.recursions = {}
-        sin = Math.sin
-        sinn = v => .5 + Math.sin(v) * .5
-        sinr = v => Math.round( Math.sin(v) )
-        cos = Math.cos
-        cosn = v => .5 + Math.cos(v) * .5
-        cosr = v => Math.round( Math.cos(v) )
-        abs = Math.abs
-        floor = Math.floor
-        ceil = Math.ceil
-        random = Math.random
-        round = Math.round
-        min = Math.min
-        max = Math.max
-        g = global
-      })
-    }
-
-    setupGlobals()
-
-    Gibber.Audio.subscribe( 'restart', setupGlobals )
+    Gibber.Audio.subscribe( 'restart', Audio.setupGlobals )
     
-    window.tr = function( fnc, name, dict, immediate=0 ) {
-      let code = fnc.toString()
-      const keys = Object.keys( dict )
-     
-      code = `
-      if( global.recursions['${name}'] !== undefined ) {
-        const idx = Gibberish.scheduler.queue.data.findIndex( evt => evt.func.toString().indexOf( "global.recursions['${name}']") > -1 )
-        if( idx > -1 ) {
-          Gibberish.scheduler.queue.data.splice( idx, 1 )
-          Gibberish.scheduler.queue.length--
-        }
-      }
-      const objs = [${keys.map( key => typeof dict[key] === 'object' || typeof dict[key] === 'function' 
-        ? dict[ key ].id !== undefined 
-          ? 'Gibberish.ugens.get(' + dict[ key ].id + ')'
-          : JSON.stringify( dict[ key ] )
-        : `'${dict[ key ]}'` ).join(',')
-}]
-      ;(global.recursions['${name}'] = function ${name} (${keys}) { 
-        let __nexttime__ = ( ${code} )(${keys})
-        if( isNaN( __nexttime__ ) === false && __nexttime__ <= 0 ) {
-          console.warn( 'temporal recursion scheduled with a time <= 0; this would create a potentially infinite loop. substituting a time of one measure.' )
-          __nexttime__ = 1
-        }
-        if( __nexttime__ && __nexttime__ > 0 ) {
-          Gibberish.scheduler.add( 
-            Clock.time( __nexttime__ ), 
-            (${keys})=>{
-              global.recursions['${name}'](...objs)
-            }, 
-            1 
-          )
-        }
-      })(...objs)`
-
-      if( immediate === 0 ) {
-        Gibberish.worklet.port.postMessage({ 
-          address:'eval',
-          code
-        })
-      }else{
-        Gibberish.worklet.port.__postMessage({ 
-          address:'eval',
-          code
-        })
-      }
-    }
-
     Gibber.Audio.Gibberish.utilities.workletHandlers.eval = function( evt ) {
       eval( evt.data.code )
     }
@@ -269,7 +178,7 @@ window.onload = function() {
         delete Environment.sounds[ key ]
       }
       if( shouldPrint )
-        Console.log( '%cgibber has been cleared.', 'background:#006;color:white; padding:.5em' )
+        Console.log( '%cgibber has been cleared.', 'background:#006;color:white;')
     })
 
     cm.__setup()
