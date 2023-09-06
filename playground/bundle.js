@@ -5062,9 +5062,26 @@ const Audio = {
       }
     };
 
+    const Score = function (score) {
+      for (let i = 0; i < score.length; i += 2) {
+        let cmd = score[i + 1].toString();
+        const arrowIndex = cmd.indexOf('=>');
+        const functionIndex = cmd.indexOf('function');
+
+        if (arrowIndex > -1) {
+          cmd = cmd.slice(arrowIndex + 2);
+        } else if (functionIndex > -1) {
+          cmd = cmd.slice(cmd.indexOf('{'));
+        }
+
+        future(new Function(`global.main( ()=> eval(\`${cmd}\`) )`), score[i], {});
+      }
+    };
+
     Audio.globals = {
       run,
-      tr
+      tr,
+      Score
     };
   },
 
@@ -84172,7 +84189,12 @@ fm = FM({ feedback:.0015, decay:1/2 })
       const query = window.location.search.slice(1)
       const params = query.split('&')
       const code = params[0]
-      if( code.indexOf( 'show=' ) === -1 ) {
+      
+      // join shared server with room / username
+      // automatically
+      if( code.indexOf( 'join' ) === 0 ) {
+        
+      }else if( code.indexOf( 'show=' ) === -1 ) {
         const auto = params[1] !== undefined && params[1].split('=')[1] === 'true' ? true : false    
         const val = atob( code )
         cm.setValue(val)
@@ -85840,6 +85862,134 @@ const share = {
 
   },
 
+  go( cm, environment, networkConfig, username, roomname, shouldShowChat, useSharedEditor ) {
+    const { socket, provider, binding, chatData, commands, userData, scrollData, clear, ydoc } = share.initShare(
+      cm, 
+      username, 
+      roomname,
+      useSharedEditor
+    )
+    share.clear = clear
+    share.commands = commands
+
+    if( username !== 'spectator' )
+      userData.unshift([{ username }])
+
+    __socket = socket
+    networkConfig.isNetworked = true
+
+    window.socket = socket
+    window.binding = binding
+    window.provider = provider
+    window.chatData = chatData
+    window.commands = commands
+    window.username = username
+    window.Gabber = { clear }
+
+    commands.observe( e => {
+      if( e.transaction.local === false ) {
+        // XXX only process last change, should we process all changes?
+        // if we did this would allow late users to potentially "catch up"
+        // with a performance...
+
+        // make sure there commands to run...
+        if( e.changes.delta.length > 0 ) {
+          const inserts = e.changes.delta[0].insert
+          for( let i = inserts.length - 1; i > 0; i -= 6 ) {
+            const arr = e.changes.delta[0].insert.slice( i-5, i+1 )
+            const code = {
+              selection:{
+                start: { line:arr[0], ch:arr[1] },
+                end:   { line:arr[2], ch:arr[3] }
+              },
+              code: arr[4]
+            }
+
+            environment.runCode( cm, false, true, false, code )
+          }
+        }
+      }
+    })
+
+    chatData.observe( e => {
+      const msgs = e.changes.delta[0].insert
+      for( let i = msgs.length-1; i>=0; i-- ) {
+        const msg = msgs[ i ]
+
+        makeMsg( msg.username, msg.value )
+      }
+    })
+
+    scrollData.observe( e => {
+      const msgs = e.changes.delta[0].insert
+      if( msgs === undefined ) return
+      for( let i = msgs.length-1; i>=0; i-- ) {
+        const msg = msgs[ i ]
+
+        if( msg !== undefined && msg.username !== 'spectator' ) {
+          if( share.editors[ msg.username ] !== undefined ) {
+            share.editors[ msg.username ].scrollTo( msg.left, msg.top )
+          }
+        }
+      }
+    })
+
+    ydoc.scrollData = scrollData
+
+    const users = []
+    userData.observe( e => {
+      //console.log( e.changes )
+      //const delta = e.changes.delta[0]
+      //if( delta !== undefined ) {
+      //const msgs = e.changes.delta[0].insert
+      const msgs = e.changes.added
+      //if( msgs !== undefined ) {
+      //for( let i = msgs.length-1; i>=0; i-- ) {
+      for( let msg of msgs ) {
+        //const msg = msgs[ i ]
+        const __username = msg.content.arr[0].username
+        if( users.indexOf( __username ) === -1 && __username !== 'spectator' ) {
+          users.push( __username )
+          if( useSharedEditor === false ) {
+            share.createSplits( __username, users, ydoc, roomname, username )
+          }
+        }
+      }
+    })
+    environment.showArgHints = false
+    environment.showCompletions = false
+
+    const menu = document.querySelector('#connectmenu')
+    if( menu !== null ) {
+      menu.remove()
+      const blurfnc = ()=> {
+        menu.remove()
+        document.querySelector('.CodeMirror-scroll').removeEventListener( 'click', blurfnc )
+      }
+      document.querySelector('.CodeMirror-scroll').addEventListener( 'click', blurfnc )
+    }
+
+    const btn = document.querySelector('#connect')
+    btn.innerText = 'disconnect'
+    btn.onclick = ()=> {
+      provider.destroy()
+    } 
+    
+    if( typeof blurfnc === 'function' )
+      document.querySelector('.CodeMirror-scroll').removeEventListener( 'click', blurfnc )
+
+    if( shouldShowChat ) {
+      share.createChatWindow()
+      share.chatDisplayed = true
+    }else{
+      Environment.CodeMirror.keyMap.playground['Ctrl-M'] = cm => share.quickmsg( Environment.editor, false, true  )
+      share.chatDisplayed = false
+    }
+
+    __connected = true
+    return true
+  },
+
   setupShareHandler( cm, environment, networkConfig ) {
     share.spectator()
     document.querySelector('#connect').onclick = function() {
@@ -85849,122 +85999,125 @@ const share = {
               username = document.querySelector( '#connectname' ).value,  
               roomname = document.querySelector( '#connectroom' ).value
 
-        const { socket, provider, binding, chatData, commands, userData, scrollData, clear, ydoc } = share.initShare(
-          cm, 
-          username, 
-          roomname,
-          useSharedEditor
-        )
-        share.clear = clear
-        share.commands = commands
 
-        if( username !== 'spectator' )
-          userData.unshift([{ username }])
-
-        __socket = socket
-        networkConfig.isNetworked = true
-
-        window.socket = socket
-        window.binding = binding
-        window.provider = provider
-        window.chatData = chatData
-        window.commands = commands
-        window.username = username
-        window.Gabber = { clear }
-
-        commands.observe( e => {
-          if( e.transaction.local === false ) {
-            // XXX only process last change, should we process all changes?
-            // if we did this would allow late users to potentially "catch up"
-            // with a performance...
-
-            // make sure there commands to run...
-            if( e.changes.delta.length > 0 ) {
-              const inserts = e.changes.delta[0].insert
-              for( let i = inserts.length - 1; i > 0; i -= 6 ) {
-                const arr = e.changes.delta[0].insert.slice( i-5, i+1 )
-                const code = {
-                  selection:{
-                    start: { line:arr[0], ch:arr[1] },
-                    end:   { line:arr[2], ch:arr[3] }
-                  },
-                  code: arr[4]
-                }
-
-                environment.runCode( cm, false, true, false, code )
-              }
-            }
-          }
-        })
-
-        chatData.observe( e => {
-          const msgs = e.changes.delta[0].insert
-          for( let i = msgs.length-1; i>=0; i-- ) {
-            const msg = msgs[ i ]
-
-            makeMsg( msg.username, msg.value )
-          }
-        })
-
-        scrollData.observe( e => {
-          const msgs = e.changes.delta[0].insert
-          if( msgs === undefined ) return
-          for( let i = msgs.length-1; i>=0; i-- ) {
-            const msg = msgs[ i ]
-
-            if( msg !== undefined && msg.username !== 'spectator' ) {
-              if( share.editors[ msg.username ] !== undefined ) {
-                share.editors[ msg.username ].scrollTo( msg.left, msg.top )
-              }
-            }
-          }
-        })
-
-        ydoc.scrollData = scrollData
-
-        const users = []
-        userData.observe( e => {
-          //console.log( e.changes )
-          //const delta = e.changes.delta[0]
-          //if( delta !== undefined ) {
-            //const msgs = e.changes.delta[0].insert
-            const msgs = e.changes.added
-            //if( msgs !== undefined ) {
-              //for( let i = msgs.length-1; i>=0; i-- ) {
-            for( let msg of msgs ) {
-              //const msg = msgs[ i ]
-              const __username = msg.content.arr[0].username
-              if( users.indexOf( __username ) === -1 && __username !== 'spectator' ) {
-                users.push( __username )
-                if( useSharedEditor === false ) {
-                  share.createSplits( __username, users, ydoc, roomname, username )
-                }
-              }
-            }
-        })
-        environment.showArgHints = false
-        environment.showCompletions = false
-        
-        menu.remove()
-
-        const btn = document.querySelector('#connect')
-        btn.innerText = 'disconnect'
-        btn.onclick = ()=> {
-          provider.destroy()
-        } 
-        document.querySelector('.CodeMirror-scroll').removeEventListener( 'click', blurfnc )
-
-        if( shouldShowChat ) {
-          share.createChatWindow()
-          share.chatDisplayed = true
-        }else{
-          Environment.CodeMirror.keyMap.playground['Ctrl-M'] = cm => share.quickmsg( Environment.editor, false, true  )
-          share.chatDisplayed = false
-        }
-
-        __connected = true
-        return true
+        share.go( cm, environment, networkConfig, username, roomname, shouldShowChat, useSharedEditor )
       }
+      //  const { socket, provider, binding, chatData, commands, userData, scrollData, clear, ydoc } = share.initShare(
+      //    cm, 
+      //    username, 
+      //    roomname,
+      //    useSharedEditor
+      //  )
+      //  share.clear = clear
+      //  share.commands = commands
+
+      //  if( username !== 'spectator' )
+      //    userData.unshift([{ username }])
+
+      //  __socket = socket
+      //  networkConfig.isNetworked = true
+
+      //  window.socket = socket
+      //  window.binding = binding
+      //  window.provider = provider
+      //  window.chatData = chatData
+      //  window.commands = commands
+      //  window.username = username
+      //  window.Gabber = { clear }
+
+      //  commands.observe( e => {
+      //    if( e.transaction.local === false ) {
+      //      // XXX only process last change, should we process all changes?
+      //      // if we did this would allow late users to potentially "catch up"
+      //      // with a performance...
+
+      //      // make sure there commands to run...
+      //      if( e.changes.delta.length > 0 ) {
+      //        const inserts = e.changes.delta[0].insert
+      //        for( let i = inserts.length - 1; i > 0; i -= 6 ) {
+      //          const arr = e.changes.delta[0].insert.slice( i-5, i+1 )
+      //          const code = {
+      //            selection:{
+      //              start: { line:arr[0], ch:arr[1] },
+      //              end:   { line:arr[2], ch:arr[3] }
+      //            },
+      //            code: arr[4]
+      //          }
+
+      //          environment.runCode( cm, false, true, false, code )
+      //        }
+      //      }
+      //    }
+      //  })
+
+      //  chatData.observe( e => {
+      //    const msgs = e.changes.delta[0].insert
+      //    for( let i = msgs.length-1; i>=0; i-- ) {
+      //      const msg = msgs[ i ]
+
+      //      makeMsg( msg.username, msg.value )
+      //    }
+      //  })
+
+      //  scrollData.observe( e => {
+      //    const msgs = e.changes.delta[0].insert
+      //    if( msgs === undefined ) return
+      //    for( let i = msgs.length-1; i>=0; i-- ) {
+      //      const msg = msgs[ i ]
+
+      //      if( msg !== undefined && msg.username !== 'spectator' ) {
+      //        if( share.editors[ msg.username ] !== undefined ) {
+      //          share.editors[ msg.username ].scrollTo( msg.left, msg.top )
+      //        }
+      //      }
+      //    }
+      //  })
+
+      //  ydoc.scrollData = scrollData
+
+      //  const users = []
+      //  userData.observe( e => {
+      //    //console.log( e.changes )
+      //    //const delta = e.changes.delta[0]
+      //    //if( delta !== undefined ) {
+      //      //const msgs = e.changes.delta[0].insert
+      //      const msgs = e.changes.added
+      //      //if( msgs !== undefined ) {
+      //        //for( let i = msgs.length-1; i>=0; i-- ) {
+      //      for( let msg of msgs ) {
+      //        //const msg = msgs[ i ]
+      //        const __username = msg.content.arr[0].username
+      //        if( users.indexOf( __username ) === -1 && __username !== 'spectator' ) {
+      //          users.push( __username )
+      //          if( useSharedEditor === false ) {
+      //            share.createSplits( __username, users, ydoc, roomname, username )
+      //          }
+      //        }
+      //      }
+      //  })
+      //  environment.showArgHints = false
+      //  environment.showCompletions = false
+        
+      //  menu.remove()
+
+      //  const btn = document.querySelector('#connect')
+      //  btn.innerText = 'disconnect'
+      //  btn.onclick = ()=> {
+      //    provider.destroy()
+      //  } 
+      //  document.querySelector('.CodeMirror-scroll').removeEventListener( 'click', blurfnc )
+
+      //  if( shouldShowChat ) {
+      //    share.createChatWindow()
+      //    share.chatDisplayed = true
+      //  }else{
+      //    Environment.CodeMirror.keyMap.playground['Ctrl-M'] = cm => share.quickmsg( Environment.editor, false, true  )
+      //    share.chatDisplayed = false
+      //  }
+
+      //  __connected = true
+      //  return true
+      //}
 
       const menu = document.createElement('div')
       menu.setAttribute('id', 'connectmenu')
@@ -85987,12 +86140,14 @@ const share = {
       document.getElementById('connectname').select()
 
       document.getElementById('connect-btn').onclick = closeconnect
+      
+      //const blurfnc = ()=> {
+      //  menu.remove()
+      //  document.querySelector('.CodeMirror-scroll').removeEventListener( 'click', blurfnc )
+      //}
+      //document.querySelector('.CodeMirror-scroll').addEventListener( 'click', blurfnc )
 
-      const blurfnc = ()=> {
-        menu.remove()
-        document.querySelector('.CodeMirror-scroll').removeEventListener( 'click', blurfnc )
-      }
-      document.querySelector('.CodeMirror-scroll').addEventListener( 'click', blurfnc )
+
     }
 
   },
@@ -86089,7 +86244,7 @@ const share = {
         const [cm] = Editor( Gibber, '#'+id, cell === username )
         cm.setValue( '' )
 
-        let style = `padding-left:1em; position:absolute; display:block; width:${editorWidth}; height:${editorHeight}; top:${rowCount*editorHeight}; left:${cellCount*editorWidth}; border:0px solid #999; box-sizing:border-box;`
+        let style = `padding-left:1em; position:absolute; display:block; width:${editorWidth}px; height:${editorHeight}px; top:${rowCount*editorHeight}px; left:${cellCount*editorWidth}px; border:0px solid #999; box-sizing:border-box;`
         if( rowCount === 0 && grid.length > 1 ) style += 'border-bottom-width:1px;'
         if( cellCount !== 0 ) style +=  'border-left-width:1px;'
         div.style = style

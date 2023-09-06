@@ -306,7 +306,12 @@ fm = FM({ feedback:.0015, decay:1/2 })
       const query = window.location.search.slice(1)
       const params = query.split('&')
       const code = params[0]
-      if( code.indexOf( 'show=' ) === -1 ) {
+      
+      // join shared server with room / username
+      // automatically
+      if( code.indexOf( 'join' ) === 0 ) {
+        
+      }else if( code.indexOf( 'show=' ) === -1 ) {
         const auto = params[1] !== undefined && params[1].split('=')[1] === 'true' ? true : false    
         const val = atob( code )
         cm.setValue(val)
