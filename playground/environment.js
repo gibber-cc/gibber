@@ -54,6 +54,8 @@ window.onload = function() {
   console.__warn = console.warn
   console.warn = ()=>{}
 
+  const altCanvas = document.querySelector(localStorage.getItem('canvas'))
+
   Gibber.init([
     {
       name:    'Audio',
@@ -63,7 +65,7 @@ window.onload = function() {
     {
       name:    'Graphics',
       plugin:  Graphics,
-      options: { canvas:document.querySelector( '#graphics' ) }
+      options: { canvas:altCanvas || document.querySelector( '#graphics' ) }
     }
   ]).then( ()=> {
     Gibber.Audio.Theory.__loadingPrefix = './resources/tune.json/' 
@@ -553,6 +555,7 @@ const setupRestartBtn = function() {
     const blurfnc = ()=> {
       menu.remove()
       document.querySelector('.CodeMirror-scroll').removeEventListener( 'click', blurfnc )
+odule.exports = share 
     }
     document.querySelector('.CodeMirror-scroll').addEventListener( 'click', blurfnc )
     document.querySelector('#restartcloselink').onclick = blurfnc
@@ -597,7 +600,7 @@ window.__use = function( lib ) {
       if( libs.Hydra !== undefined ) { res( libs.Hydra ); return }
 
       const hydrascript = document.createElement( 'script' )
-      hydrascript.src = 'https://cdn.jsdelivr.net/npm/hydra-synth@1.3.6/dist/hydra-synth.js'
+      hydrascript.src = 'https://cdn.jsdelivr.net/npm/hydra-synth@latest/dist/hydra-synth.js'
 
       hydrascript.onload = function() {
         //msg( 'hydra is ready to texture', 'new module loaded' )
