@@ -84586,6 +84586,7 @@ window.onload = function () {
         delete Environment.sounds[key];
       }
 
+      window.Out = Gibber.Audio.Out;
       if (shouldPrint) Console.log('%cgibber has been cleared.', 'background:#006;color:white;');
     });
 
@@ -104549,7 +104550,7 @@ module.exports = function( variables, scene, preface, geometries, lighting, post
     : getMainVoxels( steps, postprocessing, voxelSize )
 
     const fs_source = `     #version 300 es
-      precision mediump float;
+      precision highp float;
 
       float PI = 3.141592653589793;
       

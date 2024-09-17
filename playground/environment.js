@@ -179,6 +179,9 @@ window.onload = function() {
       for( let key in Environment.sounds ) {
         delete Environment.sounds[ key ]
       }
+      
+      window.Out = Gibber.Audio.Out
+
       if( shouldPrint )
         Console.log( '%cgibber has been cleared.', 'background:#006;color:white;')
     })
