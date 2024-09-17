@@ -96,9 +96,21 @@ module.exports = function( Gibber, Environment ) {
 
     const pos = window.watchers.length
 
+    // ok, we're going to keep track of the min and max values received. We do
+    // this by wrapping the passed callback inside of another function, and intercepting
+    // the value in order to define the min and max before calling the callback with both
+    // the value and the range.
+    const __cb = function( value ) {
+      if( value < __cb.range[0] || __cb.range[0] === null ) __cb.range[0] = value
+      if( value > __cb.range[1] || __cb.range[1] === null ) __cb.range[1] = value
+
+      cb( value, __cb.range )
+    }
+    __cb.range = [null,null]
+
     // is it fine to just leave this as an expanding array and never
     // cull dormant watchers? I think yes, it is fine.
-    window.watchers.push( cb )
+    window.watchers.push( __cb )
 
     // I added .__owner and .__name properties to all sequencable functions
     // in gibber for situations like below. this enables us to just call

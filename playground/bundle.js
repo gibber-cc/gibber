@@ -2140,7 +2140,7 @@ gen.__proto__ = new EE()
 
 module.exports = gen
 
-},{"events":153,"memory-helper":514}],34:[function(require,module,exports){
+},{"events":153,"memory-helper":521}],34:[function(require,module,exports){
 'use strict'
 
 let gen  = require('./gen.js')
@@ -6551,11 +6551,11 @@ const binops = [
 const monops = [
   'abs','acos','acosh','asin','asinh','atan','atan2','atanh','cos','cosh',
   'sin','sinh','tan','tanh', 'floor',
-  'ceil', 'round', 'sign', 'trunc', 'fract', 'param', 'in',
+  'ceil', 'round', 'sign', 'trunc', 'fract', 'param', 'in'
 ]
 
 const noops = [
-  'noise'
+  'noise', 'bang'
 ]
 
 const Gen  = {
@@ -6733,6 +6733,7 @@ const Gen  = {
     train:  { properties:[ '0','1' ],  str:'train' },
     rate:   { properties:[ '0' ], str:'rate' },
     noise:  { properties:[], str:'noise' },
+    bang:   { properties:[], str:'bang' },
     accum:  { properties:[ '0','1' ], str:'accum' },
     counter:{ properties:[ '0','1' ], str:'counter' },
     scale:  { properties: ['0', '1', '2', '3'], str:'scale' },
@@ -7680,6 +7681,17 @@ module.exports = {
     pregain:4,
     description:'a short, clean sounding preset with a minimum of distortion/wavefolding.'
   },
+  'bass': {
+    bias:.15,
+    gain:1,
+    decay:1,
+    pregain:4,
+    postgain:8,
+    filterMult:4,
+    Q:.75,
+    octave:-3,
+    description:'a relatively clean, percussive bass.'
+  },
   
   'perc': {
     bias:.35,
@@ -8095,6 +8107,23 @@ module.exports = {
     filterModel:1,
     filterMode:1
   },
+  arpy2: {
+    attack: audio=> audio.Clock.ms(1),
+    decay:1/32,
+    presetInit: function( audio ) {
+      this.delay = audio.effects.Delay({ delay:audio.Clock.time(1/8), feedback:.5, wetdry:.25 }) 
+      this.fx.push( this.delay )
+    },
+    panVoices:true,
+    gain:.3,
+    octave2:0,
+    octave3:0,
+    cutoff:.35,
+    glide:1,
+    filterModel:1,
+    filterMult:3,
+    Q:.5,
+  },
 
   lead : {
     presetInit : function( audio ) { this.fx.push( audio.effects.Delay({ time:1/6, feedback:.65 }) )  },
@@ -8218,6 +8247,18 @@ module.exports = {
     filterMult:2,
     Q:.5,
     gain:.35
+  },
+
+  bass3: {
+    attack: audio => audio.Clock.ms(1),
+    decay:1/4,
+    gain:.5,
+    glide:10, shape:'exponential',  detune2:-.505, octave:-3,
+    cutoff:.35,
+    filterMult:3.5,
+    waveform:'pwm',
+    pulsewidth:.25,
+    detune3:.005
   },
   
   edgy: {
@@ -9860,7 +9901,7 @@ const Ugen = function( gibberishConstructor, description, Audio, shouldUsePool =
       set(v) {}
     })
 
-    obj.map = (scale,offset) => {
+    obj.map = ( scale=1,offset=0 ) => {
       const f = Audio.analysis.Follow({ input:obj })
       f.multiplier = scale
       f.offset = offset
@@ -14301,7 +14342,7 @@ const Graphics = {
 };
 module.exports = Graphics;
 
-},{"../defs/graphics.js":130,"marching":343}],135:[function(require,module,exports){
+},{"../defs/graphics.js":130,"marching":344}],135:[function(require,module,exports){
 "use strict";
 
 (function (global, factory) {
@@ -83728,9 +83769,21 @@ module.exports = function( Gibber, Environment ) {
 
     const pos = window.watchers.length
 
+    // ok, we're going to keep track of the min and max values received. We do
+    // this by wrapping the passed callback inside of another function, and intercepting
+    // the value in order to define the min and max before calling the callback with both
+    // the value and the range.
+    const __cb = function( value ) {
+      if( value < __cb.range[0] || __cb.range[0] === null ) __cb.range[0] = value
+      if( value > __cb.range[1] || __cb.range[1] === null ) __cb.range[1] = value
+
+      cb( value, __cb.range )
+    }
+    __cb.range = [null,null]
+
     // is it fine to just leave this as an expanding array and never
     // cull dormant watchers? I think yes, it is fine.
-    window.watchers.push( cb )
+    window.watchers.push( __cb )
 
     // I added .__owner and .__name properties to all sequencable functions
     // in gibber for situations like below. this enables us to just call
@@ -86606,7 +86659,7 @@ Object.assign( analyzer, {
 
 module.exports = analyzer
 
-},{"../ugen.js":327}],257:[function(require,module,exports){
+},{"../ugen.js":328}],257:[function(require,module,exports){
 module.exports = function( Gibberish ) {
   const { In, Out, SSD } = require( './singlesampledelay.js'  )( Gibberish )
 
@@ -86847,7 +86900,7 @@ module.exports = function( Gibberish ) {
 
 }
 
-},{"../ugen.js":327,"./analyzer.js":256,"genish.js":40}],259:[function(require,module,exports){
+},{"../ugen.js":328,"./analyzer.js":256,"genish.js":40}],259:[function(require,module,exports){
 const g = require( 'genish.js' ),
       analyzer = require( './analyzer.js' ),
       proxy    = require( '../workletProxy.js' ),
@@ -86964,7 +87017,7 @@ return { In, Out, SSD }
 
 }
 
-},{"../ugen.js":327,"../workletProxy.js":329,"./analyzer.js":256,"genish.js":40}],260:[function(require,module,exports){
+},{"../ugen.js":328,"../workletProxy.js":330,"./analyzer.js":256,"genish.js":40}],260:[function(require,module,exports){
 const ugen = require( '../ugen.js' ),
       g = require( 'genish.js' )
 
@@ -86992,7 +87045,7 @@ module.exports = function( Gibberish ) {
 
 }
 
-},{"../ugen.js":327,"genish.js":40}],261:[function(require,module,exports){
+},{"../ugen.js":328,"genish.js":40}],261:[function(require,module,exports){
 const ugen = require( '../ugen.js' ),
       g = require( 'genish.js' )
 
@@ -87037,7 +87090,7 @@ module.exports = function( Gibberish ) {
   return ADSR
 }
 
-},{"../ugen.js":327,"genish.js":40}],262:[function(require,module,exports){
+},{"../ugen.js":328,"genish.js":40}],262:[function(require,module,exports){
 const g = require( 'genish.js' )
 
 module.exports = function( Gibberish ) {
@@ -87107,7 +87160,7 @@ module.exports = function( Gibberish ) {
 
 }
 
-},{"../ugen.js":327,"genish.js":40}],264:[function(require,module,exports){
+},{"../ugen.js":328,"genish.js":40}],264:[function(require,module,exports){
 arguments[4][28][0].apply(exports,arguments)
 },{"./realm.js":267,"dup":28}],265:[function(require,module,exports){
 "use strict";
@@ -92240,7 +92293,7 @@ module.exports = function( Gibberish ) {
   return factory
 }
 
-},{"./fx/effect.js":283,"./workletProxy.js":329}],269:[function(require,module,exports){
+},{"./fx/effect.js":283,"./workletProxy.js":330}],269:[function(require,module,exports){
 let g = require( 'genish.js' )
  
 // constructor for schroeder allpass filters
@@ -92661,7 +92714,7 @@ Object.assign( filter, {
 
 module.exports = filter
 
-},{"../ugen.js":327}],274:[function(require,module,exports){
+},{"../ugen.js":328}],274:[function(require,module,exports){
 let g = require( 'genish.js' ),
     filter = require( './filter.js' )
 
@@ -93465,7 +93518,7 @@ Object.assign( effect, {
 
 module.exports = effect
 
-},{"../ugen.js":327}],284:[function(require,module,exports){
+},{"../ugen.js":328}],284:[function(require,module,exports){
 module.exports = function( Gibberish ) {
 
   const effects = {
@@ -94277,6 +94330,7 @@ let Gibberish = {
 
     this.memoed = {}
 
+    debugger
     callbackBody = this.processGraph( this.output )
     lastLine = callbackBody[ callbackBody.length - 1]
     callbackBody.unshift( "\t'use strict'" )
@@ -94308,15 +94362,22 @@ let Gibberish = {
         this.callbackUgens.push( v.callback )
     })
 
-    this.callbackNames = this.callbackUgens.map( v => v.ugenName )
 
     callbackBody.push( '\n\treturn ' + lastLine.split( '=' )[0].split( ' ' )[1] )
 
     if( this.debug === true ) console.log( 'callback:\n', callbackBody.join('\n') )
     
+    // XXX added unshift 'input' here
+    this.callbackNames = this.callbackUgens.map( v => v.ugenName )
     this.callbackNames.push( 'mem' )
+    this.callbackNames.push( 'input' )
+    
+    // ... and here
     this.callbackUgens.push( this.memory.heap )
-    this.callback = Function( ...this.callbackNames, callbackBody.join( '\n' ) )//.bind( null, ...this.callbackUgens )
+    // XXX added 0 to represent mic input
+    this.callbackUgens.push( 0 )
+
+    this.callback = Function( ...this.callbackNames, callbackBody.join( '\n' ) )
     this.callback.out = []
 
     if( this.oncallback ) this.oncallback( this.callback )
@@ -94362,7 +94423,6 @@ let Gibberish = {
     if( block === undefined ) block = []
     if( ugen === undefined ) return block
 
-
     let dirtyIdx = Gibberish.dirtyUgens.indexOf( ugen )
 
     let memo = Gibberish.memoed[ ugen.ugenName ]
@@ -94378,18 +94438,26 @@ let Gibberish = {
       }
 
       let line = `\tconst v_${ugen.id} = ` 
-      if( !ugen.isop ) line += `${ugen.ugenName}( `
 
-      // must get array so we can keep track of length for comma insertion
-      const keys = ugen.isop === true || ugen.type === 'bus'  
-        ? Object.keys( ugen.inputs ) 
-        : [...ugen.inputNames ] 
+      // ugens can have custom callback strings so that they
+      // bypass codegen. currently Input is the only one that does this,
+      // it simply accepts the worklet input as its argument.
+      if( ugen.callbackString !== undefined ) {
+        line += ugen.callbackString
+      }else{
+        if( !ugen.isop ) line += `${ugen.ugenName}( `
 
-      line = ugen.isop === true 
-        ? Gibberish.__processBinop( ugen, line, block, keys ) 
-        : Gibberish.__processNonBinop( ugen, line, block, keys )
+        // must get array so we can keep track of length for comma insertion
+        const keys = ugen.isop === true || ugen.type === 'bus'  
+          ? Object.keys( ugen.inputs ) 
+          : [...ugen.inputNames ] 
 
-      line = Gibberish.__addLineEnding( line, ugen, keys )
+        line = ugen.isop === true 
+          ? Gibberish.__processBinop( ugen, line, block, keys ) 
+          : Gibberish.__processNonBinop( ugen, line, block, keys )
+
+        line = Gibberish.__addLineEnding( line, ugen, keys )
+      }
 
       block.push( line )
       
@@ -94576,7 +94644,7 @@ Gibberish.utilities = require( './utilities.js' )( Gibberish )
 
 module.exports = Gibberish
 
-},{"./analysis/analyzer.js":256,"./analysis/analyzers.js":257,"./envelopes/envelopes.js":262,"./factory.js":268,"./filters/filters.js":275,"./fx/effect.js":283,"./fx/effects.js":284,"./instruments/instrument.js":298,"./instruments/instruments.js":299,"./instruments/polyMixin.js":304,"./instruments/polytemplate.js":305,"./misc/binops.js":311,"./misc/bus.js":312,"./misc/bus2.js":313,"./misc/monops.js":314,"./misc/panner.js":315,"./misc/time.js":316,"./oscillators/oscillators.js":319,"./scheduling/scheduler.js":323,"./scheduling/seq2.js":324,"./scheduling/sequencer.js":325,"./scheduling/tidal.js":326,"./ugen.js":327,"./utilities.js":328,"./workletProxy.js":329,"genish.js":40,"memory-helper":330}],292:[function(require,module,exports){
+},{"./analysis/analyzer.js":256,"./analysis/analyzers.js":257,"./envelopes/envelopes.js":262,"./factory.js":268,"./filters/filters.js":275,"./fx/effect.js":283,"./fx/effects.js":284,"./instruments/instrument.js":299,"./instruments/instruments.js":300,"./instruments/polyMixin.js":305,"./instruments/polytemplate.js":306,"./misc/binops.js":312,"./misc/bus.js":313,"./misc/bus2.js":314,"./misc/monops.js":315,"./misc/panner.js":316,"./misc/time.js":317,"./oscillators/oscillators.js":320,"./scheduling/scheduler.js":324,"./scheduling/seq2.js":325,"./scheduling/sequencer.js":326,"./scheduling/tidal.js":327,"./ugen.js":328,"./utilities.js":329,"./workletProxy.js":330,"genish.js":40,"memory-helper":331}],292:[function(require,module,exports){
 const g = require( 'genish.js' ),
       instrument = require( './instrument.js' )
 
@@ -94646,7 +94714,7 @@ module.exports = function( Gibberish ) {
 
 }
 
-},{"./instrument.js":298,"genish.js":40}],293:[function(require,module,exports){
+},{"./instrument.js":299,"genish.js":40}],293:[function(require,module,exports){
 const g = require( 'genish.js' ),
       instrument = require( './instrument.js' ),
       __wavefold   = require( '../fx/wavefolder.dsp.js' )
@@ -94772,7 +94840,7 @@ module.exports = function( Gibberish ) {
 
 }
 
-},{"../fx/wavefolder.dsp.js":290,"./instrument.js":298,"genish.js":40}],294:[function(require,module,exports){
+},{"../fx/wavefolder.dsp.js":290,"./instrument.js":299,"genish.js":40}],294:[function(require,module,exports){
 let g = require( 'genish.js' ),
     instrument = require( './instrument.js' )
 
@@ -94813,7 +94881,7 @@ module.exports = function( Gibberish ) {
   return [ Conga, PolyConga ]
 }
 
-},{"./instrument.js":298,"genish.js":40}],295:[function(require,module,exports){
+},{"./instrument.js":299,"genish.js":40}],295:[function(require,module,exports){
 let g = require( 'genish.js' ),
     instrument = require( './instrument.js' )
 
@@ -94857,7 +94925,7 @@ module.exports = function( Gibberish ) {
 
 }
 
-},{"./instrument.js":298,"genish.js":40}],296:[function(require,module,exports){
+},{"./instrument.js":299,"genish.js":40}],296:[function(require,module,exports){
 const g = require( 'genish.js' ),
       instrument = require( './instrument.js' )
 
@@ -94988,7 +95056,7 @@ module.exports = function( Gibberish ) {
 
 }
 
-},{"./instrument.js":298,"genish.js":40}],297:[function(require,module,exports){
+},{"./instrument.js":299,"genish.js":40}],297:[function(require,module,exports){
 let g = require( 'genish.js' ),
     instrument = require( './instrument.js' )
 
@@ -95042,7 +95110,105 @@ module.exports = function( Gibberish ) {
 
 }
 
-},{"./instrument.js":298,"genish.js":40}],298:[function(require,module,exports){
+},{"./instrument.js":299,"genish.js":40}],298:[function(require,module,exports){
+const ugen    = require( '../ugen.js' )(),
+      __proxy = require( '../workletProxy.js' )
+
+/* we need to:
+ * 1. create the mediastream node and connect it as an input to our worklet
+ * 2. change the callback to (optionally?) include an input
+ * 3. use custom codegen in instrument to access input stream in callback
+ *
+ * look at misc/bus2 for example of how to create custom callback that
+ * doesn't use genish
+ *
+ * could we also use ugen.block to just insert a static line of code?
+ * maybe we could add getter/setter so that it can't be overridden?
+ *
+ * concern: we could just add 'input' as input to our callback function
+ */
+
+const Audio = {
+  __hasInput: false,
+  input:      null,
+  ctx:        null,
+
+  start( Gibberish ) {
+    console.log( 'connecting audio input...' )
+
+    const p = new Promise( resolve => {
+      if( Audio.input === null ) {
+        console.log( 'start?' )
+        navigator.mediaDevices.getUserMedia({ audio:true, video:false })
+          .then( stream => {
+            console.log( 'audio input connected' )
+            Audio.input = Gibberish.ctx.createMediaStreamSource( stream )
+            Audio.__hasInput = true
+
+            resolve( Audio.input )
+          })
+          .catch( err => { 
+            console.log( 'error opening audio input:', err )
+          })
+      }else{
+        resolve( Audio.input )
+      }
+    })
+    return p
+  }
+}
+  
+module.exports = function( Gibberish ) {
+
+  const Input = __props => {
+    const input = Object.create( ugen )
+    const proxy = __proxy( Gibberish )
+    const output = new Float64Array( 1 )
+    const props = Object.assign({}, Input.defaults, __props )
+
+    let phase = 0
+
+    if( Audio.input === null ) Audio.start( Gibberish )
+
+    Object.assign( input, {
+      callback( buffer ) {
+        output[0] = buffer[ phase++ % buffer.length ]
+        return output
+      },
+
+      id : Gibberish.factory.getUID(),
+      dirty : false,
+      type : 'ugen',
+      isStereo: false,
+      __properties__:props
+    })
+
+    input.ugenName = input.callback.ugenName = 'input_' + input.id
+    input.callbackString = input.ugenName + '( input );'
+
+    const out = input.__useProxy__ === true ? proxy( ['Input'], props, input ) : input
+
+    /*
+    let gain = 1
+    Object.defineProperty( out, 'gain', {
+      get() { return gain },
+      set(v){ 
+        gain = v
+        out.inputs[ out.inputs.length - 1 ] = gain
+        Gibberish.dirty( out )
+      }
+    })
+    */
+
+    return out
+  }
+
+  Input.defaults = { gain:1, __useProxy__:true }
+
+  return Input 
+}
+
+},{"../ugen.js":328,"../workletProxy.js":330}],299:[function(require,module,exports){
 const ugen = require('../ugen.js')();
 
 const instrument = Object.create(ugen);
@@ -95090,7 +95256,7 @@ Object.assign(instrument, {
 
 module.exports = instrument
 
-},{"../ugen.js":327}],299:[function(require,module,exports){
+},{"../ugen.js":328}],300:[function(require,module,exports){
 module.exports = function( Gibberish ) {
 
 const instruments = {
@@ -95102,7 +95268,8 @@ const instruments = {
   Tom         : require( './tom.js' )( Gibberish ),
   Clap        : require( './clap.dsp.js' )( Gibberish ),
   Multisampler: require( './multisampler.dsp.js' )( Gibberish ),
-  Soundfont   : require( './soundfont.js' )( Gibberish )
+  Soundfont   : require( './soundfont.js' )( Gibberish ),
+  Input       : require( './input.js' )( Gibberish ),
 }
 
 instruments.Clave.defaults.frequency = 2500
@@ -95128,7 +95295,7 @@ return instruments
 
 }
 
-},{"./clap.dsp.js":292,"./complex.dsp.js":293,"./conga.js":294,"./cowbell.js":295,"./fm.dsp.js":296,"./hat.js":297,"./karplusstrong.js":300,"./kick.js":301,"./monosynth.dsp.js":302,"./multisampler.dsp.js":303,"./sampler.js":306,"./snare.js":307,"./soundfont.js":308,"./synth.dsp.js":309,"./tom.js":310}],300:[function(require,module,exports){
+},{"./clap.dsp.js":292,"./complex.dsp.js":293,"./conga.js":294,"./cowbell.js":295,"./fm.dsp.js":296,"./hat.js":297,"./input.js":298,"./karplusstrong.js":301,"./kick.js":302,"./monosynth.dsp.js":303,"./multisampler.dsp.js":304,"./sampler.js":307,"./snare.js":308,"./soundfont.js":309,"./synth.dsp.js":310,"./tom.js":311}],301:[function(require,module,exports){
 const g = require( 'genish.js' ),
       instrument = require( './instrument.js' )
 
@@ -95220,7 +95387,7 @@ module.exports = function( Gibberish ) {
 
 }
 
-},{"./instrument.js":298,"genish.js":40}],301:[function(require,module,exports){
+},{"./instrument.js":299,"genish.js":40}],302:[function(require,module,exports){
 let g = require( 'genish.js' ),
     instrument = require( './instrument.js' )
 
@@ -95271,7 +95438,7 @@ module.exports = function( Gibberish ) {
 
 }
 
-},{"./instrument.js":298,"genish.js":40}],302:[function(require,module,exports){
+},{"./instrument.js":299,"genish.js":40}],303:[function(require,module,exports){
 const g = require( 'genish.js' ),
       instrument = require( './instrument.js' ),
       feedbackOsc = require( '../oscillators/fmfeedbackosc.js' )
@@ -95395,7 +95562,7 @@ module.exports = function( Gibberish ) {
   return [ Mono, PolyMono ]
 }
 
-},{"../oscillators/fmfeedbackosc.js":318,"./instrument.js":298,"genish.js":40}],303:[function(require,module,exports){
+},{"../oscillators/fmfeedbackosc.js":319,"./instrument.js":299,"genish.js":40}],304:[function(require,module,exports){
 const g = require( 'genish.js' ),
       instrument = require( './instrument.js' )
 
@@ -95722,7 +95889,7 @@ module.exports = function( Gibberish ) {
   return Sampler
 }
 
-},{"./instrument.js":298,"genish.js":40}],304:[function(require,module,exports){
+},{"./instrument.js":299,"genish.js":40}],305:[function(require,module,exports){
 // XXX TOO MANY GLOBAL GIBBERISH VALUES
 
 const Gibberish = require( '../index.js' )
@@ -95810,7 +95977,7 @@ module.exports = {
   triggerNote:null
 }
 
-},{"../index.js":291}],305:[function(require,module,exports){
+},{"../index.js":291}],306:[function(require,module,exports){
 /*
  * This files creates a factory generating polysynth constructors.
  */
@@ -95923,7 +96090,7 @@ module.exports = function( Gibberish ) {
 
 }
 
-},{"../workletProxy.js":329,"genish.js":40}],306:[function(require,module,exports){
+},{"../workletProxy.js":330,"genish.js":40}],307:[function(require,module,exports){
 const g = require( 'genish.js' ),
       instrument = require( './instrument.js' )
 
@@ -96148,7 +96315,7 @@ module.exports = function( Gibberish ) {
 }
 
 
-},{"./instrument.js":298,"genish.js":40}],307:[function(require,module,exports){
+},{"./instrument.js":299,"genish.js":40}],308:[function(require,module,exports){
 const g = require( 'genish.js' ),
       instrument = require( './instrument.js' )
   
@@ -96199,7 +96366,7 @@ module.exports = function( Gibberish ) {
 
 }
 
-},{"./instrument.js":298,"genish.js":40}],308:[function(require,module,exports){
+},{"./instrument.js":299,"genish.js":40}],309:[function(require,module,exports){
 /*fetch( '0000_Aspirin_sf2_file.json' )
 .then( res => res.json() )
 .then( json => {
@@ -96865,7 +97032,7 @@ module.exports = function( Gibberish ) {
   return Soundfont
 }
 
-},{"./instrument.js":298,"genish.js":40}],309:[function(require,module,exports){
+},{"./instrument.js":299,"genish.js":40}],310:[function(require,module,exports){
 const g = require( 'genish.js' ),
       instrument = require( './instrument.js' )
 
@@ -96985,7 +97152,7 @@ module.exports = function( Gibberish ) {
 
 }
 
-},{"./instrument.js":298,"genish.js":40}],310:[function(require,module,exports){
+},{"./instrument.js":299,"genish.js":40}],311:[function(require,module,exports){
 const g = require( 'genish.js' ),
       instrument = require( './instrument.js' )
 
@@ -97036,7 +97203,7 @@ module.exports = function( Gibberish ) {
   return Tom
 }
 
-},{"./instrument.js":298,"genish.js":40}],311:[function(require,module,exports){
+},{"./instrument.js":299,"genish.js":40}],312:[function(require,module,exports){
 const ugenproto = require( '../ugen.js' )(),
      __proxy     = require( '../workletProxy.js' ),
      g = require( 'genish.js' )
@@ -97152,7 +97319,7 @@ module.exports = function( Gibberish ) {
   return Binops
 }
 
-},{"../ugen.js":327,"../workletProxy.js":329,"genish.js":40}],312:[function(require,module,exports){
+},{"../ugen.js":328,"../workletProxy.js":330,"genish.js":40}],313:[function(require,module,exports){
 let g = require( 'genish.js' ),
     ugen = require( '../ugen.js' )(),
     __proxy= require( '../workletProxy.js' )
@@ -97243,7 +97410,7 @@ module.exports = function( Gibberish ) {
 }
 
 
-},{"../ugen.js":327,"../workletProxy.js":329,"genish.js":40}],313:[function(require,module,exports){
+},{"../ugen.js":328,"../workletProxy.js":330,"genish.js":40}],314:[function(require,module,exports){
 const g = require( 'genish.js' ),
       ugen = require( '../ugen.js' )(),
       __proxy = require( '../workletProxy.js' )
@@ -97259,6 +97426,7 @@ module.exports = function( Gibberish ) {
     create( __props ) {
 
       if( bufferL === undefined ) {
+        // XXX I guess this is to setup wavetables if they're not created?
         const p = g.pan()
         
         // copy memory... otherwise the wavetables don't have memory indices.
@@ -97382,7 +97550,7 @@ module.exports = function( Gibberish ) {
 
 }
 
-},{"../ugen.js":327,"../workletProxy.js":329,"genish.js":40}],314:[function(require,module,exports){
+},{"../ugen.js":328,"../workletProxy.js":330,"genish.js":40}],315:[function(require,module,exports){
 const  g    = require( 'genish.js'  ),
        ugen = require( '../ugen.js' )()
 
@@ -97444,7 +97612,7 @@ module.exports = function( Gibberish ) {
   return Monops
 }
 
-},{"../ugen.js":327,"genish.js":40}],315:[function(require,module,exports){
+},{"../ugen.js":328,"genish.js":40}],316:[function(require,module,exports){
 const g = require( 'genish.js' )
 
 const ugen = require( '../ugen.js' )()
@@ -97481,7 +97649,7 @@ return Panner
 
 }
 
-},{"../ugen.js":327,"genish.js":40}],316:[function(require,module,exports){
+},{"../ugen.js":328,"genish.js":40}],317:[function(require,module,exports){
 module.exports = function( Gibberish ) {
 
   const Time = {
@@ -97510,7 +97678,7 @@ module.exports = function( Gibberish ) {
   return Time
 }
 
-},{}],317:[function(require,module,exports){
+},{}],318:[function(require,module,exports){
 const genish = require( 'genish.js' ),
       ssd = genish.history,
       noise = genish.noise
@@ -97531,7 +97699,7 @@ module.exports = function() {
   return out
 }
 
-},{"genish.js":40}],318:[function(require,module,exports){
+},{"genish.js":40}],319:[function(require,module,exports){
 let g = require( 'genish.js' )
 
 let feedbackOsc = function( frequency, filter, pulsewidth=.5, argumentProps ) {
@@ -97607,7 +97775,7 @@ let feedbackOsc = function( frequency, filter, pulsewidth=.5, argumentProps ) {
 
 module.exports = feedbackOsc
 
-},{"genish.js":40}],319:[function(require,module,exports){
+},{"genish.js":40}],320:[function(require,module,exports){
 const g = require( 'genish.js' ),
       ugen = require( '../ugen.js' )(),
       feedbackOsc = require( './fmfeedbackosc.js' ),
@@ -97786,7 +97954,7 @@ module.exports = function( Gibberish ) {
 
 }
 
-},{"../ugen.js":327,"./brownnoise.dsp.js":317,"./fmfeedbackosc.js":318,"./pinknoise.dsp.js":320,"./polyblep.dsp.js":321,"./wavetable.js":322,"genish.js":40}],320:[function(require,module,exports){
+},{"../ugen.js":328,"./brownnoise.dsp.js":318,"./fmfeedbackosc.js":319,"./pinknoise.dsp.js":321,"./polyblep.dsp.js":322,"./wavetable.js":323,"genish.js":40}],321:[function(require,module,exports){
 const genish = require( 'genish.js' ),
       ssd = genish.history,
       data = genish.data,
@@ -97813,7 +97981,7 @@ module.exports = function() {
 
 }
 
-},{"genish.js":40}],321:[function(require,module,exports){
+},{"genish.js":40}],322:[function(require,module,exports){
 const genish = require( 'genish.js' )
 const g = genish
 
@@ -97886,7 +98054,7 @@ const polyBlep = function( __frequency, argumentProps ) {
 
 module.exports = polyBlep 
 
-},{"genish.js":40}],322:[function(require,module,exports){
+},{"genish.js":40}],323:[function(require,module,exports){
 let g = require( 'genish.js' ),
     ugen = require( '../ugen.js' )()
 
@@ -97920,7 +98088,7 @@ module.exports = function( Gibberish ) {
   return Wavetable
 }
 
-},{"../ugen.js":327,"genish.js":40}],323:[function(require,module,exports){
+},{"../ugen.js":328,"genish.js":40}],324:[function(require,module,exports){
 const Queue = require( '../external/priorityqueue.js' )
 
 let Gibberish = null
@@ -98011,7 +98179,7 @@ Object.defineProperty( Scheduler, 'shouldSync', {
 
 module.exports = Scheduler
 
-},{"../external/priorityqueue.js":266}],324:[function(require,module,exports){
+},{"../external/priorityqueue.js":266}],325:[function(require,module,exports){
 const g = require( 'genish.js' ),
       __proxy = require( '../workletProxy.js' ),
       ugen = require( '../ugen.js' )()
@@ -98225,7 +98393,7 @@ module.exports = function( Gibberish ) {
 }
 
 
-},{"../ugen.js":327,"../workletProxy.js":329,"genish.js":40}],325:[function(require,module,exports){
+},{"../ugen.js":328,"../workletProxy.js":330,"genish.js":40}],326:[function(require,module,exports){
 (function (global){(function (){
 const __proxy = require( '../workletProxy.js' )
 
@@ -98477,7 +98645,7 @@ return Sequencer
 }
 
 }).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"../workletProxy.js":329}],326:[function(require,module,exports){
+},{"../workletProxy.js":330}],327:[function(require,module,exports){
 const __proxy = require( '../workletProxy.js' ),
       mini    = require( '../external/mini.js' )
 
@@ -98690,7 +98858,7 @@ module.exports = function( Gibberish ) {
 };
 
 
-},{"../external/mini.js":265,"../workletProxy.js":329}],327:[function(require,module,exports){
+},{"../external/mini.js":265,"../workletProxy.js":330}],328:[function(require,module,exports){
 let Gibberish = null
 
 const __ugen = function( __Gibberish ) {
@@ -98837,7 +99005,7 @@ const __ugen = function( __Gibberish ) {
 
 module.exports = __ugen
 
-},{}],328:[function(require,module,exports){
+},{}],329:[function(require,module,exports){
 const genish = require( 'genish.js' ),
       AWPF = require( './external/audioworklet-polyfill.js' )
 
@@ -99160,7 +99328,7 @@ return utilities
 
 }
 
-},{"./external/audioworklet-polyfill.js":264,"genish.js":40}],329:[function(require,module,exports){
+},{"./external/audioworklet-polyfill.js":264,"genish.js":40}],330:[function(require,module,exports){
 const serialize = require('serialize-javascript')
 
 module.exports = function( Gibberish ) {
@@ -99319,7 +99487,7 @@ return __proxy
 
 }
 
-},{"serialize-javascript":331}],330:[function(require,module,exports){
+},{"serialize-javascript":332}],331:[function(require,module,exports){
 'use strict';
 
 var MemoryHelper = {
@@ -99412,9 +99580,9 @@ var MemoryHelper = {
 
 module.exports = MemoryHelper;
 
-},{}],331:[function(require,module,exports){
+},{}],332:[function(require,module,exports){
 arguments[4][120][0].apply(exports,arguments)
-},{"dup":120}],332:[function(require,module,exports){
+},{"dup":120}],333:[function(require,module,exports){
 const SceneNode = require( './sceneNode.js' )
 const { param_wrap, MaterialID } = require( './utils.js' )
 const { Var, float_var_gen, vec2_var_gen, vec3_var_gen, vec4_var_gen, int_var_gen } = require( './var.js' )
@@ -99594,7 +99762,7 @@ Alterations.Halve.RIGHT = 2
 
 module.exports = Alterations
 
-},{"./sceneNode.js":354,"./utils.js":359,"./var.js":360}],333:[function(require,module,exports){
+},{"./sceneNode.js":356,"./utils.js":361,"./var.js":362}],334:[function(require,module,exports){
 const Audio = {
   __hasInput: false,
   ctx: null,
@@ -99621,7 +99789,6 @@ const Audio = {
     console.log( 'connecting audio input...' )
     
     const p = new Promise( resolve => {
-      console.log( 'start?' )
       navigator.mediaDevices.getUserMedia({ audio:true, video:false })
         .then( stream => {
           console.log( 'audio input connected' )
@@ -99709,7 +99876,7 @@ const Audio = {
 
 module.exports = Audio
 
-},{}],334:[function(require,module,exports){
+},{}],335:[function(require,module,exports){
 const SceneNode = require( './sceneNode.js' ),
       { param_wrap, MaterialID } = require( './utils.js' ),
       { Var, float_var_gen, vec2_var_gen, vec3_var_gen, vec4_var_gen } = require( './var.js' )
@@ -99774,7 +99941,7 @@ const BG = function( Scene, SDF ) {
 
 module.exports = BG 
 
-},{"./sceneNode.js":354,"./utils.js":359,"./var.js":360,"./vec.js":361}],335:[function(require,module,exports){
+},{"./sceneNode.js":356,"./utils.js":361,"./var.js":362,"./vec.js":363}],336:[function(require,module,exports){
 const vec3 = require('gl-vec3')
 const mat4 = require('gl-mat4')
 
@@ -100014,7 +100181,7 @@ const Camera = {
 
 module.exports = Camera
 
-},{"gl-mat4":441,"gl-vec3":475}],336:[function(require,module,exports){
+},{"gl-mat4":443,"gl-vec3":477}],337:[function(require,module,exports){
 const SceneNode = require( './sceneNode.js' )
 const { param_wrap, MaterialID } = require( './utils.js' )
 const { Var, float_var_gen, vec2_var_gen, vec3_var_gen, vec4_var_gen, int_var_gen, VarAlloc } = require( './var.js' )
@@ -100075,8 +100242,9 @@ const ops = {
     return { preface, out:sdf.out }
   },
 
-  Twist( __name ) {
+  __Twist( __name ) {
     let name = __name === undefined ? 'p' : __name
+
     const sdf = this.sdf.emit( 'q'+this.id );
 
     let preface=`        float c${this.id} = cos( ${this.amount.emit()}.x * ${name}.y );
@@ -100090,6 +100258,34 @@ const ops = {
 
     return { preface, out:sdf.out }
   },
+
+  Twist( __name ) {
+    let name = __name === undefined ? 'p' : __name
+    this.transform.invert()
+
+    const bumpString =  `        vec4 twist${this.id} = ${name} * ${this.transform.emit()};\n`
+    const bumpString2 = `        vec4 twist2${this.id} = (twist${this.id} * ${this.sdf.transform.emit()});\n`
+    //const sdf = this.sdf.emit( 'q'+this.id );
+
+    //let preface=`        float c${this.id} = cos( ${this.amount.emit()}.x * ${name}.y );
+    //    float s${this.id} = sin( ${this.amount.emit()}.x * ${name}.y );
+    //    mat2  m${this.id} = mat2( c${this.id},-s${this.id},s${this.id},c${this.id} );
+    //    vec4  q${this.id} = vec4( m${this.id} * ${name}.xz, ${name}.y, 1. );\n`
+  
+    name = `twist2${this.id}`
+    let preface=`        float c${this.id} = cos( ${this.amount.emit()}.x * ${name}.y );
+        float s${this.id} = sin( ${this.amount.emit()}.x * ${name}.y );
+        mat2  m${this.id} = mat2( c${this.id},-s${this.id},s${this.id},c${this.id} );
+        vec4  q${this.id} = vec4( m${this.id} * ${name}.xz, ${name}.y, 1. );\n`
+
+    const sdf = this.sdf.emit( `q${this.id}` );
+    if( typeof sdf.preface === 'string' ) {
+      preface += sdf.preface
+    }
+
+    return { preface:bumpString + bumpString2 + preface, out:sdf.out }
+  },
+
   __Bump( __name ) {
     let name = __name === undefined ? 'p' : __name
 
@@ -100134,7 +100330,7 @@ const ops = {
     Marching.textures.addTexture( this.amount.value )
 
     let preface=`  vec3 tex${this.id} = getTexture( ${this.amount.value.id}, ${pointString}) * ${this.size.emit()};
-        ${sdf.out}.x = (tex${this.id}.x + tex${this.id}.y + tex${this.id}.z)/3. + ${sdf.out}.x;\n`
+        ${sdf.out}.x += (tex${this.id}.x + tex${this.id}.y + tex${this.id}.z)/3.;\n` 
 
     if( typeof sdf.preface === 'string' ) {
       preface = sdf.preface + preface
@@ -100262,7 +100458,7 @@ DistanceOps.Halve.RIGHT = 2
 module.exports = DistanceOps
 
 
-},{"./sceneNode.js":354,"./transform.js":358,"./utils.js":359,"./var.js":360}],337:[function(require,module,exports){
+},{"./sceneNode.js":356,"./transform.js":360,"./utils.js":361,"./var.js":362}],338:[function(require,module,exports){
 const SceneNode = require( './sceneNode.js' )
 const { param_wrap, MaterialID } = require( './utils.js' )
 const { Var, float_var_gen, vec2_var_gen, vec3_var_gen, vec4_var_gen, int_var_gen, VarAlloc } = require( './var.js' )
@@ -100498,6 +100694,7 @@ for( let name in ops ) {
   }
 
   DistanceOps[ name ].prototype.emit = function ( pname='p', transform = null ){
+    this.__dirty()
     const isNotOneop = oneops.indexOf( name ) === -1 
     if( this.__bumpObj !== undefined && this.renderingBump === false) {
       this.renderingBump = true
@@ -100588,7 +100785,7 @@ for( let name in ops ) {
 
 module.exports = DistanceOps
 
-},{"./distanceOperationsGLSL.js":338,"./sceneNode.js":354,"./transform.js":358,"./utils.js":359,"./var.js":360}],338:[function(require,module,exports){
+},{"./distanceOperationsGLSL.js":339,"./sceneNode.js":356,"./transform.js":360,"./utils.js":361,"./var.js":362}],339:[function(require,module,exports){
 module.exports = {
   Union:{
     float:`
@@ -100947,7 +101144,7 @@ module.exports = {
       `
 }
 
-},{}],339:[function(require,module,exports){
+},{}],340:[function(require,module,exports){
 const { Var, float_var_gen, vec2_var_gen, vec3_var_gen, vec4_var_gen, int_var_gen, VarAlloc } = require( './var.js' )
 const SceneNode = require( './sceneNode.js' )
 const { param_wrap, MaterialID } = require( './utils.js' )
@@ -100967,6 +101164,7 @@ const descriptions = {
     emit( name='p' ) {
       const pId = this.getID()
       const pName = 'p' + pId
+      this.__dirty()
 
       let preface =
         `        vec4 ${pName}_xyzw = opElongate( ${name}, ${this.distance.emit()} );\n
@@ -100990,6 +101188,7 @@ const descriptions = {
       const pId = VarAlloc.alloc()
       const pName = 'p' + pId
 
+      this.__dirty()
       if( transform !== null ) this.transform.apply( transform, false )
       this.transform.invert()
 
@@ -100997,7 +101196,7 @@ const descriptions = {
 
       let preface =`
           vec4 ${pName} = vec4( polarRepeat( ${pointString}, ${this.__target.count.emit() } ) * ${this.transform.emit_scale()}, 1. ); 
-          ${pName} -= vec4(${this.__target.distance.emit()}.x,0.,0.,0.);\n`
+          ${pName} -= vec4(${this.__target.distance.emit()}.x * ${this.transform.emit_scale()},0.,0.,0.);\n`
 
       const sdf = this.sdf.emit( pName )
 
@@ -101006,14 +101205,46 @@ const descriptions = {
       return { out:sdf.out, preface }
     }
   },
-  Mirror: {
-    parameters: [ { name:'distance', type:'vec3', default:Vec3(0) },{ name:'active', type:'float', default:1. }  ],
+  SmoothMirror: {
+    parameters: [
+      { name:'smooth', type:'float', default:.03 },
+      { name:'active', type:'float', default:1. } 
+    ],
     extra:[{ name:'dims', type:'local', default:'xyz' }],
 
     emit( name='p', transform=null, notused=null, scale=null ) {
       const pId = VarAlloc.alloc()
       const pName = 'p' + pId
 
+      this.__dirty()
+      if( transform !== null ) {
+        this.transform.apply( transform, false )
+      }
+      this.transform.invert()
+     
+      const pointString =  `( ${name} * ${this.transform.emit()} ).xyz`,
+            s = scale === null ? this.transform.emit_scale() : `${this.transform.emit_scale()} * ${scale}`
+//return sqrt(x * x + k); 
+      let preface =`
+        vec4 ${pName} = vec4( ( ${pointString} ) , 1.);\n
+        ${pName}.${this.dims} = sqrt( ${pName}.${this.dims} * ${pName}.${this.dims} + ${this.smooth.emit()} );\n`
+
+      const sdf = this.sdf.emit( pName, null, null, s )
+
+      if( typeof sdf.preface === 'string' ) preface += sdf.preface 
+
+      return { out:sdf.out, preface }
+    }
+  },
+  Mirror: {
+    parameters: [{ name:'active', type:'float', default:1. }  ],
+    extra:[{ name:'dims', type:'local', default:'xyz' }],
+
+    emit( name='p', transform=null, notused=null, scale=null ) {
+      const pId = VarAlloc.alloc()
+      const pName = 'p' + pId
+
+      this.__dirty()
       if( transform !== null ) {
         this.transform.apply( transform, false )
       }
@@ -101034,7 +101265,6 @@ const descriptions = {
     }
   },
 
-
   //let preface = `         vec3 ${pName} = ${name} / ${this.amount.emit()};\n`
 
   //let sdf = this.sdf.emit( pName )
@@ -101043,14 +101273,91 @@ const descriptions = {
   //sdf.preface += `      ${out}.x = ${out}.x * ${this.amount.emit()};\n`
 
   //if( typeof sdf.preface === 'string' ) preface += sdf.preface
+
+  RepeatX: {
+    parameters: [ { name:'distance', type:'vec3', default:Vec3(0) },  { name:'active', type:'float', default:1. }],
+    emit( name='p', transform=null ) {
+      const pId = VarAlloc.alloc()
+      const pName = 'p' + pId
+
+      this.__dirty()
+      if( transform !== null ) this.transform.apply( transform, false )
+      this.transform.invert()
+     
+      const pointString =  `( ${name} * ${this.transform.emit()} ).xyz`
+      const dist = this.__target.distance.emit() + '.x'
+
+      let preface =`
+        vec3 pp = ${pointString};
+        float x = mod( pp.x, ${dist} ) - .5 * ${dist};
+        vec4 ${pName} = vec4( vec3(x, pp.y, pp.z) * ${this.transform.emit_scale()}, 1.);\n`
+
+      const sdf = this.sdf.emit( pName )
+
+      if( typeof sdf.preface === 'string' ) preface += sdf.preface 
+
+      return { out:sdf.out, preface }
+    }
+  },
+  RepeatY: {
+    parameters: [ { name:'distance', type:'vec3', default:Vec3(0) },  { name:'active', type:'float', default:1. }],
+    emit( name='p', transform=null ) {
+      const pId = VarAlloc.alloc()
+      const pName = 'p' + pId
+
+      this.__dirty()
+      if( transform !== null ) this.transform.apply( transform, false )
+      this.transform.invert()
+     
+      const pointString =  `( ${name} * ${this.transform.emit()} ).xyz`
+      const dist = this.__target.distance.emit() + '.y'
+
+      let preface =`
+        vec3 pp${pId} = ${pointString};
+        float y = mod( pp${pId}.y, ${dist} ) - .5 * ${dist};
+        vec4 ${pName} = vec4( vec3(pp${pId}.x, y, pp${pId}.z) * ${this.transform.emit_scale()}, 1.);\n`
+
+      const sdf = this.sdf.emit( pName )
+
+      if( typeof sdf.preface === 'string' ) preface += sdf.preface 
+
+      return { out:sdf.out, preface }
+    }
+  },
+  RepeatZ: {
+    parameters: [ { name:'distance', type:'vec3', default:Vec3(0) },  { name:'active', type:'float', default:1. }],
+    emit( name='p', transform=null ) {
+      const pId = VarAlloc.alloc()
+      const pName = 'p' + pId
+
+      this.__dirty()
+      if( transform !== null ) this.transform.apply( transform, false )
+      this.transform.invert()
+     
+      const pointString =  `( ${name} * ${this.transform.emit()} ).xyz`
+      const dist = this.__target.distance.emit() + '.z'
+
+      let preface =`
+        vec3 pp${pId} = ${pointString};
+        float z = mod( pp${pId}.z, ${dist} ) - .5 * ${dist};
+        vec4 ${pName} = vec4( vec3(pp${pId}.x, pp${pId}.y, z) * ${this.transform.emit_scale()}, 1.);\n`
+
+      const sdf = this.sdf.emit( pName )
+
+      if( typeof sdf.preface === 'string' ) preface += sdf.preface 
+
+      return { out:sdf.out, preface }
+    }
+  },
+ 
   Repetition: {
     parameters: [ { name:'distance', type:'vec3', default:Vec3(0) },  { name:'active', type:'float', default:1. }],
     emit( name='p', transform=null ) {
       const pId = VarAlloc.alloc()
       const pName = 'p' + pId
 
+      this.__dirty()
       if( transform !== null ) this.transform.apply( transform, false )
-      
       this.transform.invert()
      
       const pointString =  `( ${name} * ${this.transform.emit()} ).xyz`;
@@ -101073,6 +101380,7 @@ const descriptions = {
       const pId = VarAlloc.alloc()
       const pName = 'p' + pId
 
+      this.__dirty()
       if( transform !== null ) this.transform.apply( transform, false )
       
       this.transform.invert()
@@ -101106,6 +101414,7 @@ const descriptions = {
       const pId = VarAlloc.alloc()
       const pName = 'p' + pId
 
+      this.__dirty()
       if( transform !== null ) this.transform.apply( transform, false )
       this.transform.invert()
 
@@ -101156,6 +101465,16 @@ const getDomainOps = function( SDF ) {
 
         let arg = args[ count ]
         let __var
+        
+        if( typeof args[count] === 'function' ) {
+          const func = args[ count ]
+          Marching.postrendercallbacks.push( t => {
+            op[ prop.name ] = func( t ) 
+          })
+
+          // set initial value with t=0
+          args[ count ] = arg = func( 0 )
+        }
 
         switch( prop.type ) {
           case 'vec2':
@@ -101269,7 +101588,7 @@ const getDomainOps = function( SDF ) {
       }
       op.__desc = opDesc
 
-      if( key !== 'Mirror' ) op.sdf.repeat = op
+      if( key !== 'Mirror' && key !== 'SmoothMirror' ) op.sdf.repeat = op
       return op
     }
 
@@ -101327,7 +101646,7 @@ const getDomainOps = function( SDF ) {
 
 module.exports = getDomainOps
 
-},{"./sceneNode.js":354,"./transform.js":358,"./utils.js":359,"./var.js":360,"./vec.js":361}],340:[function(require,module,exports){
+},{"./sceneNode.js":356,"./transform.js":360,"./utils.js":361,"./var.js":362,"./vec.js":363}],341:[function(require,module,exports){
 // matrix.js - taken from https://github.com/evanw/lightgl.js/
 
 // Represents a 4x4 matrix stored in row-major order that uses Float32Arrays
@@ -101724,7 +102043,7 @@ Matrix.lookAt = function(ex, ey, ez, cx, cy, cz, ux, uy, uz, result) {
 
 module.exports = Matrix
 
-},{}],341:[function(require,module,exports){
+},{}],342:[function(require,module,exports){
 const emit_float = function( a ) {
 	if (a % 1 === 0)
 		return a.toFixed( 1 )
@@ -101747,7 +102066,7 @@ const Float = function( x=0 ) {
 
 module.exports = Float
 
-},{}],342:[function(require,module,exports){
+},{}],343:[function(require,module,exports){
 const SceneNode = require( './sceneNode.js' ),
       { param_wrap, MaterialID } = require( './utils.js' ),
       { Var, float_var_gen, vec2_var_gen, vec3_var_gen, vec4_var_gen, int_var_gen, VarAlloc } = require( './var.js' )
@@ -101823,7 +102142,7 @@ const Fogger = function( Scene, SDF ) {
 
 module.exports = Fogger
 
-},{"./sceneNode.js":354,"./utils.js":359,"./var.js":360,"./vec.js":361}],343:[function(require,module,exports){
+},{"./sceneNode.js":356,"./utils.js":361,"./var.js":362,"./vec.js":363}],344:[function(require,module,exports){
 'use strict'
 
 const Marching = require( './main.js' )
@@ -101838,7 +102157,7 @@ window.Marching = Marching
 
 module.exports = Marching
 
-},{"./main.js":346}],344:[function(require,module,exports){
+},{"./main.js":347}],345:[function(require,module,exports){
 const emit_int = function( a ) {
 	if( a % 1 !== 0 )
 		return Math.round( a )
@@ -101861,7 +102180,7 @@ const Int = function( x=0 ) {
 
 module.exports = Int
 
-},{}],345:[function(require,module,exports){
+},{}],346:[function(require,module,exports){
 const SceneNode = require( './sceneNode.js' ),
       { param_wrap, MaterialID } = require( './utils.js' ),
       { Var, float_var_gen, vec2_var_gen, vec3_var_gen, vec4_var_gen } = require( './var.js' ),
@@ -101953,6 +102272,10 @@ const Lights = function( SDF ) {
       let str = `Light lights[${this.lights.length}] = Light[${this.lights.length}](`
 
       for( let light of this.lights ) {
+        light.color.dirty = true
+        light.__attenuation.dirty = true
+        light.pos.dirty = true
+
         str += `\n        Light( ${light.pos.emit()}, ${light.color.emit()}, ${light.__attenuation.emit()}),` 
       }
       
@@ -102089,7 +102412,7 @@ const Lights = function( SDF ) {
       global() {
         const shadow = SDF.__scene.__shadow
 
-        const str = glsl(["#define GLSLIFY 1\n\n\n        vec3 global( vec3 pos, vec3 nor, vec3 ro, vec3 rd, Material mat, Light lights[MAX_LIGHTS], vec3 textureColor ) {\n          Light light = lights[ 0 ];\n          vec3  ref = reflect( rd, nor ); // reflection angle\n          float occ = ao( pos, nor );\n          vec3  lig = normalize( light.position ); // light position\n          float amb = clamp( 0.5 + 0.5 * nor.y, 0.0, 1.0 );\n          float dif = clamp( dot( nor, lig ), 0.0, 1.0 );\n\n          // simulated backlight\n          float bac = clamp( dot( nor, normalize( vec3( -lig.x, 0.0 , -lig.z ))), 0.0, 1.0 ) * clamp( 1.0-pos.y, 0.0 ,1.0 );\n\n          // simulated skydome light\n          float dom = smoothstep( -0.1, 0.1, ref.y );\n          float fre = pow( clamp( 1.0 + dot( nor,rd ),0.0,1.0 ), 3.0);\n          float spe = pow( clamp( dot( ref, lig ), 0.0, 1.0 ), 8.0 );\n\n          dif *= softshadow( pos, lig, 0.02, 2.5, "," );\n          dom *= softshadow( pos, ref, 0.02, 2.5, "," );\n\n          vec3 brdf = textureColor;//vec3( 0.0 );\n          brdf += 1.20 * dif * vec3( 1.00,0.90,0.60 ) * mat.diffuse * light.color;\n          brdf += 2.20 * spe * vec3( 1.00,0.90,0.60 ) * dif * mat.specular * light.color;\n          brdf += 0.30 * amb * vec3( 0.50,0.70,1.00 ) * occ * mat.ambient * light.color;\n          brdf += 0.40 * dom * vec3( 0.50,0.70,1.00 );\n          brdf += 0.70 * bac * vec3( 0.25 );\n          brdf += 0.40 * (fre * light.color);\n\n          return brdf;\n        }\n        ",""],shadow.toFixed(1),shadow.toFixed(1))
+        const str = glsl(["#define GLSLIFY 1\n\n\n        vec3 global( vec3 pos, vec3 nor, vec3 ro, vec3 rd, Material mat, Light lights[MAX_LIGHTS], vec3 textureColor ) {\n          Light light = lights[ 0 ];\n          vec3  ref = reflect( rd, nor ); // reflection angle\n          float occ = ao( pos, nor );\n          vec3  lig = normalize( light.position ); // light position\n          float amb = clamp( 0.5 + 0.5 * nor.y, 0.0, 1.0 );\n          float dif = clamp( dot( nor, lig ), 0.0, 1.0 );\n\n          // simulated backlight\n          float bac = clamp( dot( nor, normalize( vec3( -lig.x, 0.0 , -lig.z ))), 0.0, 1.0 ) * clamp( 1.0-pos.y, 0.0 ,1.0 );\n\n          // simulated skydome light\n          float dom = smoothstep( -0.1, 0.1, ref.y );\n          float fre = pow( clamp( 1.0 + dot( nor,rd ),0.0,1.0 ), 3.0);\n          float spe = pow( clamp( dot( ref, lig ), 0.0, 1.0 ), 8.0 );\n\n          dif *= softshadow( pos, lig, 0.02, 2.5, "," );\n          dom *= softshadow( pos, ref, 0.02, 2.5, "," );\n\n          vec3 brdf = textureColor;//vec3( 0.0 );\n          brdf += 1.20 * dif * vec3( 1.00,0.90,0.60 ) * mat.diffuse * light.color;\n          brdf += 2.20 * spe * vec3( 1.00,0.90,0.60 ) * dif * mat.specular * light.color;\n          brdf += 0.30 * amb * vec3( 0.50,0.70,1.00 ) * occ * mat.ambient * light.color;\n          brdf += 0.40 * dom * vec3( 0.50,0.70,1.00 );\n          brdf += 0.70 * bac * vec3( 0.25 );\n          brdf += 0.40 * (fre * light.color);\n\n          return brdf;\n        }\n        ",""],shadow,shadow)
 
         return str
       },
@@ -102098,10 +102421,10 @@ const Lights = function( SDF ) {
         const shadow = SDF.__scene.__shadow
 
         const __shadow = shadow > 0
-          ? `diffuseCoefficient *= softshadow( surfacePosition, normalize( light.position ), 0.02, 2.5, ${shadow.toFixed(1)} );` 
+          ? `diffuseCoefficient *= softshadow( surfacePosition, normalize( light.position ), 0.02, 2.5, ${shadow} );` 
           : ''
 
-        const str = glsl(["#define GLSLIFY 1\n  \n        \n        vec3 directional( vec3 surfacePosition, vec3 normal, vec3 rayOrigin, vec3 rayDirection, Material mat, Light lights[MAX_LIGHTS], vec3 textureColor ) {\n          vec3  outputColor   = textureColor;//vec3( 0. );\n   \n          // applies to all lights\n          float occlusion = ao( surfacePosition, normal );\n\n          for( int i = 0; i < 20000; i++ ) {\n            if( i >= MAX_LIGHTS ) break;\n\n            Light light = lights[ i ];\n\n            vec3 surfaceToLightDirection = normalize( light.position - surfacePosition );\n            \n            // get similarity between normal and direction to light\n            float diffuseCoefficient = dot( normal, surfaceToLightDirection ); \n\n            // get reflection angle for light striking surface\n            vec3 angleOfReflection = reflect( -surfaceToLightDirection, normal );\n\n            // see if reflected light travels to camera and generate coefficient accordingly\n            float specularAngle = clamp( dot( angleOfReflection, -rayDirection ), 0., 1. );\n            float specularCoefficient = pow( specularAngle, mat.shininess );\n\n            // lights should have an attenuation factor\n            float attenuation = 1. / ( light.attenuation * pow( length( light.position - surfacePosition ), 2. ) ); \n\n            // bias, scale, power\n            float fresnel = mat.fresnel.x + mat.fresnel.y * pow( 1.0 + dot( rayDirection, normal ), mat.fresnel.z ); \n\n            ","\n\n            vec3 color = vec3( 0. );\n            color += 1.2 * diffuseCoefficient * mat.diffuse * light.color;\n            color += 2.2 * specularCoefficient * mat.specular * light.color;\n            color += 0.3 * (mat.ambient * light.color) * occlusion;\n            color += (fresnel * light.color);\n\n            // texture\n            //color *= textureColor.xyz;\n\n            // gamma correction must occur before light attenuation\n            // which means it must be applied on a per-light basis unfortunately\n            vec3 gammaCorrectedColor = pow( color, vec3( 1./2.2 ) );\n            vec3 attenuatedColor = 2. * gammaCorrectedColor * attenuation; \n\n            outputColor += attenuatedColor;\n          }\n\n          return outputColor;\n        }\n        ",""],__shadow)
+        const str = glsl(["#define GLSLIFY 1\n  \n        \n        vec3 directional( vec3 surfacePosition, vec3 normal, vec3 rayOrigin, vec3 rayDirection, Material mat, Light lights[MAX_LIGHTS], vec3 textureColor ) {\n          vec3  outputColor   = textureColor;//vec3( 0. );\n   \n          // applies to all lights\n          float occlusion = ao( surfacePosition, normal );\n\n          for( int i = 0; i < 20000; i++ ) {\n            if( i >= MAX_LIGHTS ) break;\n\n            Light light = lights[ i ];\n\n            vec3 surfaceToLightDirection = normalize( light.position - surfacePosition );\n            \n            // get similarity between normal and direction to light\n            float diffuseCoefficient = clamp( dot( normal, surfaceToLightDirection ), 0., 1.); \n\n            // get reflection angle for light striking surface\n            vec3 angleOfReflection = reflect( -surfaceToLightDirection, normal );\n\n            // see if reflected light travels to camera and generate coefficient accordingly\n            float specularAngle = clamp( dot( angleOfReflection, -rayDirection ), 0., 1. );\n            float specularCoefficient = pow( specularAngle, mat.shininess );\n\n            // lights should have an attenuation factor\n            float attenuation = 1. / ( light.attenuation * pow( length( light.position - surfacePosition ), 2. ) ); \n\n            // bias, scale, power\n            float fresnel = mat.fresnel.x + mat.fresnel.y * pow( 1.0 + dot( rayDirection, normal ), mat.fresnel.z ); \n\n            ","\n\n            vec3 color = vec3( 0. );\n            color += 1.2 * diffuseCoefficient * mat.diffuse * light.color;\n            color += 2.2 * specularCoefficient * mat.specular * light.color;\n            color += 0.3 * (mat.ambient * light.color) * occlusion;\n            color += (fresnel * light.color);\n\n            // texture\n            //color *= textureColor.xyz;\n\n            // gamma correction must occur before light attenuation\n            // which means it must be applied on a per-light basis unfortunately\n            vec3 gammaCorrectedColor = pow( color, vec3( 1./2.2 ) );\n            vec3 attenuatedColor = 2. * gammaCorrectedColor * attenuation; \n\n            outputColor += attenuatedColor;\n          }\n\n          return outputColor;\n        }\n        ",""],__shadow)
 
         return str
       }, 
@@ -102109,10 +102432,11 @@ const Lights = function( SDF ) {
         const shadow = SDF.__scene.__shadow
 
         const __shadow = shadow > 0
-          ? `diffuseCoefficient *= softshadow( surfacePosition, normalize( light.position ), 0.02, 2.5, ${shadow.toFixed(1)} );` 
+          ? `diffuseCoefficient -= softshadow( surfacePosition, normalize( light.position ), 0.02, 2.5, 4. ); // ${shadow} );` 
+
           : ''
 
-        const str = glsl(["#define GLSLIFY 1\n  \n\n        vec3 directional( vec3 surfacePosition, vec3 normal, vec3 rayOrigin, vec3 rayDirection, Material mat, Light lights[MAX_LIGHTS] ) {\n          vec3  outputColor   = vec3( 0. );\n   \n          // applies to all lights\n          float occlusion = ao( surfacePosition, normal );\n\n          vec4 textureColor;\n          if( mat.textureID > -1 ) {\n            //textureColor = texcube( textures[ mat.textureID ], surfacePosition, normal, 1. );//texture( textures[ mat.textureID ], surfacePosition.xy - normal.xy ); \n            vec2 uv = getUVCubic( surfacePosition, vec3(0.) );//surfacePosition.xz*vec2(0.03,0.07);\n            textureColor = texture( textures[ mat.textureID ], uv );\n          }else{\n            textureColor = vec4(0.);\n          }\n\n          outputColor = 0;//textureColor.xyz;\n\n          for( int i = 0; i < 20000; i++ ) {\n            if( i >= MAX_LIGHTS ) break;\n\n            Light light = lights[ i ];\n\n            vec3 surfaceToLightDirection = normalize( light.position - surfacePosition );\n            \n            // get similarity between normal and direction to light\n            float diffuseCoefficient = dot( normal, surfaceToLightDirection ); \n\n            // get reflection angle for light striking surface\n            vec3 angleOfReflection = reflect( -surfaceToLightDirection, normal );\n\n            // see if reflected light travels to camera and generate coefficient accordingly\n            float specularAngle = clamp( dot( angleOfReflection, -rayDirection ), 0., 1. );\n            float specularCoefficient = pow( specularAngle, mat.shininess );\n\n            // lights should have an attenuation factor\n            float attenuation = 1. / ( light.attenuation * pow( length( light.position - surfacePosition ), 2. ) ); \n\n            // bias, scale, power\n            float fresnel = mat.fresnel.x + mat.fresnel.y * pow( 1.0 + dot( rayDirection, normal ), mat.fresnel.z ); \n\n            ","\n\n            vec3 color = vec3( 0. );\n            color += 1.2 * diffuseCoefficient * textureColor.xyz * light.color;\n            color += 2.2 * specularCoefficient * textureColor.xyz * light.color;\n            color += 0.3 * (mat.ambient * light.color) * occlusion;\n            color += (fresnel * light.color);\n\n            // texture\n            //color *= textureColor.xyz;\n\n            // gamma correction must occur before light attenuation\n            // which means it must be applied on a per-light basis unfortunately\n            vec3 gammaCorrectedColor = pow( color, vec3( 1./2.2 ) );\n            vec3 attenuatedColor = 2. * gammaCorrectedColor * attenuation; \n\n            outputColor += attenuatedColor;\n          }\n\n          return outputColor;\n        }\n        ",""],__shadow)
+        const str = glsl(["#define GLSLIFY 1\n  \n\n        vec3 directional( vec3 surfacePosition, vec3 normal, vec3 rayOrigin, vec3 rayDirection, Material mat, Light lights[MAX_LIGHTS] ) {\n          vec3  outputColor   = vec3( 0. );\n   \n          // applies to all lights\n          float occlusion = ao( surfacePosition, normal );\n\n          vec4 textureColor;\n          if( mat.textureID > -1 ) {\n            //textureColor = texcube( textures[ mat.textureID ], surfacePosition, normal, 1. );//texture( textures[ mat.textureID ], surfacePosition.xy - normal.xy ); \n            vec2 uv = getUVCubic( surfacePosition, vec3(0.) );//surfacePosition.xz*vec2(0.03,0.07);\n            textureColor = texture( textures[ mat.textureID ], uv );\n          }else{\n            textureColor = vec4(0.);\n          }\n\n          outputColor = 0;//textureColor.xyz;\n\n          for( int i = 0; i < 20000; i++ ) {\n            if( i >= MAX_LIGHTS ) break;\n\n            Light light = lights[ i ];\n\n            vec3 surfaceToLightDirection = normalize( light.position - surfacePosition );\n            \n            // get similarity between normal and direction to light\n            float diffuseCoefficient = clamp( dot( normal, surfaceToLightDirection ), 0., 1. ); \n\n            // get reflection angle for light striking surface\n            vec3 angleOfReflection = reflect( -surfaceToLightDirection, normal );\n\n            // see if reflected light travels to camera and generate coefficient accordingly\n            float specularAngle = clamp( dot( angleOfReflection, -rayDirection ), 0., 1. );\n            float specularCoefficient = pow( specularAngle, mat.shininess );\n\n            // lights should have an attenuation factor\n            float attenuation = 1. / ( light.attenuation * pow( length( light.position - surfacePosition ), 2. ) ); \n\n            // bias, scale, power\n            float fresnel = mat.fresnel.x + mat.fresnel.y * pow( 1.0 + dot( rayDirection, normal ), mat.fresnel.z ); \n\n            ","\n\n            vec3 color = vec3( 0. );\n            color += 1.2 * diffuseCoefficient * textureColor.xyz * light.color;\n            color += 2.2 * specularCoefficient * textureColor.xyz * light.color;\n            color += 0.3 * (mat.ambient * light.color) * occlusion;\n            color += (fresnel * light.color);\n\n            // texture\n            //color *= textureColor.xyz;\n\n            // gamma correction must occur before light attenuation\n            // which means it must be applied on a per-light basis unfortunately\n            vec3 gammaCorrectedColor = pow( color, vec3( 1./2.2 ) );\n            vec3 attenuatedColor = 2. * gammaCorrectedColor * attenuation; \n\n            outputColor += attenuatedColor;\n          }\n\n          return outputColor;\n        }\n        ",""],__shadow)
 
         return str
       }, 
@@ -102121,7 +102445,7 @@ const Lights = function( SDF ) {
       orenn( numlights, lights, materials ) {
         const shadow = SDF.__scene.__shadow
         const __shadow = shadow > 0
-          ? `diffuseCoefficient *= softshadow( surfacePosition, normalize( light.position ), 0.02, 2.5, ${shadow.toFixed(1)} );` 
+          ? `diffuseCoefficient *= softshadow( surfacePosition, normalize( light.position ), 0.02, 2.5, ${shadow} );` 
           : ''
 
         const str = glsl(["#define GLSLIFY 1\n  \n        float orenNayarDiffuse(\n  vec3 lightDirection,\n  vec3 viewDirection,\n  vec3 surfaceNormal,\n  float roughness,\n  float albedo) {\n  \n  float LdotV = dot(lightDirection, viewDirection);\n  float NdotL = dot(lightDirection, surfaceNormal);\n  float NdotV = dot(surfaceNormal, viewDirection);\n\n  float s = LdotV - NdotL * NdotV;\n  float t = mix(1.0, max(NdotL, NdotV), step(0.0, s));\n\n  float sigma2 = roughness * roughness;\n  float A = 1.0 + sigma2 * (albedo / (sigma2 + 0.13) + 0.5 / (sigma2 + 0.33));\n  float B = 0.45 * sigma2 / (sigma2 + 0.09);\n\n  return albedo * max(0.0, NdotL) * (A + B * s / t) / 3.14159265;\n}\n\n        float gaussianSpecular(\n  vec3 lightDirection,\n  vec3 viewDirection,\n  vec3 surfaceNormal,\n  float shininess) {\n  vec3 H = normalize(lightDirection + viewDirection);\n  float theta = acos(dot(H, surfaceNormal));\n  float w = theta / shininess;\n  return exp(-w*w);\n}\n\n        vec3 orenn( vec3 surfacePosition, vec3 normal, vec3 rayOrigin, vec3 rayDirection, Material mat, Light lights[MAX_LIGHTS] ) {\n          vec3  outputColor   = vec3( 0. );\n   \n          // applies to all lights\n          float occlusion = ao( surfacePosition, normal );\n\n          for( int i = 0; i < 20000; i++ ) {\n            if( i >= MAX_LIGHTS ) break;\n\n            Light light = lights[ i ];\n\n            vec3 surfaceToLightDirection = normalize( light.position - surfacePosition );\n            \n            // get similarity between normal and direction to light\n            float diffuseCoefficient = orenNayarDiffuse( surfaceToLightDirection, -rayDirection, normal, 0.15, 4.0);\n\n            // get reflection angle for light striking surface\n            vec3 angleOfReflection = reflect( -surfaceToLightDirection, normal );\n\n            // see if reflected light travels to camera and generate coefficient accordingly\n            float specularAngle = clamp( dot( angleOfReflection, -rayDirection ), 0., 1. );\n            float specularCoefficient = gaussianSpecular( surfaceToLightDirection, -rayDirection, normal, .5 ); \n\n            // lights should have an attenuation factor\n            float attenuation = 1. / ( light.attenuation * pow( length( light.position - surfacePosition ), 2. ) ); \n\n            float fresnel = mat.fresnel.x + mat.fresnel.y * pow( 1.0 + dot( rayDirection, normal ), mat.fresnel.z ); \n\n            ","\n\n            vec3 color = vec3( 0. );\n            color += 1.2 * diffuseCoefficient * mat.diffuse * light.color;\n            color += 2.2 * specularCoefficient * mat.specular * light.color;\n            color += 0.3 * (mat.ambient * light.color) * occlusion;\n            color += (fresnel * light.color);\n\n            // gamma correction must occur before light attenuation\n            // which means it must be applied on a per-light basis unfortunately\n            vec3 gammaCorrectedColor = pow( color, vec3( 1./2.2 ) );\n            vec3 attenuatedColor = 2. * gammaCorrectedColor * attenuation; \n\n            outputColor += attenuatedColor;\n          }\n\n          return outputColor;\n        }",""],__shadow)
@@ -102143,7 +102467,7 @@ module.exports = Lights
 /*
 */
 
-},{"./sceneNode.js":354,"./utils.js":359,"./var.js":360,"./vec.js":361,"glslify":503}],346:[function(require,module,exports){
+},{"./sceneNode.js":356,"./utils.js":361,"./var.js":362,"./vec.js":363,"glslify":505}],347:[function(require,module,exports){
 const SDF = {
   camera:           require( './camera.js' ),
   __primitives:     require( './primitives.js' ),
@@ -102157,14 +102481,30 @@ const SDF = {
   __lighting:       require( './lighting.js' ),
   __materials:      require( './material.js' ),
   __textures:       require( './texture.js' ),
+  __transform:      require( './transform.js' ),
   Var:              require( './var.js' ).Var,
   //Color:            require( './color.js' ),
   FFT:              require( './audio.js' ),
+  OSC:              require( './osc.js' ),
   fx:               require( './mergepass.js' ),
 
   gl:               null,
+  // store for reuse
+  vs:               null,
+  // store so it can be detached from running shader programs when recompiling
+  fs:               null,
+  program:          null,
+  copyProgram:      null,
+  uTime:            null,
+  uResolution:      null,
+  aPos:             null,
+
   // a function that generates the fragment shader
   renderFragmentShader: require( './renderFragmentShader.js' ),
+
+  // if true, log shader error messages
+  // however, this will greatly slow down compilation
+  debug: false,
 
   // additional callbacks that are run once per frame
   callbacks: [],
@@ -102209,6 +102549,7 @@ const SDF = {
     obj.camera = this.camera
     obj.callbacks = this.callbacks // XXX remove once API stops using callbacks
     obj.FFT = this.FFT
+    obj.OSC = this.OSC
   },
 
   init( canvas, shouldInit = true ) {
@@ -102246,23 +102587,24 @@ const SDF = {
     return scene
   },
 
-  start( fs, width, height, shouldAnimate ) {
+  start( fs, width, height, shouldAnimate, time=0 ) {
     if( this.render !== null ) this.render.running = false
 
     if( this.gl === null ) 
       this.gl = this.canvas.getContext( 'webgl2', { antialias:true, alpha:true })
 
-    this.fs = fs
+    this.text = fs
     this.callbacks.length = 0
 
-    this.render = this.initWebGL( this.defaultVertexSource, fs, width, height, shouldAnimate )
+    this.render = this.initWebGL( this.defaultVertexSource, fs, width, height, shouldAnimate, time )
     this.render.running = true
 
     this.camera.init( this.gl, this.program, cb => { 
       this.callbacks.push( cb )
     })
 
-    setTimeout( ()=> this.render( 0.0 ), 0 )
+    this.callbacks.forEach( fnc => fnc( time ) )
+    setTimeout( ()=> this.render( time ), 0 )
   },
 
   generateSDF( __scene ) {
@@ -102287,16 +102629,19 @@ const SDF = {
 
     // create an fancy emit() function that wraps the scene
     // with an id #.
+    
+    if( scene.output.emit_modified === undefined ) {
+      scene.output.__emit = scene.output.emit.bind( scene.output )
+      scene.output.emit = function( ...args ) {
+        const emitted = scene.output.__emit(...args)
+        const output = {
+          out:     emitted.out,
+          preface: emitted.preface || '' 
+        }
 
-    scene.output.__emit = scene.output.emit.bind( scene.output )
-    scene.output.emit = function( ...args ) {
-      const emitted = scene.output.__emit(...args)
-      const output = {
-        out:     emitted.out,
-        preface: emitted.preface || '' 
+        return output 
       }
-
-      return output 
+      scene.output.emit_modified = true
     }
 
     this.scene = scene.output
@@ -102322,65 +102667,81 @@ const SDF = {
 		gl.shaderSource( shader, source )
 		gl.compileShader( shader )
 
-		if( gl.getShaderParameter( shader, gl.COMPILE_STATUS) !== true ) {
-			let log = gl.getShaderInfoLog( shader )
-			gl.deleteShader( shader )
+    if( this.debug === true ) {
+      if( gl.getShaderParameter( shader, gl.COMPILE_STATUS) !== true ) {
+        let log = gl.getShaderInfoLog( shader )
+        gl.deleteShader( shader )
 
-			console.log( source )
-			console.log( log )
+        console.log( source )
+        console.log( log )
 
-			return null
-		}
+        return null
+      }
+    }
 
 		return shader
 	},
 
   createProgram( vs_source, fs_source ) {
     const gl = this.gl
-		const vs = this.compile( gl.VERTEX_SHADER, vs_source )
-		const fs = this.compile( gl.FRAGMENT_SHADER, fs_source )
 
-		if( null === vs || null === fs ) return null
+    if( this.vs === null ) {
+		  this.vs = this.compile( gl.VERTEX_SHADER, vs_source )
+    }
+    if( this.fs !== null && this.program !== null ) {
+      gl.detachShader( this.program, this.fs )
+    }
 
-		const program = gl.createProgram()
-		gl.attachShader( program, vs )
-		gl.attachShader( program, fs )
-		gl.linkProgram( program )
+		this.fs = this.compile( gl.FRAGMENT_SHADER, fs_source )
 
-		if( gl.getProgramParameter( program, gl.LINK_STATUS ) !== true ){
-			const log = gl.getProgramInfoLog( program )
-			gl.deleteShader(vs)
-			gl.deleteShader(fs)
-			gl.deleteProgram(program)
+		if( null === this.vs || null === this.fs ) return null
 
-			console.error( log )
-			return null
-		}
+    if( this.program === null ) {
+      this.program = gl.createProgram()
+      gl.attachShader( this.program, this.vs )
+    }
+		gl.attachShader( this.program, this.fs )
+		gl.linkProgram( this.program )
 
-    const drawProgram = gl.createProgram()
-    const fragSource = ` #version 300 es
-  precision mediump float;
+    if( this.debug === true ) {
+      if( gl.getProgramParameter( this.program, gl.LINK_STATUS ) !== true ){
+        const log = gl.getProgramInfoLog( this.program )
+        gl.deleteShader( this.vs )
+        gl.deleteShader( this.fs )
+        gl.deleteProgram( this.program )
 
-  uniform sampler2D uSampler;
-  uniform vec2 resolution;
+        console.error( log )
+        return null
+      }
+    }
 
-  out vec4 col;
-  void main() {
-    // copy color info from texture
-    col = vec4( texture( uSampler, gl_FragCoord.xy / resolution ).rgb, 1. );
-  }`
+    if( this.copyProgram === null ) {
+      this.copyProgram = gl.createProgram()
+      const fragSource = ` #version 300 es
+    precision mediump float;
 
-    const fs_draw = this.compile( gl.FRAGMENT_SHADER, fragSource )
-    const vs_draw = this.compile( gl.VERTEX_SHADER, vs_source )
+    uniform sampler2D uSampler;
+    //uniform vec2 resolution;
 
-    gl.attachShader( drawProgram, vs_draw )
-		gl.attachShader( drawProgram, fs_draw )
-		gl.linkProgram( drawProgram )
+    out vec4 col;
+    void main() {
+      vec2 resolution = vec2( ${this.canvas.width}., ${this.canvas.height}. );
+      // copy color info from texture
+      col = vec4( texture( uSampler, gl_FragCoord.xy / resolution ).rgb, 1. );
+    }`
 
-    return [ program, drawProgram ]
+      const fs_draw = this.compile( gl.FRAGMENT_SHADER, fragSource )
+      const vs_draw = this.compile( gl.VERTEX_SHADER, vs_source )
+
+      gl.attachShader( this.copyProgram, vs_draw )
+      gl.attachShader( this.copyProgram, fs_draw )
+      gl.linkProgram( this.copyProgram )
+    }
+
+    return [ this.program, this.copyProgram ]
   },
 
-  clear() {
+  clear( shouldClearScreen=false ) {
     if( this.callbacks !== undefined ) this.callbacks.length = 0
     if( this.postrendercallbacks !== undefined ) this.postrendercallbacks.length = 0
     if( this.render !== null ) this.render.running = false
@@ -102391,7 +102752,7 @@ const SDF = {
     this.geometries.length = 0
 
     const gl = this.gl
-    if( gl !== null )
+    if( shouldClearScreen === true && gl !== null )
       gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT | gl.STENCIL_BUFFER_BIT )
   },
 
@@ -102432,12 +102793,12 @@ const SDF = {
   },
 
   initUniforms( gl, program ) {
-    const aPos = this.gl.getAttribLocation( this.program, "a_pos" )
+    if( this.aPos === null ) this.aPos = this.gl.getAttribLocation( this.program, "a_pos" )
 
-    const uTime= this.gl.getUniformLocation( this.program, "time" )
-    const uResolution = this.gl.getUniformLocation( this.program, "resolution" )
+    //const uTime= this.gl.getUniformLocation( this.program, "time" )
+    //const uResolution = this.gl.getUniformLocation( this.program, "resolution" )
 
-    return { aPos, uTime, uResolution } 
+    return { aPos:this.aPos } 
   },
 
   initTextures( gl, width, height ) {
@@ -102496,7 +102857,7 @@ const SDF = {
     gl.vertexAttribPointer( aPos, 2, gl.FLOAT, false, 0, 0)
   },
 
-  initWebGL( vs, fs, width, height,shouldAnimate=false ) {
+  initWebGL( vs, fs, width, height,shouldAnimate=false, __time = 0 ) {
     this.canvas.width = width 
     this.canvas.height = height 
 
@@ -102505,21 +102866,27 @@ const SDF = {
     const gl                                = this.gl,
           programs                          = this.initShaderProgram( vs, fs, gl ),
           { colorTexture, depthTexture }    = this.initTextures( gl, width, height ),
-          { aPos, uTime, uResolution }      = this.initUniforms( gl, programs[0] ),
           { vbo, vertices, framebuffer }    = this.initBuffers( width, height, colorTexture, depthTexture )
  
-    let total_time = 0.0,
+
+    Object.assign( this,  this.initUniforms( gl, programs[0] ) )
+      
+    let total_time = __time,
         frameCount = 0
 
     // only init post-processing if effects have been registered
-    if( this.fx.chain.length > 0 ) this.fx.init( colorTexture, depthTexture, gl )
+    if( this.fx.chain.length > 0 ) {
+      this.fx.init( colorTexture, depthTexture, gl )
+    }
 
+    // needed whenever post-processing is in use
     gl.useProgram( this.program )
+
     this.updateLocations( gl, this.program )
-    this.uploadVertices( gl, aPos, vertices )
+    this.uploadVertices( gl, this.aPos, vertices )
 
     gl.viewport( 0,0,width,height )
-    gl.uniform2f( uResolution, width, height )
+    gl.uniform2f( this.uResolution, width, height )
  
     const render = function( timestamp ){
       if( render.running === true && shouldAnimate === true ) {
@@ -102541,7 +102908,7 @@ const SDF = {
         gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT1, gl.TEXTURE_2D, depthTexture, 0)
       }
 
-      gl.enableVertexAttribArray( aPos )
+      gl.enableVertexAttribArray( this.aPos )
 
       if( this.__isPaused === false ) {
         this.currentTime = timestamp
@@ -102554,14 +102921,13 @@ const SDF = {
         }
 
         total_time = timestamp / 1000.0
-        gl.uniform1f( uTime, total_time )
+        //gl.uniform1f( this.uTime, total_time )
 
         this.callbacks.forEach( cb => cb( total_time, this.currentTime ) )
 
         if( typeof window.onframe === 'function' ) window.onframe( total_time )
       }
 
-      //this.textures.update_location( gl, this.program )
       // transfer all data associated with uniforms in marching.js
       this.uploadData( gl )
 
@@ -102586,7 +102952,7 @@ const SDF = {
       if( this.fx.merger !== null ) this.fx.merger.draw( total_time )
 
       this.postrendercallbacks.forEach( fnc => fnc( total_time ) )
-
+      render.time = total_time
     }.bind( SDF )
 
     render.running = true
@@ -102612,7 +102978,7 @@ const SDF = {
 
 module.exports = SDF
 
-},{"./alterations.js":332,"./audio.js":333,"./camera.js":335,"./distanceDeformations.js":336,"./distanceOperations.js":337,"./domainOperations.js":339,"./lighting.js":345,"./material.js":347,"./mergepass.js":348,"./noise.js":349,"./primitives.js":351,"./renderFragmentShader.js":352,"./scene.js":353,"./texture.js":355,"./var.js":360,"./vec.js":361}],347:[function(require,module,exports){
+},{"./alterations.js":333,"./audio.js":334,"./camera.js":336,"./distanceDeformations.js":337,"./distanceOperations.js":338,"./domainOperations.js":340,"./lighting.js":346,"./material.js":348,"./mergepass.js":349,"./noise.js":350,"./osc.js":351,"./primitives.js":353,"./renderFragmentShader.js":354,"./scene.js":355,"./texture.js":357,"./transform.js":360,"./var.js":362,"./vec.js":363}],348:[function(require,module,exports){
 const SceneNode = require( './sceneNode.js' ),
       { param_wrap, MaterialID } = require( './utils.js' ),
       { Var, float_var_gen, vec2_var_gen, vec3_var_gen, vec4_var_gen } = require( './var.js' ),
@@ -102626,6 +102992,7 @@ const __Materials = function( SDF ) {
   const Materials = {
     materials:[],
     __materials:[],
+    __clearOnEmit: true,
     modeConstants : [
       'global',
       'normal',
@@ -102656,7 +103023,9 @@ const __Materials = function( SDF ) {
         Materials.dirty( mat )
 
         Materials.materials.push( mat )
-      } 
+      }else{
+        mat.id = Materials.materials.indexOf( mat ) 
+      }
 
       return mat
     },
@@ -102752,24 +103121,42 @@ const __Materials = function( SDF ) {
       mat.fresnel.dirty = true
       if( mat.texture !== null ) mat.texture.dirty = true
     },
+    
+    walk( branch ) {
+      if( branch === null ) return
+      if( branch.__material ) {
+        branch.mat = branch.__material = this.addMaterial( branch.__material )
+      }
+      
+      if( 'a' in branch ) {
+        // combinators
+        this.walk( branch.a )
+        this.walk( branch.b )
+      }else if( 'sdf' in branch ) {
+        // repeat etc.
+        this.walk( branch.sdf )
+      }
+    },
+
+    generate() {
+      this.materials = []
+      MaterialID.clear()
+
+      const head = Array.isArray( SDF.__scene.__prerender ) 
+        ? SDF.__scene.__prerender[0] 
+        : SDF.__scene.__prerender
+
+      this.walk( head )  
+    },
    
     emit_materials() {
-      if( this.materials.length === 0 ) {
-        console.log( 'returning undefined?', this.defaultMaterials )
-        return this.defaultMaterials//this.addMaterial() 
-      }
-
       let str = `Material materials[${this.materials.length}] = Material[${this.materials.length}](`
 
       this.materials.sort( (a,b) => a.id > b.id ? 1 : -1 ) 
 
       for( let mat of this.materials ) {
-        const fresnel = `Fresnel( ${f(mat.fresnel.x)}, ${f(mat.fresnel.y)}, ${f(mat.fresnel.z)} )`
-
-        const texid = 0//SDF.textures.textures.indexOf( mat.texture )
-        str += mat.texture === null 
-          ? `\n        Material( ${this.modeConstants.indexOf( mat.mode )}, ${mat.ambient.emit()}, ${mat.diffuse.emit()}, ${mat.specular.emit()}, ${mat.shininess.emit()}, ${mat.fresnel.emit()}, ${ texid } ),` 
-          : `\n        Material( ${this.modeConstants.indexOf( mat.mode )}, ${mat.ambient.emit()}, ${mat.diffuse.emit()}, ${mat.specular.emit()}, ${mat.shininess.emit()}, ${mat.fresnel.emit()}, ${ texid } ),` 
+        Materials.dirty( mat )
+        str += `\n        Material( ${this.modeConstants.indexOf( mat.mode )}, ${mat.ambient.emit()}, ${mat.diffuse.emit()}, ${mat.specular.emit()}, ${mat.shininess.emit()}, ${mat.fresnel.emit()}, 0 ),` 
       }
       
       str = str.slice(0,-1) // remove trailing comma
@@ -102777,7 +103164,10 @@ const __Materials = function( SDF ) {
       str += '\n      );'
 
       this.__materials = this.materials.slice( 0 )
-      this.materials.length = 0
+      this.__str = str
+      if( this.__clearOnEmit ) {
+        //this.materials.length = 0
+      }
 
       return str
     },
@@ -102814,13 +103204,12 @@ const __Materials = function( SDF ) {
         if( mat.fresnel.dirty === true )   mat.fresnel.upload_data( gl, program )
       }
     }
-
   }
 
   const f = value => value % 1 === 0 ? value.toFixed(1) : value 
 
   Object.assign( Materials.material, {
-    default : Materials.material( 'global', Vec3( .15 ), Vec3(0), Vec3(1), 8, Vec3( 0, 1, .5 ) ),  
+    default : Materials.material( 'global', Vec3( .15 ), Vec3(0), Vec3(1), 8, Vec3( 0 ) ),  
     red     : Materials.material( 'global', Vec3(.25,0,0), Vec3(1,0,0), Vec3(0), 2, Vec3(0) ),
     green   : Materials.material( 'global', Vec3(0,.25,0), Vec3(0,1,0), Vec3(0), 2, Vec3(0) ),
     blue    : Materials.material( 'global', Vec3(0,0,.25), Vec3(0,0,1), Vec3(0), 2, Vec3(0) ),
@@ -102835,6 +103224,7 @@ const __Materials = function( SDF ) {
     glue         : Materials.material( 'phong',  Vec3(.015), Vec3(1), Vec3(1), 16, Vec3(0,15,-.1) ),
     inverse      : Materials.material( 'phong', 1, .5, 1, 16, Vec3(1,.5,-2) ),
     blackhole    : Materials.material( 'phong', Vec3(0), Vec3(0), Vec3(0), 32 ),
+    redp         : Materials.material( 'phong', Vec3(1,0,0), Vec3(1,0,0), Vec3(1), 128, Vec3(0) ),
 
     normal  : Materials.material( 'normal' ),
     noise   : Materials.material( 'noise',  Vec3( .15 ), Vec3(1,0,0), Vec3(1), 8, Vec3( 0, 1, .5 ))
@@ -102845,7 +103235,7 @@ const __Materials = function( SDF ) {
 
 module.exports = __Materials
 
-},{"./sceneNode.js":354,"./utils.js":359,"./var.js":360,"./vec.js":361,"glslify":503}],348:[function(require,module,exports){
+},{"./sceneNode.js":356,"./utils.js":361,"./var.js":362,"./vec.js":363,"glslify":505}],349:[function(require,module,exports){
 const MP   = require( '@bandaloo/merge-pass' )
 
 const FX = {
@@ -102927,9 +103317,9 @@ const FX = {
   Bloom( __threshold=0, __boost = .5, __horizontal=1, __vertical=1, taps = 9, reps = 3, num=1 ) {
     const fx = {},
           threshold  = FX.wrapProperty( fx, 'threshold',  __threshold ),
+          boost      = FX.wrapProperty( fx, 'amount', __boost ), 
           horizontal = FX.wrapProperty( fx, 'vertical',  __vertical ),
-          vertical   = FX.wrapProperty( fx, 'horizontal',  __horizontal ),
-          boost      = FX.wrapProperty( fx, 'amount', __boost ) 
+          vertical   = FX.wrapProperty( fx, 'horizontal',  __horizontal )
 
     fx.__wrapped__ = MP.bloom( threshold, horizontal, vertical, boost, num, taps, reps ) 
 
@@ -103010,7 +103400,7 @@ const FX = {
         MP.contrast( contrast),
       ], loops ),
       MP.brightness( adjust ),
-      MP.setcolor( MP.op( MP.fcolor(), "+", MP.input() ) )
+      MP.op( MP.fcolor(), "+", MP.input() )
     ]
 
     return fx
@@ -103050,10 +103440,10 @@ const FX = {
 
   Hue( __shift=.5, __threshold = .99 )  {
     const fx = {},
-          frag = MP.fcolor(), 
+          frag  = MP.fcolor(), 
           depth = MP.channel(0),
-          threshold = FX.wrapProperty( fx, 'threshold', __threshold, v => 1 - v ),
-          shift= FX.wrapProperty( fx, 'shift', __shift )
+          shift = FX.wrapProperty( fx, 'shift', __shift ),
+          threshold = FX.wrapProperty( fx, 'threshold', __threshold, v => 1 - v )
 
     let control
     fx.__wrapped__ = MP.hsv2rgb( 
@@ -103098,7 +103488,7 @@ const FX = {
 
 module.exports = FX
 
-},{"@bandaloo/merge-pass":414}],349:[function(require,module,exports){
+},{"@bandaloo/merge-pass":416}],350:[function(require,module,exports){
 const glsl = require( 'glslify' )
 const SceneNode = require( './sceneNode.js' )
 const { param_wrap, MaterialID } = require( './utils.js' )
@@ -103185,7 +103575,86 @@ return Noise
 
 module.exports = getNoise 
 
-},{"./sceneNode.js":354,"./utils.js":359,"./var.js":360,"glslify":503}],350:[function(require,module,exports){
+},{"./sceneNode.js":356,"./utils.js":361,"./var.js":362,"glslify":505}],351:[function(require,module,exports){
+const osc = require( 'osc/dist/osc-browser' ),
+      { Vec2, Vec3, Vec4 } = require( './vec.js' )
+
+function unpackArg( arg ) {
+  if( Array.isArray( arg ) )
+    return Vec4( arg.map( a => a.value ) )
+
+  return arg.value
+}
+
+const OSC = {
+  client: null,
+
+  start( url ) {
+    console.log("STARTING", url)
+    OSC.client = new osc.WebSocketPort({ url, metadata: true, unpackSingleArgs: true })
+    OSC.client.on( 'message', OSC.messageCallback )
+    OSC.client.open()
+    console.log("STARTING", OSC.client)
+  },
+
+  stop() {
+    OSC.client.close()
+  },
+
+  messageCallback(message) {
+    const parts = message.address.split('/')
+
+    let object = window
+    for( const part of parts.slice( 1, -1 ) ) {
+      object = object[part]
+
+      if( !object ) {
+        throw new Error( `can't handle OSC message ${message.address}: no such key '${part}'` )
+      }
+    }
+
+    const key = parts[parts.length - 1]
+    switch( key ) {
+      /* methods */
+      case 'translate':
+      case 'rotate':
+      case 'scale':
+      case 'fog':
+      case 'material':
+        object[key].apply( object, message.args.map( unpackArg ) )
+        break
+
+      /* variables */
+      default: {
+        const old = object[key]
+
+        if( !old ) {
+          throw new Error( `can't handle OSC message ${message.address}: no such key ${key}` )
+        }
+
+        switch( old.type ) {
+          case 'int':
+          case 'float':
+            object[key] = message.args.value
+            break
+
+          case 'vec2':
+          case 'vec3':
+          case 'vec4':
+            object[key] = Vec4( message.args.map( a => a.value ) )
+            break
+
+          default:
+            throw new Error( `can't handle OSC message ${message.address}: type ${old.type}` )
+        }
+      }
+    }
+  }
+}
+
+module.exports = OSC
+
+},{"./vec.js":363,"osc/dist/osc-browser":514}],352:[function(require,module,exports){
 const glsl = require( 'glslify' )
 
 module.exports = {
@@ -103554,10 +104023,10 @@ module.exports = {
 
 }
 
-},{"glslify":503}],351:[function(require,module,exports){
+},{"glslify":505}],353:[function(require,module,exports){
 const { Var, float_var_gen, vec2_var_gen, vec3_var_gen, vec4_var_gen, int_var_gen, VarAlloc }  = require( './var.js' )
 const SceneNode = require( './sceneNode.js' )
-const { param_wrap, MaterialID } = require( './utils.js' )
+const { param_wrap, MaterialID, processVec3, processVec2 } = require( './utils.js' )
 const { Vec2, Vec3, Vec4 } = require( './vec.js' )
 const Transform = require( './transform.js' )
 
@@ -103652,7 +104121,18 @@ const createPrimitives = function( SDF ) {
           p.color = args[ count ] === undefined ? param.default : args[ count++ ]
           continue
         }
-        if( param.type === 'obj' ) {
+        // setup to enable passing functions 
+        // to set values
+        if( typeof args[count] === 'function' ) {
+          const func = args[ count ]
+          Marching.postrendercallbacks.push( t => {
+            p[ param.name ] = func( t ) 
+          })
+
+          // set initial value with t=0
+          args[ count ] = func( 0 )
+        }
+        if( param.type === 'obj' ) {error
           let __value = args[ count++ ]
           p[ param.name ] = {
             get value() { return __value },
@@ -103700,6 +104180,12 @@ const createPrimitives = function( SDF ) {
           })
 
         }else{
+          // a bit of santization...
+          if( Array.isArray( args[ count ] ) ) {
+            args[ count ] = defaultValues.length === 3 
+              ? processVec3( args[ count ] )
+              : processVec2( args[ count ] )
+          }
           let __var  = param_wrap( 
             args[ count++ ], 
             gens[ param.type ]( defaultValues ) 
@@ -103770,6 +104256,13 @@ const createPrimitives = function( SDF ) {
 
 
     Primitives[ name ].prototype.emit = function ( __name, transform = null, bump=null, scale=null ) {
+      // XXX after the first time a primitive is rendered, all its 
+      // properties / transform are set to not be dirty, which means that
+      // the next time it is rendered, none of it's data is uploaded
+      // correctly. The next few lines set all the properties to be
+      // dirty as well as the transform
+      this.__dirty() 
+
       if( SDF.memo[ this.id ] !== undefined ) return { preface:'', out:name+this.matId }
       if( this.__bumpObj !== undefined && this.renderingBump === false) {
         this.renderingBump = true
@@ -103811,7 +104304,6 @@ const createPrimitives = function( SDF ) {
       let decl = ''
       decl += this.transform.emit_decl()
 
-      //debugger
       if( this.__repeat !== undefined ) decl += this.__repeat.emit_decl( false )
       if( this.__polarRepeat !== undefined ) decl += this.__polarRepeat.emit_decl( false )
 
@@ -103831,11 +104323,11 @@ const createPrimitives = function( SDF ) {
       }
 
       for( let param of params ) {
-        if( param.type !== 'obj' ) {
-          if( param.name !== 'material' ) 
-            this[ param.name ].update_location( gl,program )
+        if( param.type !== 'obj' && param.name !== 'material' ) { 
+          this[ param.name ].update_location( gl,program )
         }
       }
+     
 
       if( this.__repeat !== undefined ) this.__repeat.update_location( gl, program, false )
       if( this.__polarRepeat !== undefined ) this.__polarRepeat.update_location( gl, program, false )
@@ -103849,8 +104341,9 @@ const createPrimitives = function( SDF ) {
         return this.__bumpObj.upload_data( gl )
       }
       for( let param of params ) {
-        if( param.type !== 'obj' && param.name !== 'material' )
+        if( param.type !== 'obj' && param.name !== 'material' ) {
           this[ param.name ].upload_data( gl )
+        }
       }
 
       if( this.__polarRepeat !== undefined ) this.__polarRepeat.upload_data( gl, false )
@@ -103873,7 +104366,7 @@ const createPrimitives = function( SDF ) {
 
 module.exports = createPrimitives
 
-},{"./primitiveDescriptions.js":350,"./sceneNode.js":354,"./transform.js":358,"./utils.js":359,"./var.js":360,"./vec.js":361}],352:[function(require,module,exports){
+},{"./primitiveDescriptions.js":352,"./sceneNode.js":356,"./transform.js":360,"./utils.js":361,"./var.js":362,"./vec.js":363}],354:[function(require,module,exports){
 const getMainContinuous = function( steps, minDistance, maxDistance, postprocessing, bg='vec4(0.,0.,0.,1.)' ) {
   const out = `
   // adapted from https://www.shadertoy.com/view/ldfSWs
@@ -103953,7 +104446,7 @@ const getMainContinuous = function( steps, minDistance, maxDistance, postprocess
   return out
 }
 
-const getMainVoxels = function( steps, postprocessing, voxelSize = .1 ) {
+const getMainVoxels = function( steps, postprocessing, voxelSize = .05 ) {
   const out = `
   struct VoxelDistance {
     bvec3 mask;
@@ -103965,7 +104458,7 @@ const getMainVoxels = function( steps, postprocessing, voxelSize = .1 ) {
   VoxelDistance calcRayIntersection( vec3 rayOrigin, vec3 rayDir ) {
     vec2 result;
 
-    float m = ${voxelSize};
+    float m = ${voxelSize.toFixed(2)};
     rayOrigin *= 1./m;
     vec3 mapPos = vec3(floor(rayOrigin));
     vec3 diff = mapPos - rayOrigin;
@@ -104029,8 +104522,10 @@ const getMainVoxels = function( steps, postprocessing, voxelSize = .1 ) {
       color = bg;
     }
     
-    float modAmount = ${(1./voxelSize).toFixed(1)};
+    float modAmount = ${(1./voxelSize).toFixed(2)};
     bool hit = false;
+    vec3 t = vec3( length(vd.distance-ro) );
+
     if( color != bg ) {
       vec3 pos = vd.distance; 
       color.xyz *= lighting( pos * modAmount, nor, ro, rd, float(vd.id), false ); 
@@ -104040,16 +104535,16 @@ const getMainVoxels = function( steps, postprocessing, voxelSize = .1 ) {
 
     col = color;
 
-    float normalizedDepth = length( (vd.distance-ro) * ${voxelSize.toFixed(1)} ); 
+    float normalizedDepth = length( (vd.distance-ro) * ${voxelSize.toFixed(2)} ); 
     depth = hit == true ? vec4( vec3(1.-normalizedDepth), 1. ) : vec4(0.);
   }`
 
   return out
 }
 
-module.exports = function( variables, scene, preface, geometries, lighting, postprocessing, steps=90, minDistance=.001, maxDistance=20, ops, voxelSize=0 ) {
+module.exports = function( variables, scene, preface, geometries, lighting, postprocessing, steps=90, minDistance=.001, maxDistance=20, ops, useVoxels=false, voxelSize=0 ) {
 
-  const main = voxelSize === 0
+  const main = useVoxels === false
     ? getMainContinuous( steps, minDistance, maxDistance, postprocessing ) 
     : getMainVoxels( steps, postprocessing, voxelSize )
 
@@ -104088,14 +104583,12 @@ module.exports = function( variables, scene, preface, geometries, lighting, post
         mat4 repeatTransform;
       };
 
-      uniform float time;
-      uniform vec2 resolution;
       uniform vec3 camera_pos;
       uniform vec3 camera_normal;
       uniform float camera_rot;
       uniform mat4 camera;
 
-      
+      vec2 resolution = vec2( ${ Marching.__scene.width }., ${Marching.__scene.height}. );
 
       ${variables}
 
@@ -104152,19 +104645,20 @@ module.exports = function( variables, scene, preface, geometries, lighting, post
         return _out;
       }
 
-      // added k value to glsl-sdf-ops/soft-shadow
-      float softshadow( in vec3 ro, in vec3 rd, in float mint, in float tmax, in float k ){
-        float res = 1.0;
-        float t = mint;
-
-        for( int i = 0; i < 12; i++ ) {
-          float h = scene( ro + rd * t ).x;
-          res = min( res, k * h / t );
-          t += clamp( h, 0.02, 0.10 );
-          if( h<0.001 || t>tmax ) break;
-        }
-
-        return clamp( res, 0.0, 1.0 );
+      // taken from https://iquilezles.org/articles/rmshadows/
+      float softshadow( in vec3 ro, in vec3 rd, float mint, float maxt, float w )
+      {
+          float res = 1.0;
+          float t = mint;
+          for( int i=0; i<256 && t<maxt; i++ )
+          {
+              float h = scene(ro + t*rd).x;
+              res = min( res, h/(w*t) );
+              t += clamp(h, 0.005, 0.50);
+              if( res<-1.0 || t>maxt ) break;
+          }
+          res = max(res,-1.0);
+          return 0.25*(1.0+res)*(1.0+res)*(2.0-res);
       }
 
 ${lighting}
@@ -104181,7 +104675,7 @@ ${main}
     return fs_source
   }
 
-},{}],353:[function(require,module,exports){
+},{}],355:[function(require,module,exports){
 const getFog = require( './fog.js' )
 const vignette = require( './vignette.js' )
 const { param_wrap, MaterialID } = require( './utils.js' )
@@ -104207,13 +104701,14 @@ const getScene = function( SDF ) {
       objs, 
       canvas,
       postprocessing:[],
-      __shadow:8,
+      __shadow:.2,
       __followLight:null,
       __postprocessingFlag:false,
       __steps:null,
       __thresold:null,
       __farPlane:null,
-      __resolution:null
+      __resolution:null,
+      __voxelSize:.1
     })
 
     scene.useQuality = true
@@ -104292,6 +104787,9 @@ const getScene = function( SDF ) {
     
     applyPreset( presetName ) {
       const preset = this.presets[ presetName ]
+      if( preset === undefined ) {
+        throw ReferenceError(`The render preset ${presetName} doesn't exist.`)
+      }
       if( preset.farPlane !== undefined ) {
         this.farPlane( this.__farPlane || preset.farPlane )
       }else{
@@ -104300,6 +104798,7 @@ const getScene = function( SDF ) {
       this.steps( this.__steps || preset.steps )
       if( this.donotuseresolution === undefined ) this.resolution( this.__resolution || preset.resolution )
       this.threshold( this.__threshold || preset.threshold || .001 )
+      this.useVoxels = presetName.indexOf( 'voxel' ) !== -1
 
       return preset.animated
     },
@@ -104311,7 +104810,7 @@ const getScene = function( SDF ) {
       return this
     },
 
-    render( quality=10, animate=false, useQuality=true ) {
+    render( quality=10, animate=false, useQuality=true, shouldResetTime=false ) {
       // adds default if none has been specified
       this.background() 
       if( this.__postprocessingFlag === false ) { SDF.fx.clear() }
@@ -104324,18 +104823,26 @@ const getScene = function( SDF ) {
 
       this.animate( animate )
 
-      SDF.distanceOps.__clear()
+      //SDF.distanceOps.__clear()
       SDF.alterations.__clear()
       SDF.textures.clear()
+
+      // MATERIALS MUST BE GENERATED BEFORE GEOMETRIES,
+      // SO THAT GEOMETRIES CAN PROPERLY REFERENCE THEM
+      SDF.materials.generate() 
       const geometries = SDF.primitives.emit_geometries()
 
       let [ variablesDeclaration, sceneRendering, postprocessing ] = SDF.generateSDF( this )
+      //SDF.materials.generate( Marching.scene )
 
       const lighting = SDF.lighting.gen( this.__shadow, geometries )
       variablesDeclaration += SDF.materials.emit_decl() 
       variablesDeclaration += SDF.textures.emit_decl() 
       variablesDeclaration += SDF.lighting.emit_decl() 
       variablesDeclaration += this.__background.emit_decl()
+
+      if( this.width === undefined )  this.width = window.innerWidth
+      if( this.height === undefined ) this.height = window.innerHeight
 
       this.fs = SDF.renderFragmentShader( 
         variablesDeclaration, 
@@ -104346,12 +104853,13 @@ const getScene = function( SDF ) {
         postprocessing, 
         this.__steps, this.__threshold, this.__farPlane.toFixed(1),
         SDF.distanceOps.__getGLSL() + SDF.alterations.__getGLSL(),
-        this.useVoxels ? this.__voxelSize : 0
+        this.useVoxels,
+        this.__voxelSize
       )
 
-      if( this.width === undefined ) this.width = window.innerWidth
-      if( this.height === undefined ) this.height = window.innerHeight
-      SDF.start( this.fs, this.width, this.height, this.__animate )
+
+      const time = SDF.render !== null && !shouldResetTime ? SDF.render.time : 0
+      SDF.start( this.fs, this.width, this.height, this.__animate, time  )
 
       //SDF.materials.materials.length = 0
 
@@ -104472,12 +104980,36 @@ const getScene = function( SDF ) {
 
 module.exports = getScene 
 
-},{"./background.js":334,"./fog.js":342,"./lighting.js":345,"./utils.js":359,"./var.js":360,"./vignette.js":362}],354:[function(require,module,exports){
+},{"./background.js":335,"./fog.js":343,"./lighting.js":346,"./utils.js":361,"./var.js":362,"./vignette.js":364}],356:[function(require,module,exports){
 const SceneNode = ()=> Object.create( SceneNode.prototype )
 const Matrix = require( './external/matrix.js' )
 
 SceneNode.prototype = {
   active: 1,
+
+  // register functions passed as property values
+  // to callbacks, and assign initial value by
+  // running the function
+  __processFunction( obj, value, name, shouldAdd=false ) {
+    if( typeof value === 'function' ) {
+      const __value = value
+      let fnc = null
+
+      if( typeof obj[ name ] === 'function' ) {
+        fnc = t => obj[ name ]( __value( t ) ) 
+      }else{
+        fnc = shouldAdd 
+          ? t => obj[ name ] += __value( t )
+          : t => obj[ name ] =__value( t )  
+      }
+
+      Marching.postrendercallbacks.push( fnc )
+
+      value = value( 0 )
+    }
+
+    return value
+  },
 
 	emit() { return "#NotImplemented#"; },
 
@@ -104486,6 +105018,19 @@ SceneNode.prototype = {
 	update_location(gl, program) {},
 
   upload_data(gl) {},
+
+  __dirty() {
+    const params = this.params || this.parameters
+    params.forEach( v => {
+      if( this[ v.name ] !== undefined ) {
+        this[ v.name ].dirty = true
+      }
+    })
+
+    if( this.transform !== undefined ) {
+      this.transform.dirty = true
+    }
+  },
 
   getID() {
     let id = this.id
@@ -104515,13 +105060,37 @@ SceneNode.prototype = {
     return this.translate( ...args )
   },
 
+  moveBy( x,y,z ) {
+    x = this.__processFunction( this.transform.translation, x, 'x', true )
+    y = this.__processFunction( this.transform.translation, y, 'y', true )
+    z = this.__processFunction( this.transform.translation, z, 'z', true )
+
+    if( x !== undefined && x !== null ) this.transform.translation.x += x
+    if( y !== undefined && y !== null ) this.transform.translation.y += y
+    if( z !== undefined && z !== null ) this.transform.translation.z += z
+
+    return this
+  },
+  
   rotate( angle, x,y,z ) {
+    angle = this.__processFunction( this.transform.rotation, angle, 'angle' )
     this.transform.rotation.angle = angle
+
+    x = this.__processFunction( this.transform.rotation.axis, x, 'x' )
+    y = this.__processFunction( this.transform.rotation.axis, y, 'y' )
+    z = this.__processFunction( this.transform.rotation.axis, z, 'z' )
     if( x !== undefined ) this.transform.rotation.axis.x = x
     if( y !== undefined ) this.transform.rotation.axis.y = y
     if( z !== undefined ) this.transform.rotation.axis.z = z
   
     return this
+  },
+
+  rotateX( angle ) {
+    angle = this.__processFunction( this.transform.rotation, angle, 'angle' )
+    this.transform.rotation.angle = angle
+
+
   },
 
   rotateBy( angle,x,y,z ) {
@@ -104530,6 +105099,9 @@ SceneNode.prototype = {
   },
 
   translate( x,y,z ) {
+    x = this.__processFunction( this.transform.translation, x, 'x' )
+    y = this.__processFunction( this.transform.translation, y, 'y' )
+    z = this.__processFunction( this.transform.translation, z, 'z' )
     if( x !== undefined && x !== null ) this.transform.translation.x = x
     if( y !== undefined && y !== null ) this.transform.translation.y = y
     if( z !== undefined && z !== null ) this.transform.translation.z = z
@@ -104538,7 +105110,14 @@ SceneNode.prototype = {
   },
 
   scale( amount ) {
+    amount = this.__processFunction( this, amount, 'scale' )
     if( amount !== undefined ) this.transform.scale = amount
+    return this
+  },
+
+  scaleBy( amount ) {
+    amount = this.__processFunction( this, amount, 'scaleBy' )
+    if( amount !== undefined ) this.transform.scale += amount
     return this
   },
 
@@ -104574,7 +105153,7 @@ ops.forEach( op => {
 
 module.exports = SceneNode
 
-},{"./external/matrix.js":340}],355:[function(require,module,exports){
+},{"./external/matrix.js":341}],357:[function(require,module,exports){
 const SceneNode = require( './sceneNode.js' ),
       getPixels = require( 'get-pixels' ),
       createTexture = require( 'gl-texture2d' ),
@@ -104720,6 +105299,7 @@ const __Textures = function( SDF ) {
       if( target === null ) target = tex
       tex.__target = target
 
+      if( tex.parameters === undefined ) tex.parameters = []
       for( let param of tex.parameters ) {
         const defaultValues = param.default
         const isArray = Array.isArray( defaultValues )
@@ -104931,7 +105511,7 @@ const __Textures = function( SDF ) {
 
 module.exports = __Textures
 
-},{"./sceneNode.js":354,"./textureDescriptions.js":356,"./textureWrap.js":357,"./utils.js":359,"./var.js":360,"./vec.js":361,"get-pixels":425,"gl-texture2d":456}],356:[function(require,module,exports){
+},{"./sceneNode.js":356,"./textureDescriptions.js":358,"./textureWrap.js":359,"./utils.js":361,"./var.js":362,"./vec.js":363,"get-pixels":427,"gl-texture2d":458}],358:[function(require,module,exports){
 const glsl = require( 'glslify' )
 
 const textures = {
@@ -104992,7 +105572,7 @@ const textures = {
   checkers: {
     name:'checkers',
     glsl:`          
-        vec3 checkers( vec3 pos, float size, vec3 mod, vec3 color1, vec3 color2 ) {
+        vec3 checkers( vec3 pos, float size, vec3 mod, vec3 color1, vec3 color2, float strength ) {
           vec3 tex;
           pos  = (pos+mod) * size;
           if ((int(floor(pos.x) + floor(pos.y) + floor(pos.z)) & 1) == 0) {
@@ -105001,21 +105581,22 @@ const textures = {
             tex = color2;
           }
 
-          return tex;
+          return tex * strength;
         }`,
     glsl2d:`
-        vec3 checkers2d( vec2 uv, float size, vec3 mod, vec3 color1, vec3 color2 ) {
+        vec3 checkers2d( vec2 uv, float size, vec3 mod, vec3 color1, vec3 color2, float strength ) {
           float fmodResult = mod(floor(size * (uv.x+mod.x)) + floor(size * (uv.y+mod.y)), 2.0);
           float fin = max(sign(fmodResult), 0.0); 
 
-          return vec3(fin);
+          return vec3(fin) * strength;
         }
     `,
     parameters: [
       { name:'scale',  type:'float', default:5 },
       { name:'uv',  type:'vec3', default:[0,0,0] },
       { name:'color1', type:'vec3', default:[1,1,1] },
-      { name:'color2', type:'vec3', default:[0,0,0] }
+      { name:'color2', type:'vec3', default:[0,0,0] },
+      { name:'strength', type:'float', default:1 },
     ],
   },
   noise: {
@@ -105051,7 +105632,7 @@ const textures = {
             return _st;
         }
 
-        vec3 truchet2d( vec2 st, float scale, vec3 mod, vec3 color ) {
+        vec3 truchet2d( vec2 st, float scale, vec3 mod, vec3 color, float strength ) {
             st = (st+mod.xy) * scale;
             vec2 ipos = floor(st);  // integer
             vec2 fpos = fract(st);  // fraction
@@ -105059,23 +105640,24 @@ const textures = {
             vec2 tile = truchetPattern(fpos, random_truchet( ipos ));
 
             float col = smoothstep(tile.x-0.3,tile.x,tile.y)-smoothstep(tile.x,tile.x+.3,tile.y);
-            return color * col;
+            return color * col * strength;
         }
 
 ` ,
     parameters: [
       { name:'scale', type:'float', default:10 },
       { name:'uv',  type:'vec3', default:[0,0,0] },
-      { name:'color', type:'vec3', default:[1,1,1] }
+      { name:'color', type:'vec3', default:[1,1,1] },
+      { name:'strength', type:'float', default:1 },
     ],
   },
   dots: {
     name:'dots',
     glsl:`          
-        vec3 dots( vec3 pos, float count, vec3 mod, float radius, vec3 color ) {
+        vec3 dots( vec3 pos, float count, vec3 mod, float radius, vec3 color, float strength ) {
           vec3 tex;
           tex = vec3( color - smoothstep( radius, radius+.02, length(fract(pos*(round(count/2.)+.5)) -.5 )) );
-          return tex;
+          return tex * strength;
         }` ,
     glsl2d:`
       vec2 tile(vec2 _st, float _zoom){
@@ -105089,32 +105671,35 @@ const textures = {
         return 1.-smoothstep(_radius-(_radius*0.05),_radius+(_radius*0.05),dot(pos,pos)*3.14);
       }
     
-      vec3 dots2d( vec2 _st, float scale, vec3 mod, float radius, vec3 color ) {
+      vec3 dots2d( vec2 _st, float scale, vec3 mod, float radius, vec3 color, float strength ) {
         vec2 st = tile((_st+mod.xy,scale);
         vec3 fin = vec3(circle(st, radius)) * color;
-        return fin;
+        return fin * strength;
       }
     `,
     parameters: [
       { name:'scale', type:'float', default:5 },
       { name:'uv',  type:'vec3', default:[0,0,0] },
       { name:'radius', type:'float', default:.3 },
-      { name:'color', type:'vec3', default:[1,1,1] }
+      { name:'color', type:'vec3', default:[1,1,1] },
+      { name:'strength', type:'float', default:1 },
+
     ],
   },
   stripes: {
     name:'stripes',
     glsl:`          
-        vec3 stripes( vec3 pos, float scale, vec3 mod, vec3 color ) {
+        vec3 stripes( vec3 pos, float scale, vec3 mod, vec3 color, float strength ) {
           vec3 tex;
           pos = pos + mod;
           tex = vec3( color - smoothstep(0.3, 0.32, length(fract((pos.x+pos.y+pos.z)*scale) -.5 )) );
-          return tex;
+          return tex * strength;
         }` ,
     parameters: [
       { name:'scale', type:'float', default:5 },
       { name:'uv',  type:'vec3', default:[0,0,0] },
-      { name:'color', type:'vec3', default:[1,1,1] }
+      { name:'color', type:'vec3', default:[1,1,1] },
+      { name:'strength', type:'float', default:1 },
     ],
   },
   cellular: {
@@ -105138,7 +105723,8 @@ const textures = {
       { name:'uv',  type:'vec3', default:[0,0,0] },
       { name:'res', type:'float', default:100 },
       { name:'time', type:'float', default:1 },
-      { name:'mode', type:'float', default:0 }
+      { name:'mode', type:'float', default:0 },
+      { name:'strength', type:'float', default:1 }
     ],
     glsl:`
     vec3 voronoi_hash(vec3 p) {
@@ -105178,17 +105764,17 @@ const textures = {
       return vec3(sqrt(res), abs(id));
     }
 
-    vec3 voronoi( vec3 pos, float scale, vec3 mod, float res, float time, float mode ) {
+    vec3 voronoi( vec3 pos, float scale, vec3 mod, float res, float time, float mode, float strength ) {
       vec3 v = voronoi_3d( (pos+mod) * scale, res );
       vec3 fin;
       if( mode == 0. ) fin = vec3(v.x);
       if( mode == 1. ) fin = vec3(v.y);
       if( mode == 2. ) fin = vec3(v.y - v.x); 
 
-      return fin;
+      return fin * strength;
     }
 `,
-    glsl2d:glsl(["#define GLSLIFY 1\n    \n    vec3 voronoi_hash(vec3 p) {\n      return fract(\n          sin(vec3(dot(p, vec3(1.0, 57.0, 113.0)), dot(p, vec3(57.0, 113.0, 1.0)),\n                   dot(p, vec3(113.0, 1.0, 57.0)))) * 43758.5453);\n    }\n\n    vec3 voronoi_3d(const in vec3 x, float _res ) {\n      vec3 p = floor(x);\n      vec3 f = fract(x);\n\n      float id = 0.0;\n      vec2 res = vec2( _res );\n      for (int k = -1; k <= 1; k++) {\n        for (int j = -1; j <= 1; j++) {\n          for (int i = -1; i <= 1; i++) {\n            vec3 b = vec3(float(i), float(j), float(k));\n            vec3 r = vec3(b) - f + voronoi_hash(p + b);\n            float d = dot(r, r);\n\n            float cond = max(sign(res.x - d), 0.0);\n            float nCond = 1.0 - cond;\n\n            float cond2 = nCond * max(sign(res.y - d), 0.0);\n            float nCond2 = 1.0 - cond2;\n\n            id = (dot(p + b, vec3(1.0, 57.0, 113.0)) * cond) + (id * nCond);\n            res = vec2(d, res.x) * cond + res * nCond;\n\n            res.y = cond2 * d + nCond2 * res.y;\n          }\n        }\n      }\n\n      return vec3(sqrt(res), abs(id));\n    }\n\n    vec3 voronoi2d( vec2 st, float scale, vec3 mod, float res, float time, float mode ) {\n      vec3 v = voronoi_3d( vec3((st+mod.xy) * scale, time), res );\n      vec3 fin;\n      if( mode == 0. ) fin = vec3(v.x);\n      if( mode == 1. ) fin = vec3(v.y);\n      if( mode == 2. ) fin = vec3(v.y - v.x); \n\n      return fin;\n    }\n\n",""]) ,
+    glsl2d:glsl(["#define GLSLIFY 1\n    \n    vec3 voronoi_hash(vec3 p) {\n      return fract(\n          sin(vec3(dot(p, vec3(1.0, 57.0, 113.0)), dot(p, vec3(57.0, 113.0, 1.0)),\n                   dot(p, vec3(113.0, 1.0, 57.0)))) * 43758.5453);\n    }\n\n    vec3 voronoi_3d(const in vec3 x, float _res ) {\n      vec3 p = floor(x);\n      vec3 f = fract(x);\n\n      float id = 0.0;\n      vec2 res = vec2( _res );\n      for (int k = -1; k <= 1; k++) {\n        for (int j = -1; j <= 1; j++) {\n          for (int i = -1; i <= 1; i++) {\n            vec3 b = vec3(float(i), float(j), float(k));\n            vec3 r = vec3(b) - f + voronoi_hash(p + b);\n            float d = dot(r, r);\n\n            float cond = max(sign(res.x - d), 0.0);\n            float nCond = 1.0 - cond;\n\n            float cond2 = nCond * max(sign(res.y - d), 0.0);\n            float nCond2 = 1.0 - cond2;\n\n            id = (dot(p + b, vec3(1.0, 57.0, 113.0)) * cond) + (id * nCond);\n            res = vec2(d, res.x) * cond + res * nCond;\n\n            res.y = cond2 * d + nCond2 * res.y;\n          }\n        }\n      }\n\n      return vec3(sqrt(res), abs(id));\n    }\n\n    vec3 voronoi2d( vec2 st, float scale, vec3 mod, float res, float time, float mode, float strength ) {\n      vec3 v = voronoi_3d( vec3((st+mod.xy) * scale, time), res );\n      vec3 fin;\n      if( mode == 0. ) fin = vec3(v.x);\n      if( mode == 1. ) fin = vec3(v.y);\n      if( mode == 2. ) fin = vec3(v.y - v.x); \n\n      return fin * strength;\n    }\n\n",""]) ,
   },
   // adapted from https://thebookofshaders.com/edit.php#09/zigzag.frag
   zigzag: {
@@ -105207,7 +105793,7 @@ const textures = {
          return smoothstep( _pct-_antia, _pct, _st.y);
        }
 
-       vec3 zigzag2d( vec2 st, float scale, vec3 mod, float time ) {
+       vec3 zigzag2d( vec2 st, float scale, vec3 mod, float time, float strength ) {
          st = mirrorTile((st+mod.xy)*vec2(1.,2.),scale);
          float x = st.x*2.;
          float a = floor(1.+sin(x*3.14));
@@ -105216,20 +105802,21 @@ const textures = {
 
          vec3 color = vec3( fillY(st,mix(a,b,f),0.01) ); 
 
-         return vec3(color);
+         return vec3(color) * strength;
        }
 ` ,
     parameters: [
       { name:'scale', type:'float', default:5 },
       { name:'uv',  type:'vec3', default:[0,0,0] },
-      { name:'time', type:'float', default:1 }
+      { name:'time', type:'float', default:1 },
+      { name:'strength', type:'float', default:1 }
     ],
   }
 }
 
 module.exports = textures
 
-},{"glslify":503}],357:[function(require,module,exports){
+},{"glslify":505}],359:[function(require,module,exports){
 module.exports = `
     // p = point on surface, p0 = object center
     vec2 getUVCubic(vec3 p ){
@@ -105291,7 +105878,7 @@ module.exports = `vec3 t3(sampler2D tex, vec3 p, vec3 n)
     }`
     */
 
-},{}],358:[function(require,module,exports){
+},{}],360:[function(require,module,exports){
 const { param_wrap, MaterialID } = require( './utils.js' )
 const { Var, float_var_gen, vec2_var_gen, vec3_var_gen, vec4_var_gen, int_var_gen, VarAlloc }  = require( './var.js' )
 const Matrix = require( './external/matrix.js' )
@@ -105302,6 +105889,7 @@ const MatrixWrap = function ( shouldInvert = false ) {
   m.translation = {}
   m.scale = {}
   m.shouldInvert = shouldInvert
+  m.shouldRotate = true
   m.rotation = {
     axis: {}
   }
@@ -105478,10 +106066,14 @@ MatrixWrap.prototype = {
     this.__data = this.__data.multiply( Matrix.translate( this.translation.x, this.translation.y, this.translation.z ) ) 
 
     // handle cumulative rotations via .rotateBy() method
-    this.__rotations.forEach( r => this.__data = this.__data.multiply( r ) )
+    this.__rotations.forEach( r => {
+      this.__data = this.__data.multiply( r )
+    })
 
     // handle absolute rotations via .rotate() method... should this be aliased to rotateTo() ?
-    this.__data = this.__data.multiply( Matrix.rotate( this.rotation.angle, this.rotation.axis.x, this.rotation.axis.y, this.rotation.axis.z ) )
+    if( this.shouldRotate ) {
+      this.__data = this.__data.multiply( Matrix.rotate( this.rotation.angle, this.rotation.axis.x, this.rotation.axis.y, this.rotation.axis.z ) )
+    }
 
     this.__data = this.__data.multiply( Matrix.scale( this.scale, this.scale, this.scale ) )
   },
@@ -105500,7 +106092,7 @@ MatrixWrap.prototype = {
 
 module.exports = MatrixWrap
 
-},{"./external/matrix.js":340,"./utils.js":359,"./var.js":360}],359:[function(require,module,exports){
+},{"./external/matrix.js":341,"./utils.js":361,"./var.js":362}],361:[function(require,module,exports){
 const Var = require('./var.js').Var
 const { Vec2, Vec3, Vec4 } = require( './vec.js' )
 
@@ -105535,14 +106127,14 @@ const processVec3 = function( val ) {
   if( typeof val === 'number' ) 
     val = Vec3( val )
   else if( Array.isArray( val ) ) 
-    val = Vec3( val[0], val[1], val[2] )
+    val = Vec3( val[0], val[1] || val[0], val[2] || val[0] )
 
   return val
 }
 
 module.exports = { param_wrap, MaterialID, processVec2, processVec3 }
 
-},{"./var.js":360,"./vec.js":361}],360:[function(require,module,exports){
+},{"./var.js":362,"./vec.js":363}],362:[function(require,module,exports){
 const { Vec2, Vec3, Vec4 } = require( './vec.js' )
 const float = require( './float.js' )
 const int   = require( './int.js' )
@@ -105661,7 +106253,9 @@ Var.prototype = {
       this.value.update_location( gl, program )
       return
     }
-		this.loc = gl.getUniformLocation(program, this.varName)
+    
+    //if( this.loc === -1 )
+		  this.loc = gl.getUniformLocation(program, this.varName)
 	},	
 
 	upload_data(gl) {
@@ -105747,16 +106341,35 @@ function vec4_var_gen( x, y, z, w, name=null ) {
 }
 */
 
-},{"./float.js":341,"./int.js":344,"./vec.js":361}],361:[function(require,module,exports){
+},{"./float.js":342,"./int.js":345,"./vec.js":363}],363:[function(require,module,exports){
+// add functions to animation callback if needed
+const process = function( vec, dim, arg ) {
+
+  if( typeof arg === 'function' ) {
+    const fnc = arg
+    Marching.postrendercallbacks.push( t => {
+      vec[ dim ] = fnc( t ) 
+      vec.dirty = true
+      vec.var.dirty = true
+    })
+
+    // set initial value with t=0
+    arg = fnc( 0 )
+  }
+  
+  return arg
+}
+
 const Vec2 = function (x=0, y=0) {
   if( x.type === 'vec2' ) return x  
   const v = Object.create( Vec2.prototype )
   if( Array.isArray( x ) ) {
-    v.x = x[0]; v.y = x[1]; 
+    v.x = process(v, 'x', x[0]); v.y = process(v, 'y', x[1]); 
   } else if( y === undefined ) {
-    v.x = v.y = x
+    v.x = process(v, 'x', x)
+    v.y = process(v, 'y', x)
   }else{
-    v.x = x; v.y = y; 
+    v.x = process(v,'x',x); v.y = process(v,'y',y); 
   }
 
   return v
@@ -105808,11 +106421,13 @@ const Vec3 = function (x=0, y, z) {
   })
 
   if( Array.isArray( x ) ) {
-    v.x = x[0]; v.y = x[1]; v.z = x[2]; 
-  } else if( y === undefined && z === undefined) {
-    v.x = v.y = v.z = x
+    v.x = process(v,'x',x[0]); v.y = process(v,'y',x[1]); v.z = process(v,'z',x[2]); 
+   } else if( y === undefined ) {
+    v.x = process(v, 'x', x)
+    v.y = process(v, 'y', x)
+    v.z = process(v, 'z', x)
   }else{
-    v.x = x; v.y = y; v.z = z;
+    v.x = process(v,'x',x); v.y = process(v,'y',y); v.z=process(v,'z',z) 
   }
  
   v.isGen = v.x.type === 'string' || v.y.type === 'string' || v.z.type === 'string'
@@ -106028,7 +106643,7 @@ Vec4.prototype = {
 
 module.exports = { Vec2, Vec3, Vec4 } 
 
-},{}],362:[function(require,module,exports){
+},{}],364:[function(require,module,exports){
 const SceneNode = require( './sceneNode.js' ),
       { param_wrap, MaterialID } = require( './utils.js' ),
       { Var, float_var_gen, vec2_var_gen, vec3_var_gen, vec4_var_gen, int_var_gen, VarAlloc } = require( './var.js' )
@@ -106102,7 +106717,7 @@ const Vignette = function( Scene, SDF ) {
 
 module.exports = Vignette 
 
-},{"./sceneNode.js":354,"./utils.js":359,"./var.js":360}],363:[function(require,module,exports){
+},{"./sceneNode.js":356,"./utils.js":361,"./var.js":362}],365:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CodeBuilder = exports.channelSamplerName = void 0;
@@ -106293,7 +106908,7 @@ class CodeBuilder {
 }
 exports.CodeBuilder = CodeBuilder;
 
-},{"./exprs/expr":377,"./settings":416,"./webglprogramloop":418}],364:[function(require,module,exports){
+},{"./exprs/expr":379,"./settings":418,"./webglprogramloop":420}],366:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.a1 = exports.Arity1HomogenousExpr = void 0;
@@ -106328,7 +106943,7 @@ function a1(name, val) {
 }
 exports.a1 = a1;
 
-},{"./expr":377}],365:[function(require,module,exports){
+},{"./expr":379}],367:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.a2 = exports.Arity2HomogenousExpr = void 0;
@@ -106372,7 +106987,7 @@ function a2(name, val1, val2) {
 }
 exports.a2 = a2;
 
-},{"./expr":377}],366:[function(require,module,exports){
+},{"./expr":379}],368:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.bloom = exports.BloomLoop = void 0;
@@ -106456,7 +107071,7 @@ function bloom(threshold, horizontal, vertical, boost, samplerNum, taps, reps) {
 }
 exports.bloom = bloom;
 
-},{"../mergepass":415,"./arity2":365,"./blurexpr":368,"./brightnessexpr":369,"./channelsampleexpr":371,"./contrastexpr":372,"./expr":377,"./fragcolorexpr":378,"./opexpr":395,"./vecexprs":411}],367:[function(require,module,exports){
+},{"../mergepass":417,"./arity2":367,"./blurexpr":370,"./brightnessexpr":371,"./channelsampleexpr":373,"./contrastexpr":374,"./expr":379,"./fragcolorexpr":380,"./opexpr":397,"./vecexprs":413}],369:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.blur2d = exports.Blur2dLoop = void 0;
@@ -106509,7 +107124,7 @@ function blur2d(horizontalExpr, verticalExpr, reps, taps, samplerNum) {
 }
 exports.blur2d = blur2d;
 
-},{"../mergepass":415,"./blurexpr":368,"./expr":377,"./vecexprs":411}],368:[function(require,module,exports){
+},{"../mergepass":417,"./blurexpr":370,"./expr":379,"./vecexprs":413}],370:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.gauss = exports.BlurExpr = void 0;
@@ -106565,7 +107180,7 @@ function gauss(direction, taps = 5, samplerNum) {
 }
 exports.gauss = gauss;
 
-},{"../glslfunctions":413,"./expr":377}],369:[function(require,module,exports){
+},{"../glslfunctions":415,"./expr":379}],371:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.brightness = exports.Brightness = void 0;
@@ -106598,7 +107213,7 @@ function brightness(val, col) {
 }
 exports.brightness = brightness;
 
-},{"../glslfunctions":413,"./expr":377,"./fragcolorexpr":378}],370:[function(require,module,exports){
+},{"../glslfunctions":415,"./expr":379,"./fragcolorexpr":380}],372:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.changecomp = exports.ChangeCompExpr = void 0;
@@ -106687,7 +107302,7 @@ function changecomp(vec, setter, comps, op) {
 }
 exports.changecomp = changecomp;
 
-},{"./expr":377,"./getcompexpr":382}],371:[function(require,module,exports){
+},{"./expr":379,"./getcompexpr":384}],373:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.channel = exports.ChannelSampleExpr = void 0;
@@ -106733,7 +107348,7 @@ function channel(channel, vec) {
 }
 exports.channel = channel;
 
-},{"../codebuilder":363,"../glslfunctions":413,"./expr":377,"./normfragcoordexpr":393}],372:[function(require,module,exports){
+},{"../codebuilder":365,"../glslfunctions":415,"./expr":379,"./normfragcoordexpr":395}],374:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.contrast = exports.ContrastExpr = void 0;
@@ -106765,7 +107380,7 @@ function contrast(val, col) {
 }
 exports.contrast = contrast;
 
-},{"../glslfunctions":413,"./expr":377,"./fragcolorexpr":378}],373:[function(require,module,exports){
+},{"../glslfunctions":415,"./expr":379,"./fragcolorexpr":380}],375:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.depth2occlusion = exports.DepthToOcclusionExpr = void 0;
@@ -106813,7 +107428,7 @@ function depth2occlusion(depthCol, newCol, threshold) {
 }
 exports.depth2occlusion = depth2occlusion;
 
-},{"./channelsampleexpr":371,"./expr":377,"./vecexprs":411}],374:[function(require,module,exports){
+},{"./channelsampleexpr":373,"./expr":379,"./vecexprs":413}],376:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.dof = exports.DoFLoop = void 0;
@@ -106859,7 +107474,7 @@ function dof(depth, rad, depthInfo, reps) {
 }
 exports.dof = dof;
 
-},{"../mergepass":415,"./arity2":365,"./blurexpr":368,"./channelsampleexpr":371,"./expr":377,"./gaussianexpr":381,"./getcompexpr":382,"./opexpr":395,"./vecexprs":411}],375:[function(require,module,exports){
+},{"../mergepass":417,"./arity2":367,"./blurexpr":370,"./channelsampleexpr":373,"./expr":379,"./gaussianexpr":383,"./getcompexpr":384,"./opexpr":397,"./vecexprs":413}],377:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.edgecolor = exports.EdgeColorExpr = void 0;
@@ -106897,7 +107512,7 @@ function edgecolor(color, samplerNum, stepped) {
 }
 exports.edgecolor = edgecolor;
 
-},{"./arity2":365,"./expr":377,"./fragcolorexpr":378,"./monochromeexpr":388,"./sobelexpr":406,"./vecexprs":411}],376:[function(require,module,exports){
+},{"./arity2":367,"./expr":379,"./fragcolorexpr":380,"./monochromeexpr":390,"./sobelexpr":408,"./vecexprs":413}],378:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.edge = exports.EdgeExpr = void 0;
@@ -106933,7 +107548,7 @@ function edge(style, samplerNum) {
 }
 exports.edge = edge;
 
-},{"./brightnessexpr":369,"./expr":377,"./getcompexpr":382,"./invertexpr":386,"./monochromeexpr":388,"./opexpr":395,"./sobelexpr":406}],377:[function(require,module,exports){
+},{"./brightnessexpr":371,"./expr":379,"./getcompexpr":384,"./invertexpr":388,"./monochromeexpr":390,"./opexpr":397,"./sobelexpr":408}],379:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.tag = exports.wrapInValue = exports.pfloat = exports.Operator = exports.WrappedExpr = exports.ExprVec4 = exports.ExprVec3 = exports.ExprVec2 = exports.float = exports.ExprFloat = exports.BasicFloat = exports.ExprVec = exports.BasicVec4 = exports.BasicVec3 = exports.BasicVec2 = exports.BasicVec = exports.PrimitiveVec4 = exports.PrimitiveVec3 = exports.PrimitiveVec2 = exports.PrimitiveVec = exports.PrimitiveFloat = exports.Primitive = exports.mut = exports.Mutable = exports.cvec4 = exports.cvec3 = exports.cvec2 = exports.cfloat = exports.Expr = void 0;
@@ -107393,7 +108008,7 @@ function tag(strings, ...values) {
 }
 exports.tag = tag;
 
-},{"../mergepass":415,"../utils":417,"../webglprogramloop":418}],378:[function(require,module,exports){
+},{"../mergepass":417,"../utils":419,"../webglprogramloop":420}],380:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.fcolor = exports.FragColorExpr = void 0;
@@ -107412,7 +108027,7 @@ function fcolor() {
 }
 exports.fcolor = fcolor;
 
-},{"./expr":377}],379:[function(require,module,exports){
+},{"./expr":379}],381:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.pixel = exports.FragCoordExpr = void 0;
@@ -107433,7 +108048,7 @@ function pixel() {
 }
 exports.pixel = pixel;
 
-},{"./expr":377}],380:[function(require,module,exports){
+},{"./expr":379}],382:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.fxaa = void 0;
@@ -107453,7 +108068,7 @@ function fxaa() {
 }
 exports.fxaa = fxaa;
 
-},{"../glslfunctions":413,"./expr":377}],381:[function(require,module,exports){
+},{"../glslfunctions":415,"./expr":379}],383:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.gaussian = exports.GaussianExpr = void 0;
@@ -107493,7 +108108,7 @@ function gaussian(x, a = 0, b = 1) {
 }
 exports.gaussian = gaussian;
 
-},{"../glslfunctions":413,"./expr":377}],382:[function(require,module,exports){
+},{"../glslfunctions":415,"./expr":379}],384:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.get4comp = exports.get3comp = exports.get2comp = exports.getcomp = exports.Get4CompExpr = exports.Get3CompExpr = exports.Get2CompExpr = exports.GetCompExpr = exports.checkLegalComponents = exports.typeStringToLength = void 0;
@@ -107647,7 +108262,7 @@ function get4comp(vec, comps) {
 }
 exports.get4comp = get4comp;
 
-},{"./expr":377}],383:[function(require,module,exports){
+},{"./expr":379}],385:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.godrays = exports.GodRaysExpr = void 0;
@@ -107763,7 +108378,7 @@ function godrays(options = {}) {
 }
 exports.godrays = godrays;
 
-},{"../glslfunctions":413,"./expr":377,"./fragcolorexpr":378,"./vecexprs":411}],384:[function(require,module,exports){
+},{"../glslfunctions":415,"./expr":379,"./fragcolorexpr":380,"./vecexprs":413}],386:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.grain = exports.GrainExpr = void 0;
@@ -107795,7 +108410,7 @@ function grain(val) {
 }
 exports.grain = grain;
 
-},{"../glslfunctions":413,"./expr":377}],385:[function(require,module,exports){
+},{"../glslfunctions":415,"./expr":379}],387:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.hsv2rgb = exports.HSVToRGBExpr = void 0;
@@ -107824,7 +108439,7 @@ function hsv2rgb(col) {
 }
 exports.hsv2rgb = hsv2rgb;
 
-},{"../glslfunctions":413,"./expr":377}],386:[function(require,module,exports){
+},{"../glslfunctions":415,"./expr":379}],388:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.invert = exports.InvertExpr = void 0;
@@ -107852,7 +108467,7 @@ function invert(col) {
 }
 exports.invert = invert;
 
-},{"../glslfunctions":413,"./expr":377}],387:[function(require,module,exports){
+},{"../glslfunctions":415,"./expr":379}],389:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.len = exports.LenExpr = void 0;
@@ -107875,7 +108490,7 @@ function len(vec) {
 }
 exports.len = len;
 
-},{"./expr":377}],388:[function(require,module,exports){
+},{"./expr":379}],390:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.monochrome = exports.MonochromeExpr = void 0;
@@ -107904,7 +108519,7 @@ function monochrome(col) {
 }
 exports.monochrome = monochrome;
 
-},{"../glslfunctions":413,"./expr":377}],389:[function(require,module,exports){
+},{"../glslfunctions":415,"./expr":379}],391:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.motionblur = exports.MotionBlurLoop = void 0;
@@ -107946,7 +108561,7 @@ function motionblur(target, persistence) {
 }
 exports.motionblur = motionblur;
 
-},{"../mergepass":415,"./channelsampleexpr":371,"./expr":377,"./fragcolorexpr":378,"./opexpr":395}],390:[function(require,module,exports){
+},{"../mergepass":417,"./channelsampleexpr":373,"./expr":379,"./fragcolorexpr":380,"./opexpr":397}],392:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.mouse = exports.MouseExpr = void 0;
@@ -107968,7 +108583,7 @@ function mouse() {
 }
 exports.mouse = mouse;
 
-},{"./expr":377}],391:[function(require,module,exports){
+},{"./expr":379}],393:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.center = exports.NormCenterFragCoordExpr = void 0;
@@ -107989,7 +108604,7 @@ function center() {
 }
 exports.center = center;
 
-},{"./expr":377}],392:[function(require,module,exports){
+},{"./expr":379}],394:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.norm = exports.NormExpr = void 0;
@@ -108013,7 +108628,7 @@ function norm(vec) {
 }
 exports.norm = norm;
 
-},{"./expr":377}],393:[function(require,module,exports){
+},{"./expr":379}],395:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.pos = exports.NormFragCoordExpr = void 0;
@@ -108036,7 +108651,7 @@ function pos() {
 }
 exports.pos = pos;
 
-},{"./expr":377}],394:[function(require,module,exports){
+},{"./expr":379}],396:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.nmouse = exports.NormMouseExpr = void 0;
@@ -108058,7 +108673,7 @@ function nmouse() {
 }
 exports.nmouse = nmouse;
 
-},{"./expr":377}],395:[function(require,module,exports){
+},{"./expr":379}],397:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.op = exports.OpExpr = void 0;
@@ -108097,7 +108712,7 @@ function op(left, op, right) {
 }
 exports.op = op;
 
-},{"./expr":377}],396:[function(require,module,exports){
+},{"./expr":379}],398:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.fractalize = exports.perlin = exports.PerlinExpr = void 0;
@@ -108148,7 +108763,7 @@ function fractalize(pos, octaves, func) {
 }
 exports.fractalize = fractalize;
 
-},{"../glslfunctions":413,"./expr":377,"./opexpr":395}],397:[function(require,module,exports){
+},{"../glslfunctions":415,"./expr":379,"./opexpr":397}],399:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.pblur = exports.PowerBlurLoop = void 0;
@@ -108190,7 +108805,7 @@ function pblur(size) {
 }
 exports.pblur = pblur;
 
-},{"../mergepass":415,"./blurexpr":368,"./expr":377,"./vecexprs":411}],398:[function(require,module,exports){
+},{"../mergepass":417,"./blurexpr":370,"./expr":379,"./vecexprs":413}],400:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.random = exports.RandomExpr = void 0;
@@ -108221,7 +108836,7 @@ function random(seed) {
 }
 exports.random = random;
 
-},{"../glslfunctions":413,"./expr":377,"./normfragcoordexpr":393}],399:[function(require,module,exports){
+},{"../glslfunctions":415,"./expr":379,"./normfragcoordexpr":395}],401:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.region = void 0;
@@ -108281,7 +108896,7 @@ function region(space, success, failure, not = false) {
 }
 exports.region = region;
 
-},{"../mergepass":415,"./expr":377,"./fragcolorexpr":378,"./getcompexpr":382,"./normfragcoordexpr":393,"./opexpr":395,"./ternaryexpr":407}],400:[function(require,module,exports){
+},{"../mergepass":417,"./expr":379,"./fragcolorexpr":380,"./getcompexpr":384,"./normfragcoordexpr":395,"./opexpr":397,"./ternaryexpr":409}],402:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.resolution = exports.ResolutionExpr = void 0;
@@ -108299,7 +108914,7 @@ function resolution() {
 }
 exports.resolution = resolution;
 
-},{"./expr":377}],401:[function(require,module,exports){
+},{"./expr":379}],403:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.rgb2hsv = exports.RGBToHSVExpr = void 0;
@@ -108329,7 +108944,7 @@ function rgb2hsv(col) {
 }
 exports.rgb2hsv = rgb2hsv;
 
-},{"../glslfunctions":413,"./expr":377}],402:[function(require,module,exports){
+},{"../glslfunctions":415,"./expr":379}],404:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.rotate = exports.RotateExpr = void 0;
@@ -108365,7 +108980,7 @@ function rotate(vec, angle) {
 }
 exports.rotate = rotate;
 
-},{"../glslfunctions":413,"./expr":377}],403:[function(require,module,exports){
+},{"../glslfunctions":415,"./expr":379}],405:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.input = exports.SceneSampleExpr = void 0;
@@ -108396,7 +109011,7 @@ function input(vec) {
 }
 exports.input = input;
 
-},{"./expr":377,"./normfragcoordexpr":393}],404:[function(require,module,exports){
+},{"./expr":379,"./normfragcoordexpr":395}],406:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SetColorExpr = void 0;
@@ -108413,7 +109028,7 @@ class SetColorExpr extends expr_1.ExprVec4 {
 }
 exports.SetColorExpr = SetColorExpr;
 
-},{"./expr":377}],405:[function(require,module,exports){
+},{"./expr":379}],407:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.simplex = exports.SimplexNoise = void 0;
@@ -108441,7 +109056,7 @@ function simplex(pos) {
 }
 exports.simplex = simplex;
 
-},{"../glslfunctions":413,"./expr":377}],406:[function(require,module,exports){
+},{"../glslfunctions":415,"./expr":379}],408:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.sobel = exports.SobelExpr = void 0;
@@ -108467,7 +109082,7 @@ function sobel(samplerNum) {
 }
 exports.sobel = sobel;
 
-},{"../glslfunctions":413,"./expr":377}],407:[function(require,module,exports){
+},{"../glslfunctions":415,"./expr":379}],409:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ternary = exports.TernaryExpr = void 0;
@@ -108532,7 +109147,7 @@ function ternary(floats, success, failure, not = false) {
 }
 exports.ternary = ternary;
 
-},{"./expr":377}],408:[function(require,module,exports){
+},{"./expr":379}],410:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.time = exports.TimeExpr = void 0;
@@ -108551,7 +109166,7 @@ function time() {
 }
 exports.time = time;
 
-},{"./expr":377}],409:[function(require,module,exports){
+},{"./expr":379}],411:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.translate = exports.TranslateExpr = void 0;
@@ -108584,7 +109199,7 @@ function translate(vec, pos) {
 }
 exports.translate = translate;
 
-},{"./expr":377}],410:[function(require,module,exports){
+},{"./expr":379}],412:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.truedepth = exports.TrueDepthExpr = void 0;
@@ -108610,7 +109225,7 @@ function truedepth(depth) {
 }
 exports.truedepth = truedepth;
 
-},{"../glslfunctions":413,"./expr":377}],411:[function(require,module,exports){
+},{"../glslfunctions":415,"./expr":379}],413:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.pvec4 = exports.pvec3 = exports.pvec2 = exports.vec4 = exports.vec3 = exports.vec2 = void 0;
@@ -108661,11 +109276,11 @@ function pvec4(comp1, comp2, comp3, comp4) {
 }
 exports.pvec4 = pvec4;
 
-},{"./expr":377}],412:[function(require,module,exports){
+},{"./expr":379}],414:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 
-},{}],413:[function(require,module,exports){
+},{}],415:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.glslFuncs = void 0;
@@ -108985,7 +109600,7 @@ vec3 permute(vec3 x) { return mod289_3(((x*34.0)+1.0)*x); }`,
 }`,
 };
 
-},{}],414:[function(require,module,exports){
+},{}],416:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -109049,7 +109664,7 @@ __exportStar(require("./exprs/ternaryexpr"), exports);
 __exportStar(require("./exprs/regiondecorator"), exports);
 __exportStar(require("./exprs/expr"), exports);
 
-},{"./exprs/arity1":364,"./exprs/arity2":365,"./exprs/bloomloop":366,"./exprs/blur2dloop":367,"./exprs/blurexpr":368,"./exprs/brightnessexpr":369,"./exprs/changecompexpr":370,"./exprs/channelsampleexpr":371,"./exprs/contrastexpr":372,"./exprs/depthtoocclusionexpr":373,"./exprs/dofloop":374,"./exprs/edgecolorexpr":375,"./exprs/edgeexpr":376,"./exprs/expr":377,"./exprs/fragcolorexpr":378,"./exprs/fragcoordexpr":379,"./exprs/fxaaexpr":380,"./exprs/getcompexpr":382,"./exprs/godraysexpr":383,"./exprs/grainexpr":384,"./exprs/hsvtorgbexpr":385,"./exprs/invertexpr":386,"./exprs/lenexpr":387,"./exprs/monochromeexpr":388,"./exprs/motionblurloop":389,"./exprs/mouseexpr":390,"./exprs/normcenterfragcoordexpr":391,"./exprs/normexpr":392,"./exprs/normfragcoordexpr":393,"./exprs/normmouseexpr":394,"./exprs/opexpr":395,"./exprs/perlinexpr":396,"./exprs/powerblur":397,"./exprs/randomexpr":398,"./exprs/regiondecorator":399,"./exprs/resolutionexpr":400,"./exprs/rgbtohsvexpr":401,"./exprs/rotateexpr":402,"./exprs/scenesampleexpr":403,"./exprs/simplexexpr":405,"./exprs/sobelexpr":406,"./exprs/ternaryexpr":407,"./exprs/timeexpr":408,"./exprs/translateexpr":409,"./exprs/truedepthexpr":410,"./exprs/vecexprs":411,"./exprtypes":412,"./glslfunctions":413,"./mergepass":415,"./settings":416}],415:[function(require,module,exports){
+},{"./exprs/arity1":366,"./exprs/arity2":367,"./exprs/bloomloop":368,"./exprs/blur2dloop":369,"./exprs/blurexpr":370,"./exprs/brightnessexpr":371,"./exprs/changecompexpr":372,"./exprs/channelsampleexpr":373,"./exprs/contrastexpr":374,"./exprs/depthtoocclusionexpr":375,"./exprs/dofloop":376,"./exprs/edgecolorexpr":377,"./exprs/edgeexpr":378,"./exprs/expr":379,"./exprs/fragcolorexpr":380,"./exprs/fragcoordexpr":381,"./exprs/fxaaexpr":382,"./exprs/getcompexpr":384,"./exprs/godraysexpr":385,"./exprs/grainexpr":386,"./exprs/hsvtorgbexpr":387,"./exprs/invertexpr":388,"./exprs/lenexpr":389,"./exprs/monochromeexpr":390,"./exprs/motionblurloop":391,"./exprs/mouseexpr":392,"./exprs/normcenterfragcoordexpr":393,"./exprs/normexpr":394,"./exprs/normfragcoordexpr":395,"./exprs/normmouseexpr":396,"./exprs/opexpr":397,"./exprs/perlinexpr":398,"./exprs/powerblur":399,"./exprs/randomexpr":400,"./exprs/regiondecorator":401,"./exprs/resolutionexpr":402,"./exprs/rgbtohsvexpr":403,"./exprs/rotateexpr":404,"./exprs/scenesampleexpr":405,"./exprs/simplexexpr":407,"./exprs/sobelexpr":408,"./exprs/ternaryexpr":409,"./exprs/timeexpr":410,"./exprs/translateexpr":411,"./exprs/truedepthexpr":412,"./exprs/vecexprs":413,"./exprtypes":414,"./glslfunctions":415,"./mergepass":417,"./settings":418}],417:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.sendTexture = exports.makeTexture = exports.Merger = exports.loop = exports.EffectLoop = exports.EffectDictionary = void 0;
@@ -109484,7 +110099,7 @@ function sendTexture(gl, src) {
 }
 exports.sendTexture = sendTexture;
 
-},{"./codebuilder":363,"./exprs/expr":377,"./exprs/fragcolorexpr":378,"./exprs/regiondecorator":399,"./exprs/scenesampleexpr":403,"./exprs/setcolorexpr":404,"./exprs/ternaryexpr":407,"./settings":416,"./webglprogramloop":418}],416:[function(require,module,exports){
+},{"./codebuilder":365,"./exprs/expr":379,"./exprs/fragcolorexpr":380,"./exprs/regiondecorator":401,"./exprs/scenesampleexpr":405,"./exprs/setcolorexpr":406,"./exprs/ternaryexpr":409,"./settings":418,"./webglprogramloop":420}],418:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.settings = void 0;
@@ -109500,7 +110115,7 @@ exports.settings = {
     offset: 0,
 };
 
-},{}],417:[function(require,module,exports){
+},{}],419:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.brandWithRegion = exports.brandWithChannel = exports.captureAndAppend = void 0;
@@ -109585,7 +110200,7 @@ function brandWithRegion(expr, funcIndex, space) {
 }
 exports.brandWithRegion = brandWithRegion;
 
-},{"./glslfunctions":413}],418:[function(require,module,exports){
+},{"./glslfunctions":415}],420:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.WebGLProgramLoop = exports.WebGLProgramLeaf = exports.updateNeeds = void 0;
@@ -109819,7 +110434,7 @@ class WebGLProgramLoop {
 }
 exports.WebGLProgramLoop = WebGLProgramLoop;
 
-},{"./settings":416}],419:[function(require,module,exports){
+},{"./settings":418}],421:[function(require,module,exports){
 /**
  * Bit twiddling hacks for JavaScript.
  *
@@ -110025,7 +110640,7 @@ exports.nextCombination = function(v) {
 }
 
 
-},{}],420:[function(require,module,exports){
+},{}],422:[function(require,module,exports){
 "use strict"
 
 var createThunk = require("./lib/thunk.js")
@@ -110136,7 +110751,7 @@ function compileCwise(user_args) {
 
 module.exports = compileCwise
 
-},{"./lib/thunk.js":422}],421:[function(require,module,exports){
+},{"./lib/thunk.js":424}],423:[function(require,module,exports){
 "use strict"
 
 var uniq = require("uniq")
@@ -110496,7 +111111,7 @@ function generateCWiseOp(proc, typesig) {
 }
 module.exports = generateCWiseOp
 
-},{"uniq":513}],422:[function(require,module,exports){
+},{"uniq":519}],424:[function(require,module,exports){
 "use strict"
 
 // The function below is called when constructing a cwise function object, and does the following:
@@ -110584,7 +111199,7 @@ function createThunk(proc) {
 
 module.exports = createThunk
 
-},{"./compile.js":421}],423:[function(require,module,exports){
+},{"./compile.js":423}],425:[function(require,module,exports){
 (function (Buffer){(function (){
 
 /**
@@ -110642,7 +111257,7 @@ function dataUriToBuffer (uri) {
 }
 
 }).call(this)}).call(this,require("buffer").Buffer)
-},{"buffer":143}],424:[function(require,module,exports){
+},{"buffer":143}],426:[function(require,module,exports){
 "use strict"
 
 function dupe_array(count, value, i) {
@@ -110692,7 +111307,7 @@ function dupe(count, value) {
 }
 
 module.exports = dupe
-},{}],425:[function(require,module,exports){
+},{}],427:[function(require,module,exports){
 (function (Buffer,process){(function (){
 'use strict'
 
@@ -110830,7 +111445,7 @@ module.exports = function getPixels(url, type, cb) {
   }
 }
 }).call(this)}).call(this,{"isBuffer":require("../../../gibber/node_modules/is-buffer/index.js")},require('_process'))
-},{"../../../gibber/node_modules/is-buffer/index.js":156,"_process":193,"data-uri-to-buffer":423,"ndarray":509,"ndarray-pack":507,"omggif":510,"path":191,"through":511}],426:[function(require,module,exports){
+},{"../../../gibber/node_modules/is-buffer/index.js":156,"_process":193,"data-uri-to-buffer":425,"ndarray":512,"ndarray-pack":510,"omggif":513,"path":191,"through":517}],428:[function(require,module,exports){
 module.exports = adjoint;
 
 /**
@@ -110864,7 +111479,7 @@ function adjoint(out, a) {
     out[15] =  (a00 * (a11 * a22 - a12 * a21) - a10 * (a01 * a22 - a02 * a21) + a20 * (a01 * a12 - a02 * a11));
     return out;
 };
-},{}],427:[function(require,module,exports){
+},{}],429:[function(require,module,exports){
 module.exports = clone;
 
 /**
@@ -110893,7 +111508,7 @@ function clone(a) {
     out[15] = a[15];
     return out;
 };
-},{}],428:[function(require,module,exports){
+},{}],430:[function(require,module,exports){
 module.exports = copy;
 
 /**
@@ -110922,7 +111537,7 @@ function copy(out, a) {
     out[15] = a[15];
     return out;
 };
-},{}],429:[function(require,module,exports){
+},{}],431:[function(require,module,exports){
 module.exports = create;
 
 /**
@@ -110950,7 +111565,7 @@ function create() {
     out[15] = 1;
     return out;
 };
-},{}],430:[function(require,module,exports){
+},{}],432:[function(require,module,exports){
 module.exports = determinant;
 
 /**
@@ -110981,7 +111596,7 @@ function determinant(a) {
     // Calculate the determinant
     return b00 * b11 - b01 * b10 + b02 * b09 + b03 * b08 - b04 * b07 + b05 * b06;
 };
-},{}],431:[function(require,module,exports){
+},{}],433:[function(require,module,exports){
 module.exports = fromQuat;
 
 /**
@@ -111029,7 +111644,7 @@ function fromQuat(out, q) {
 
     return out;
 };
-},{}],432:[function(require,module,exports){
+},{}],434:[function(require,module,exports){
 module.exports = fromRotation
 
 /**
@@ -111084,7 +111699,7 @@ function fromRotation(out, rad, axis) {
   return out
 }
 
-},{}],433:[function(require,module,exports){
+},{}],435:[function(require,module,exports){
 module.exports = fromRotationTranslation;
 
 /**
@@ -111138,7 +111753,7 @@ function fromRotationTranslation(out, q, v) {
     
     return out;
 };
-},{}],434:[function(require,module,exports){
+},{}],436:[function(require,module,exports){
 module.exports = fromScaling
 
 /**
@@ -111172,7 +111787,7 @@ function fromScaling(out, v) {
   return out
 }
 
-},{}],435:[function(require,module,exports){
+},{}],437:[function(require,module,exports){
 module.exports = fromTranslation
 
 /**
@@ -111206,7 +111821,7 @@ function fromTranslation(out, v) {
   return out
 }
 
-},{}],436:[function(require,module,exports){
+},{}],438:[function(require,module,exports){
 module.exports = fromXRotation
 
 /**
@@ -111243,7 +111858,7 @@ function fromXRotation(out, rad) {
     out[15] = 1
     return out
 }
-},{}],437:[function(require,module,exports){
+},{}],439:[function(require,module,exports){
 module.exports = fromYRotation
 
 /**
@@ -111280,7 +111895,7 @@ function fromYRotation(out, rad) {
     out[15] = 1
     return out
 }
-},{}],438:[function(require,module,exports){
+},{}],440:[function(require,module,exports){
 module.exports = fromZRotation
 
 /**
@@ -111317,7 +111932,7 @@ function fromZRotation(out, rad) {
     out[15] = 1
     return out
 }
-},{}],439:[function(require,module,exports){
+},{}],441:[function(require,module,exports){
 module.exports = frustum;
 
 /**
@@ -111354,7 +111969,7 @@ function frustum(out, left, right, bottom, top, near, far) {
     out[15] = 0;
     return out;
 };
-},{}],440:[function(require,module,exports){
+},{}],442:[function(require,module,exports){
 module.exports = identity;
 
 /**
@@ -111382,7 +111997,7 @@ function identity(out) {
     out[15] = 1;
     return out;
 };
-},{}],441:[function(require,module,exports){
+},{}],443:[function(require,module,exports){
 module.exports = {
   create: require('./create')
   , clone: require('./clone')
@@ -111415,7 +112030,7 @@ module.exports = {
   , str: require('./str')
 }
 
-},{"./adjoint":426,"./clone":427,"./copy":428,"./create":429,"./determinant":430,"./fromQuat":431,"./fromRotation":432,"./fromRotationTranslation":433,"./fromScaling":434,"./fromTranslation":435,"./fromXRotation":436,"./fromYRotation":437,"./fromZRotation":438,"./frustum":439,"./identity":440,"./invert":442,"./lookAt":443,"./multiply":444,"./ortho":445,"./perspective":446,"./perspectiveFromFieldOfView":447,"./rotate":448,"./rotateX":449,"./rotateY":450,"./rotateZ":451,"./scale":452,"./str":453,"./translate":454,"./transpose":455}],442:[function(require,module,exports){
+},{"./adjoint":428,"./clone":429,"./copy":430,"./create":431,"./determinant":432,"./fromQuat":433,"./fromRotation":434,"./fromRotationTranslation":435,"./fromScaling":436,"./fromTranslation":437,"./fromXRotation":438,"./fromYRotation":439,"./fromZRotation":440,"./frustum":441,"./identity":442,"./invert":444,"./lookAt":445,"./multiply":446,"./ortho":447,"./perspective":448,"./perspectiveFromFieldOfView":449,"./rotate":450,"./rotateX":451,"./rotateY":452,"./rotateZ":453,"./scale":454,"./str":455,"./translate":456,"./transpose":457}],444:[function(require,module,exports){
 module.exports = invert;
 
 /**
@@ -111471,7 +112086,7 @@ function invert(out, a) {
 
     return out;
 };
-},{}],443:[function(require,module,exports){
+},{}],445:[function(require,module,exports){
 var identity = require('./identity');
 
 module.exports = lookAt;
@@ -111562,7 +112177,7 @@ function lookAt(out, eye, center, up) {
 
     return out;
 };
-},{"./identity":440}],444:[function(require,module,exports){
+},{"./identity":442}],446:[function(require,module,exports){
 module.exports = multiply;
 
 /**
@@ -111605,7 +112220,7 @@ function multiply(out, a, b) {
     out[15] = b0*a03 + b1*a13 + b2*a23 + b3*a33;
     return out;
 };
-},{}],445:[function(require,module,exports){
+},{}],447:[function(require,module,exports){
 module.exports = ortho;
 
 /**
@@ -111642,7 +112257,7 @@ function ortho(out, left, right, bottom, top, near, far) {
     out[15] = 1;
     return out;
 };
-},{}],446:[function(require,module,exports){
+},{}],448:[function(require,module,exports){
 module.exports = perspective;
 
 /**
@@ -111676,7 +112291,7 @@ function perspective(out, fovy, aspect, near, far) {
     out[15] = 0;
     return out;
 };
-},{}],447:[function(require,module,exports){
+},{}],449:[function(require,module,exports){
 module.exports = perspectiveFromFieldOfView;
 
 /**
@@ -111718,7 +112333,7 @@ function perspectiveFromFieldOfView(out, fov, near, far) {
 }
 
 
-},{}],448:[function(require,module,exports){
+},{}],450:[function(require,module,exports){
 module.exports = rotate;
 
 /**
@@ -111783,7 +112398,7 @@ function rotate(out, a, rad, axis) {
     }
     return out;
 };
-},{}],449:[function(require,module,exports){
+},{}],451:[function(require,module,exports){
 module.exports = rotateX;
 
 /**
@@ -111828,7 +112443,7 @@ function rotateX(out, a, rad) {
     out[11] = a23 * c - a13 * s;
     return out;
 };
-},{}],450:[function(require,module,exports){
+},{}],452:[function(require,module,exports){
 module.exports = rotateY;
 
 /**
@@ -111873,7 +112488,7 @@ function rotateY(out, a, rad) {
     out[11] = a03 * s + a23 * c;
     return out;
 };
-},{}],451:[function(require,module,exports){
+},{}],453:[function(require,module,exports){
 module.exports = rotateZ;
 
 /**
@@ -111918,7 +112533,7 @@ function rotateZ(out, a, rad) {
     out[7] = a13 * c - a03 * s;
     return out;
 };
-},{}],452:[function(require,module,exports){
+},{}],454:[function(require,module,exports){
 module.exports = scale;
 
 /**
@@ -111950,7 +112565,7 @@ function scale(out, a, v) {
     out[15] = a[15];
     return out;
 };
-},{}],453:[function(require,module,exports){
+},{}],455:[function(require,module,exports){
 module.exports = str;
 
 /**
@@ -111965,7 +112580,7 @@ function str(a) {
                     a[8] + ', ' + a[9] + ', ' + a[10] + ', ' + a[11] + ', ' + 
                     a[12] + ', ' + a[13] + ', ' + a[14] + ', ' + a[15] + ')';
 };
-},{}],454:[function(require,module,exports){
+},{}],456:[function(require,module,exports){
 module.exports = translate;
 
 /**
@@ -112004,7 +112619,7 @@ function translate(out, a, v) {
 
     return out;
 };
-},{}],455:[function(require,module,exports){
+},{}],457:[function(require,module,exports){
 module.exports = transpose;
 
 /**
@@ -112054,7 +112669,7 @@ function transpose(out, a) {
     
     return out;
 };
-},{}],456:[function(require,module,exports){
+},{}],458:[function(require,module,exports){
 'use strict'
 
 var ndarray = require('ndarray')
@@ -112617,7 +113232,7 @@ function createTexture2D(gl) {
   throw new Error('gl-texture2d: Invalid arguments for texture2d constructor')
 }
 
-},{"ndarray":509,"ndarray-ops":506,"typedarray-pool":512}],457:[function(require,module,exports){
+},{"ndarray":512,"ndarray-ops":509,"typedarray-pool":518}],459:[function(require,module,exports){
 module.exports = add;
 
 /**
@@ -112634,7 +113249,7 @@ function add(out, a, b) {
     out[2] = a[2] + b[2]
     return out
 }
-},{}],458:[function(require,module,exports){
+},{}],460:[function(require,module,exports){
 module.exports = angle
 
 var fromValues = require('./fromValues')
@@ -112663,7 +113278,7 @@ function angle(a, b) {
     }     
 }
 
-},{"./dot":468,"./fromValues":474,"./normalize":485}],459:[function(require,module,exports){
+},{"./dot":470,"./fromValues":476,"./normalize":487}],461:[function(require,module,exports){
 module.exports = ceil
 
 /**
@@ -112680,7 +113295,7 @@ function ceil(out, a) {
   return out
 }
 
-},{}],460:[function(require,module,exports){
+},{}],462:[function(require,module,exports){
 module.exports = clone;
 
 /**
@@ -112696,7 +113311,7 @@ function clone(a) {
     out[2] = a[2]
     return out
 }
-},{}],461:[function(require,module,exports){
+},{}],463:[function(require,module,exports){
 module.exports = copy;
 
 /**
@@ -112712,7 +113327,7 @@ function copy(out, a) {
     out[2] = a[2]
     return out
 }
-},{}],462:[function(require,module,exports){
+},{}],464:[function(require,module,exports){
 module.exports = create;
 
 /**
@@ -112727,7 +113342,7 @@ function create() {
     out[2] = 0
     return out
 }
-},{}],463:[function(require,module,exports){
+},{}],465:[function(require,module,exports){
 module.exports = cross;
 
 /**
@@ -112747,10 +113362,10 @@ function cross(out, a, b) {
     out[2] = ax * by - ay * bx
     return out
 }
-},{}],464:[function(require,module,exports){
+},{}],466:[function(require,module,exports){
 module.exports = require('./distance')
 
-},{"./distance":465}],465:[function(require,module,exports){
+},{"./distance":467}],467:[function(require,module,exports){
 module.exports = distance;
 
 /**
@@ -112766,10 +113381,10 @@ function distance(a, b) {
         z = b[2] - a[2]
     return Math.sqrt(x*x + y*y + z*z)
 }
-},{}],466:[function(require,module,exports){
+},{}],468:[function(require,module,exports){
 module.exports = require('./divide')
 
-},{"./divide":467}],467:[function(require,module,exports){
+},{"./divide":469}],469:[function(require,module,exports){
 module.exports = divide;
 
 /**
@@ -112786,7 +113401,7 @@ function divide(out, a, b) {
     out[2] = a[2] / b[2]
     return out
 }
-},{}],468:[function(require,module,exports){
+},{}],470:[function(require,module,exports){
 module.exports = dot;
 
 /**
@@ -112799,10 +113414,10 @@ module.exports = dot;
 function dot(a, b) {
     return a[0] * b[0] + a[1] * b[1] + a[2] * b[2]
 }
-},{}],469:[function(require,module,exports){
+},{}],471:[function(require,module,exports){
 module.exports = 0.000001
 
-},{}],470:[function(require,module,exports){
+},{}],472:[function(require,module,exports){
 module.exports = equals
 
 var EPSILON = require('./epsilon')
@@ -112826,7 +113441,7 @@ function equals(a, b) {
           Math.abs(a2 - b2) <= EPSILON * Math.max(1.0, Math.abs(a2), Math.abs(b2)))
 }
 
-},{"./epsilon":469}],471:[function(require,module,exports){
+},{"./epsilon":471}],473:[function(require,module,exports){
 module.exports = exactEquals
 
 /**
@@ -112840,7 +113455,7 @@ function exactEquals(a, b) {
   return a[0] === b[0] && a[1] === b[1] && a[2] === b[2]
 }
 
-},{}],472:[function(require,module,exports){
+},{}],474:[function(require,module,exports){
 module.exports = floor
 
 /**
@@ -112857,7 +113472,7 @@ function floor(out, a) {
   return out
 }
 
-},{}],473:[function(require,module,exports){
+},{}],475:[function(require,module,exports){
 module.exports = forEach;
 
 var vec = require('./create')()
@@ -112902,7 +113517,7 @@ function forEach(a, stride, offset, count, fn, arg) {
         
         return a
 }
-},{"./create":462}],474:[function(require,module,exports){
+},{"./create":464}],476:[function(require,module,exports){
 module.exports = fromValues;
 
 /**
@@ -112920,7 +113535,7 @@ function fromValues(x, y, z) {
     out[2] = z
     return out
 }
-},{}],475:[function(require,module,exports){
+},{}],477:[function(require,module,exports){
 module.exports = {
   EPSILON: require('./epsilon')
   , create: require('./create')
@@ -112969,7 +113584,7 @@ module.exports = {
   , forEach: require('./forEach')
 }
 
-},{"./add":457,"./angle":458,"./ceil":459,"./clone":460,"./copy":461,"./create":462,"./cross":463,"./dist":464,"./distance":465,"./div":466,"./divide":467,"./dot":468,"./epsilon":469,"./equals":470,"./exactEquals":471,"./floor":472,"./forEach":473,"./fromValues":474,"./inverse":476,"./len":477,"./length":478,"./lerp":479,"./max":480,"./min":481,"./mul":482,"./multiply":483,"./negate":484,"./normalize":485,"./random":486,"./rotateX":487,"./rotateY":488,"./rotateZ":489,"./round":490,"./scale":491,"./scaleAndAdd":492,"./set":493,"./sqrDist":494,"./sqrLen":495,"./squaredDistance":496,"./squaredLength":497,"./sub":498,"./subtract":499,"./transformMat3":500,"./transformMat4":501,"./transformQuat":502}],476:[function(require,module,exports){
+},{"./add":459,"./angle":460,"./ceil":461,"./clone":462,"./copy":463,"./create":464,"./cross":465,"./dist":466,"./distance":467,"./div":468,"./divide":469,"./dot":470,"./epsilon":471,"./equals":472,"./exactEquals":473,"./floor":474,"./forEach":475,"./fromValues":476,"./inverse":478,"./len":479,"./length":480,"./lerp":481,"./max":482,"./min":483,"./mul":484,"./multiply":485,"./negate":486,"./normalize":487,"./random":488,"./rotateX":489,"./rotateY":490,"./rotateZ":491,"./round":492,"./scale":493,"./scaleAndAdd":494,"./set":495,"./sqrDist":496,"./sqrLen":497,"./squaredDistance":498,"./squaredLength":499,"./sub":500,"./subtract":501,"./transformMat3":502,"./transformMat4":503,"./transformQuat":504}],478:[function(require,module,exports){
 module.exports = inverse;
 
 /**
@@ -112985,10 +113600,10 @@ function inverse(out, a) {
   out[2] = 1.0 / a[2]
   return out
 }
-},{}],477:[function(require,module,exports){
+},{}],479:[function(require,module,exports){
 module.exports = require('./length')
 
-},{"./length":478}],478:[function(require,module,exports){
+},{"./length":480}],480:[function(require,module,exports){
 module.exports = length;
 
 /**
@@ -113003,7 +113618,7 @@ function length(a) {
         z = a[2]
     return Math.sqrt(x*x + y*y + z*z)
 }
-},{}],479:[function(require,module,exports){
+},{}],481:[function(require,module,exports){
 module.exports = lerp;
 
 /**
@@ -113024,7 +113639,7 @@ function lerp(out, a, b, t) {
     out[2] = az + t * (b[2] - az)
     return out
 }
-},{}],480:[function(require,module,exports){
+},{}],482:[function(require,module,exports){
 module.exports = max;
 
 /**
@@ -113041,7 +113656,7 @@ function max(out, a, b) {
     out[2] = Math.max(a[2], b[2])
     return out
 }
-},{}],481:[function(require,module,exports){
+},{}],483:[function(require,module,exports){
 module.exports = min;
 
 /**
@@ -113058,10 +113673,10 @@ function min(out, a, b) {
     out[2] = Math.min(a[2], b[2])
     return out
 }
-},{}],482:[function(require,module,exports){
+},{}],484:[function(require,module,exports){
 module.exports = require('./multiply')
 
-},{"./multiply":483}],483:[function(require,module,exports){
+},{"./multiply":485}],485:[function(require,module,exports){
 module.exports = multiply;
 
 /**
@@ -113078,7 +113693,7 @@ function multiply(out, a, b) {
     out[2] = a[2] * b[2]
     return out
 }
-},{}],484:[function(require,module,exports){
+},{}],486:[function(require,module,exports){
 module.exports = negate;
 
 /**
@@ -113094,7 +113709,7 @@ function negate(out, a) {
     out[2] = -a[2]
     return out
 }
-},{}],485:[function(require,module,exports){
+},{}],487:[function(require,module,exports){
 module.exports = normalize;
 
 /**
@@ -113118,7 +113733,7 @@ function normalize(out, a) {
     }
     return out
 }
-},{}],486:[function(require,module,exports){
+},{}],488:[function(require,module,exports){
 module.exports = random;
 
 /**
@@ -113140,7 +113755,7 @@ function random(out, scale) {
     out[2] = z * scale
     return out
 }
-},{}],487:[function(require,module,exports){
+},{}],489:[function(require,module,exports){
 module.exports = rotateX;
 
 /**
@@ -113170,7 +113785,7 @@ function rotateX(out, a, b, c){
     return out
 }
 
-},{}],488:[function(require,module,exports){
+},{}],490:[function(require,module,exports){
 module.exports = rotateY;
 
 /**
@@ -113200,7 +113815,7 @@ function rotateY(out, a, b, c){
     return out
 }
 
-},{}],489:[function(require,module,exports){
+},{}],491:[function(require,module,exports){
 module.exports = rotateZ;
 
 /**
@@ -113230,7 +113845,7 @@ function rotateZ(out, a, b, c){
     return out
 }
 
-},{}],490:[function(require,module,exports){
+},{}],492:[function(require,module,exports){
 module.exports = round
 
 /**
@@ -113247,7 +113862,7 @@ function round(out, a) {
   return out
 }
 
-},{}],491:[function(require,module,exports){
+},{}],493:[function(require,module,exports){
 module.exports = scale;
 
 /**
@@ -113264,7 +113879,7 @@ function scale(out, a, b) {
     out[2] = a[2] * b
     return out
 }
-},{}],492:[function(require,module,exports){
+},{}],494:[function(require,module,exports){
 module.exports = scaleAndAdd;
 
 /**
@@ -113282,7 +113897,7 @@ function scaleAndAdd(out, a, b, scale) {
     out[2] = a[2] + (b[2] * scale)
     return out
 }
-},{}],493:[function(require,module,exports){
+},{}],495:[function(require,module,exports){
 module.exports = set;
 
 /**
@@ -113300,13 +113915,13 @@ function set(out, x, y, z) {
     out[2] = z
     return out
 }
-},{}],494:[function(require,module,exports){
+},{}],496:[function(require,module,exports){
 module.exports = require('./squaredDistance')
 
-},{"./squaredDistance":496}],495:[function(require,module,exports){
+},{"./squaredDistance":498}],497:[function(require,module,exports){
 module.exports = require('./squaredLength')
 
-},{"./squaredLength":497}],496:[function(require,module,exports){
+},{"./squaredLength":499}],498:[function(require,module,exports){
 module.exports = squaredDistance;
 
 /**
@@ -113322,7 +113937,7 @@ function squaredDistance(a, b) {
         z = b[2] - a[2]
     return x*x + y*y + z*z
 }
-},{}],497:[function(require,module,exports){
+},{}],499:[function(require,module,exports){
 module.exports = squaredLength;
 
 /**
@@ -113337,10 +113952,10 @@ function squaredLength(a) {
         z = a[2]
     return x*x + y*y + z*z
 }
-},{}],498:[function(require,module,exports){
+},{}],500:[function(require,module,exports){
 module.exports = require('./subtract')
 
-},{"./subtract":499}],499:[function(require,module,exports){
+},{"./subtract":501}],501:[function(require,module,exports){
 module.exports = subtract;
 
 /**
@@ -113357,7 +113972,7 @@ function subtract(out, a, b) {
     out[2] = a[2] - b[2]
     return out
 }
-},{}],500:[function(require,module,exports){
+},{}],502:[function(require,module,exports){
 module.exports = transformMat3;
 
 /**
@@ -113375,7 +113990,7 @@ function transformMat3(out, a, m) {
     out[2] = x * m[2] + y * m[5] + z * m[8]
     return out
 }
-},{}],501:[function(require,module,exports){
+},{}],503:[function(require,module,exports){
 module.exports = transformMat4;
 
 /**
@@ -113396,7 +114011,7 @@ function transformMat4(out, a, m) {
     out[2] = (m[2] * x + m[6] * y + m[10] * z + m[14]) / w
     return out
 }
-},{}],502:[function(require,module,exports){
+},{}],504:[function(require,module,exports){
 module.exports = transformQuat;
 
 /**
@@ -113425,7 +114040,7 @@ function transformQuat(out, a, q) {
     out[2] = iz * qw + iw * -qz + ix * -qy - iy * -qx
     return out
 }
-},{}],503:[function(require,module,exports){
+},{}],505:[function(require,module,exports){
 module.exports = function(strings) {
   if (typeof strings === 'string') strings = [strings]
   var exprs = [].slice.call(arguments,1)
@@ -113437,7 +114052,7 @@ module.exports = function(strings) {
   return parts.join('')
 }
 
-},{}],504:[function(require,module,exports){
+},{}],506:[function(require,module,exports){
 "use strict"
 
 function iota(n) {
@@ -113449,9 +114064,1334 @@ function iota(n) {
 }
 
 module.exports = iota
-},{}],505:[function(require,module,exports){
+},{}],507:[function(require,module,exports){
 arguments[4][156][0].apply(exports,arguments)
-},{"dup":156}],506:[function(require,module,exports){
+},{"dup":156}],508:[function(require,module,exports){
+module.exports = Long;
+
+/**
+ * wasm optimizations, to do native i64 multiplication and divide
+ */
+var wasm = null;
+
+try {
+  wasm = new WebAssembly.Instance(new WebAssembly.Module(new Uint8Array([
+    0, 97, 115, 109, 1, 0, 0, 0, 1, 13, 2, 96, 0, 1, 127, 96, 4, 127, 127, 127, 127, 1, 127, 3, 7, 6, 0, 1, 1, 1, 1, 1, 6, 6, 1, 127, 1, 65, 0, 11, 7, 50, 6, 3, 109, 117, 108, 0, 1, 5, 100, 105, 118, 95, 115, 0, 2, 5, 100, 105, 118, 95, 117, 0, 3, 5, 114, 101, 109, 95, 115, 0, 4, 5, 114, 101, 109, 95, 117, 0, 5, 8, 103, 101, 116, 95, 104, 105, 103, 104, 0, 0, 10, 191, 1, 6, 4, 0, 35, 0, 11, 36, 1, 1, 126, 32, 0, 173, 32, 1, 173, 66, 32, 134, 132, 32, 2, 173, 32, 3, 173, 66, 32, 134, 132, 126, 34, 4, 66, 32, 135, 167, 36, 0, 32, 4, 167, 11, 36, 1, 1, 126, 32, 0, 173, 32, 1, 173, 66, 32, 134, 132, 32, 2, 173, 32, 3, 173, 66, 32, 134, 132, 127, 34, 4, 66, 32, 135, 167, 36, 0, 32, 4, 167, 11, 36, 1, 1, 126, 32, 0, 173, 32, 1, 173, 66, 32, 134, 132, 32, 2, 173, 32, 3, 173, 66, 32, 134, 132, 128, 34, 4, 66, 32, 135, 167, 36, 0, 32, 4, 167, 11, 36, 1, 1, 126, 32, 0, 173, 32, 1, 173, 66, 32, 134, 132, 32, 2, 173, 32, 3, 173, 66, 32, 134, 132, 129, 34, 4, 66, 32, 135, 167, 36, 0, 32, 4, 167, 11, 36, 1, 1, 126, 32, 0, 173, 32, 1, 173, 66, 32, 134, 132, 32, 2, 173, 32, 3, 173, 66, 32, 134, 132, 130, 34, 4, 66, 32, 135, 167, 36, 0, 32, 4, 167, 11
+  ])), {}).exports;
+} catch (e) {
+  // no wasm support :(
+}
+
+/**
+ * Constructs a 64 bit two's-complement integer, given its low and high 32 bit values as *signed* integers.
+ *  See the from* functions below for more convenient ways of constructing Longs.
+ * @exports Long
+ * @class A Long class for representing a 64 bit two's-complement integer value.
+ * @param {number} low The low (signed) 32 bits of the long
+ * @param {number} high The high (signed) 32 bits of the long
+ * @param {boolean=} unsigned Whether unsigned or not, defaults to signed
+ * @constructor
+ */
+function Long(low, high, unsigned) {
+
+    /**
+     * The low 32 bits as a signed value.
+     * @type {number}
+     */
+    this.low = low | 0;
+
+    /**
+     * The high 32 bits as a signed value.
+     * @type {number}
+     */
+    this.high = high | 0;
+
+    /**
+     * Whether unsigned or not.
+     * @type {boolean}
+     */
+    this.unsigned = !!unsigned;
+}
+
+// The internal representation of a long is the two given signed, 32-bit values.
+// We use 32-bit pieces because these are the size of integers on which
+// Javascript performs bit-operations.  For operations like addition and
+// multiplication, we split each number into 16 bit pieces, which can easily be
+// multiplied within Javascript's floating-point representation without overflow
+// or change in sign.
+//
+// In the algorithms below, we frequently reduce the negative case to the
+// positive case by negating the input(s) and then post-processing the result.
+// Note that we must ALWAYS check specially whether those values are MIN_VALUE
+// (-2^63) because -MIN_VALUE == MIN_VALUE (since 2^63 cannot be represented as
+// a positive number, it overflows back into a negative).  Not handling this
+// case would often result in infinite recursion.
+//
+// Common constant values ZERO, ONE, NEG_ONE, etc. are defined below the from*
+// methods on which they depend.
+
+/**
+ * An indicator used to reliably determine if an object is a Long or not.
+ * @type {boolean}
+ * @const
+ * @private
+ */
+Long.prototype.__isLong__;
+
+Object.defineProperty(Long.prototype, "__isLong__", { value: true });
+
+/**
+ * @function
+ * @param {*} obj Object
+ * @returns {boolean}
+ * @inner
+ */
+function isLong(obj) {
+    return (obj && obj["__isLong__"]) === true;
+}
+
+/**
+ * Tests if the specified object is a Long.
+ * @function
+ * @param {*} obj Object
+ * @returns {boolean}
+ */
+Long.isLong = isLong;
+
+/**
+ * A cache of the Long representations of small integer values.
+ * @type {!Object}
+ * @inner
+ */
+var INT_CACHE = {};
+
+/**
+ * A cache of the Long representations of small unsigned integer values.
+ * @type {!Object}
+ * @inner
+ */
+var UINT_CACHE = {};
+
+/**
+ * @param {number} value
+ * @param {boolean=} unsigned
+ * @returns {!Long}
+ * @inner
+ */
+function fromInt(value, unsigned) {
+    var obj, cachedObj, cache;
+    if (unsigned) {
+        value >>>= 0;
+        if (cache = (0 <= value && value < 256)) {
+            cachedObj = UINT_CACHE[value];
+            if (cachedObj)
+                return cachedObj;
+        }
+        obj = fromBits(value, (value | 0) < 0 ? -1 : 0, true);
+        if (cache)
+            UINT_CACHE[value] = obj;
+        return obj;
+    } else {
+        value |= 0;
+        if (cache = (-128 <= value && value < 128)) {
+            cachedObj = INT_CACHE[value];
+            if (cachedObj)
+                return cachedObj;
+        }
+        obj = fromBits(value, value < 0 ? -1 : 0, false);
+        if (cache)
+            INT_CACHE[value] = obj;
+        return obj;
+    }
+}
+
+/**
+ * Returns a Long representing the given 32 bit integer value.
+ * @function
+ * @param {number} value The 32 bit integer in question
+ * @param {boolean=} unsigned Whether unsigned or not, defaults to signed
+ * @returns {!Long} The corresponding Long value
+ */
+Long.fromInt = fromInt;
+
+/**
+ * @param {number} value
+ * @param {boolean=} unsigned
+ * @returns {!Long}
+ * @inner
+ */
+function fromNumber(value, unsigned) {
+    if (isNaN(value))
+        return unsigned ? UZERO : ZERO;
+    if (unsigned) {
+        if (value < 0)
+            return UZERO;
+        if (value >= TWO_PWR_64_DBL)
+            return MAX_UNSIGNED_VALUE;
+    } else {
+        if (value <= -TWO_PWR_63_DBL)
+            return MIN_VALUE;
+        if (value + 1 >= TWO_PWR_63_DBL)
+            return MAX_VALUE;
+    }
+    if (value < 0)
+        return fromNumber(-value, unsigned).neg();
+    return fromBits((value % TWO_PWR_32_DBL) | 0, (value / TWO_PWR_32_DBL) | 0, unsigned);
+}
+
+/**
+ * Returns a Long representing the given value, provided that it is a finite number. Otherwise, zero is returned.
+ * @function
+ * @param {number} value The number in question
+ * @param {boolean=} unsigned Whether unsigned or not, defaults to signed
+ * @returns {!Long} The corresponding Long value
+ */
+Long.fromNumber = fromNumber;
+
+/**
+ * @param {number} lowBits
+ * @param {number} highBits
+ * @param {boolean=} unsigned
+ * @returns {!Long}
+ * @inner
+ */
+function fromBits(lowBits, highBits, unsigned) {
+    return new Long(lowBits, highBits, unsigned);
+}
+
+/**
+ * Returns a Long representing the 64 bit integer that comes by concatenating the given low and high bits. Each is
+ *  assumed to use 32 bits.
+ * @function
+ * @param {number} lowBits The low 32 bits
+ * @param {number} highBits The high 32 bits
+ * @param {boolean=} unsigned Whether unsigned or not, defaults to signed
+ * @returns {!Long} The corresponding Long value
+ */
+Long.fromBits = fromBits;
+
+/**
+ * @function
+ * @param {number} base
+ * @param {number} exponent
+ * @returns {number}
+ * @inner
+ */
+var pow_dbl = Math.pow; // Used 4 times (4*8 to 15+4)
+
+/**
+ * @param {string} str
+ * @param {(boolean|number)=} unsigned
+ * @param {number=} radix
+ * @returns {!Long}
+ * @inner
+ */
+function fromString(str, unsigned, radix) {
+    if (str.length === 0)
+        throw Error('empty string');
+    if (str === "NaN" || str === "Infinity" || str === "+Infinity" || str === "-Infinity")
+        return ZERO;
+    if (typeof unsigned === 'number') {
+        // For goog.math.long compatibility
+        radix = unsigned,
+        unsigned = false;
+    } else {
+        unsigned = !! unsigned;
+    }
+    radix = radix || 10;
+    if (radix < 2 || 36 < radix)
+        throw RangeError('radix');
+
+    var p;
+    if ((p = str.indexOf('-')) > 0)
+        throw Error('interior hyphen');
+    else if (p === 0) {
+        return fromString(str.substring(1), unsigned, radix).neg();
+    }
+
+    // Do several (8) digits each time through the loop, so as to
+    // minimize the calls to the very expensive emulated div.
+    var radixToPower = fromNumber(pow_dbl(radix, 8));
+
+    var result = ZERO;
+    for (var i = 0; i < str.length; i += 8) {
+        var size = Math.min(8, str.length - i),
+            value = parseInt(str.substring(i, i + size), radix);
+        if (size < 8) {
+            var power = fromNumber(pow_dbl(radix, size));
+            result = result.mul(power).add(fromNumber(value));
+        } else {
+            result = result.mul(radixToPower);
+            result = result.add(fromNumber(value));
+        }
+    }
+    result.unsigned = unsigned;
+    return result;
+}
+
+/**
+ * Returns a Long representation of the given string, written using the specified radix.
+ * @function
+ * @param {string} str The textual representation of the Long
+ * @param {(boolean|number)=} unsigned Whether unsigned or not, defaults to signed
+ * @param {number=} radix The radix in which the text is written (2-36), defaults to 10
+ * @returns {!Long} The corresponding Long value
+ */
+Long.fromString = fromString;
+
+/**
+ * @function
+ * @param {!Long|number|string|!{low: number, high: number, unsigned: boolean}} val
+ * @param {boolean=} unsigned
+ * @returns {!Long}
+ * @inner
+ */
+function fromValue(val, unsigned) {
+    if (typeof val === 'number')
+        return fromNumber(val, unsigned);
+    if (typeof val === 'string')
+        return fromString(val, unsigned);
+    // Throws for non-objects, converts non-instanceof Long:
+    return fromBits(val.low, val.high, typeof unsigned === 'boolean' ? unsigned : val.unsigned);
+}
+
+/**
+ * Converts the specified value to a Long using the appropriate from* function for its type.
+ * @function
+ * @param {!Long|number|string|!{low: number, high: number, unsigned: boolean}} val Value
+ * @param {boolean=} unsigned Whether unsigned or not, defaults to signed
+ * @returns {!Long}
+ */
+Long.fromValue = fromValue;
+
+// NOTE: the compiler should inline these constant values below and then remove these variables, so there should be
+// no runtime penalty for these.
+
+/**
+ * @type {number}
+ * @const
+ * @inner
+ */
+var TWO_PWR_16_DBL = 1 << 16;
+
+/**
+ * @type {number}
+ * @const
+ * @inner
+ */
+var TWO_PWR_24_DBL = 1 << 24;
+
+/**
+ * @type {number}
+ * @const
+ * @inner
+ */
+var TWO_PWR_32_DBL = TWO_PWR_16_DBL * TWO_PWR_16_DBL;
+
+/**
+ * @type {number}
+ * @const
+ * @inner
+ */
+var TWO_PWR_64_DBL = TWO_PWR_32_DBL * TWO_PWR_32_DBL;
+
+/**
+ * @type {number}
+ * @const
+ * @inner
+ */
+var TWO_PWR_63_DBL = TWO_PWR_64_DBL / 2;
+
+/**
+ * @type {!Long}
+ * @const
+ * @inner
+ */
+var TWO_PWR_24 = fromInt(TWO_PWR_24_DBL);
+
+/**
+ * @type {!Long}
+ * @inner
+ */
+var ZERO = fromInt(0);
+
+/**
+ * Signed zero.
+ * @type {!Long}
+ */
+Long.ZERO = ZERO;
+
+/**
+ * @type {!Long}
+ * @inner
+ */
+var UZERO = fromInt(0, true);
+
+/**
+ * Unsigned zero.
+ * @type {!Long}
+ */
+Long.UZERO = UZERO;
+
+/**
+ * @type {!Long}
+ * @inner
+ */
+var ONE = fromInt(1);
+
+/**
+ * Signed one.
+ * @type {!Long}
+ */
+Long.ONE = ONE;
+
+/**
+ * @type {!Long}
+ * @inner
+ */
+var UONE = fromInt(1, true);
+
+/**
+ * Unsigned one.
+ * @type {!Long}
+ */
+Long.UONE = UONE;
+
+/**
+ * @type {!Long}
+ * @inner
+ */
+var NEG_ONE = fromInt(-1);
+
+/**
+ * Signed negative one.
+ * @type {!Long}
+ */
+Long.NEG_ONE = NEG_ONE;
+
+/**
+ * @type {!Long}
+ * @inner
+ */
+var MAX_VALUE = fromBits(0xFFFFFFFF|0, 0x7FFFFFFF|0, false);
+
+/**
+ * Maximum signed value.
+ * @type {!Long}
+ */
+Long.MAX_VALUE = MAX_VALUE;
+
+/**
+ * @type {!Long}
+ * @inner
+ */
+var MAX_UNSIGNED_VALUE = fromBits(0xFFFFFFFF|0, 0xFFFFFFFF|0, true);
+
+/**
+ * Maximum unsigned value.
+ * @type {!Long}
+ */
+Long.MAX_UNSIGNED_VALUE = MAX_UNSIGNED_VALUE;
+
+/**
+ * @type {!Long}
+ * @inner
+ */
+var MIN_VALUE = fromBits(0, 0x80000000|0, false);
+
+/**
+ * Minimum signed value.
+ * @type {!Long}
+ */
+Long.MIN_VALUE = MIN_VALUE;
+
+/**
+ * @alias Long.prototype
+ * @inner
+ */
+var LongPrototype = Long.prototype;
+
+/**
+ * Converts the Long to a 32 bit integer, assuming it is a 32 bit integer.
+ * @returns {number}
+ */
+LongPrototype.toInt = function toInt() {
+    return this.unsigned ? this.low >>> 0 : this.low;
+};
+
+/**
+ * Converts the Long to a the nearest floating-point representation of this value (double, 53 bit mantissa).
+ * @returns {number}
+ */
+LongPrototype.toNumber = function toNumber() {
+    if (this.unsigned)
+        return ((this.high >>> 0) * TWO_PWR_32_DBL) + (this.low >>> 0);
+    return this.high * TWO_PWR_32_DBL + (this.low >>> 0);
+};
+
+/**
+ * Converts the Long to a string written in the specified radix.
+ * @param {number=} radix Radix (2-36), defaults to 10
+ * @returns {string}
+ * @override
+ * @throws {RangeError} If `radix` is out of range
+ */
+LongPrototype.toString = function toString(radix) {
+    radix = radix || 10;
+    if (radix < 2 || 36 < radix)
+        throw RangeError('radix');
+    if (this.isZero())
+        return '0';
+    if (this.isNegative()) { // Unsigned Longs are never negative
+        if (this.eq(MIN_VALUE)) {
+            // We need to change the Long value before it can be negated, so we remove
+            // the bottom-most digit in this base and then recurse to do the rest.
+            var radixLong = fromNumber(radix),
+                div = this.div(radixLong),
+                rem1 = div.mul(radixLong).sub(this);
+            return div.toString(radix) + rem1.toInt().toString(radix);
+        } else
+            return '-' + this.neg().toString(radix);
+    }
+
+    // Do several (6) digits each time through the loop, so as to
+    // minimize the calls to the very expensive emulated div.
+    var radixToPower = fromNumber(pow_dbl(radix, 6), this.unsigned),
+        rem = this;
+    var result = '';
+    while (true) {
+        var remDiv = rem.div(radixToPower),
+            intval = rem.sub(remDiv.mul(radixToPower)).toInt() >>> 0,
+            digits = intval.toString(radix);
+        rem = remDiv;
+        if (rem.isZero())
+            return digits + result;
+        else {
+            while (digits.length < 6)
+                digits = '0' + digits;
+            result = '' + digits + result;
+        }
+    }
+};
+
+/**
+ * Gets the high 32 bits as a signed integer.
+ * @returns {number} Signed high bits
+ */
+LongPrototype.getHighBits = function getHighBits() {
+    return this.high;
+};
+
+/**
+ * Gets the high 32 bits as an unsigned integer.
+ * @returns {number} Unsigned high bits
+ */
+LongPrototype.getHighBitsUnsigned = function getHighBitsUnsigned() {
+    return this.high >>> 0;
+};
+
+/**
+ * Gets the low 32 bits as a signed integer.
+ * @returns {number} Signed low bits
+ */
+LongPrototype.getLowBits = function getLowBits() {
+    return this.low;
+};
+
+/**
+ * Gets the low 32 bits as an unsigned integer.
+ * @returns {number} Unsigned low bits
+ */
+LongPrototype.getLowBitsUnsigned = function getLowBitsUnsigned() {
+    return this.low >>> 0;
+};
+
+/**
+ * Gets the number of bits needed to represent the absolute value of this Long.
+ * @returns {number}
+ */
+LongPrototype.getNumBitsAbs = function getNumBitsAbs() {
+    if (this.isNegative()) // Unsigned Longs are never negative
+        return this.eq(MIN_VALUE) ? 64 : this.neg().getNumBitsAbs();
+    var val = this.high != 0 ? this.high : this.low;
+    for (var bit = 31; bit > 0; bit--)
+        if ((val & (1 << bit)) != 0)
+            break;
+    return this.high != 0 ? bit + 33 : bit + 1;
+};
+
+/**
+ * Tests if this Long's value equals zero.
+ * @returns {boolean}
+ */
+LongPrototype.isZero = function isZero() {
+    return this.high === 0 && this.low === 0;
+};
+
+/**
+ * Tests if this Long's value equals zero. This is an alias of {@link Long#isZero}.
+ * @returns {boolean}
+ */
+LongPrototype.eqz = LongPrototype.isZero;
+
+/**
+ * Tests if this Long's value is negative.
+ * @returns {boolean}
+ */
+LongPrototype.isNegative = function isNegative() {
+    return !this.unsigned && this.high < 0;
+};
+
+/**
+ * Tests if this Long's value is positive.
+ * @returns {boolean}
+ */
+LongPrototype.isPositive = function isPositive() {
+    return this.unsigned || this.high >= 0;
+};
+
+/**
+ * Tests if this Long's value is odd.
+ * @returns {boolean}
+ */
+LongPrototype.isOdd = function isOdd() {
+    return (this.low & 1) === 1;
+};
+
+/**
+ * Tests if this Long's value is even.
+ * @returns {boolean}
+ */
+LongPrototype.isEven = function isEven() {
+    return (this.low & 1) === 0;
+};
+
+/**
+ * Tests if this Long's value equals the specified's.
+ * @param {!Long|number|string} other Other value
+ * @returns {boolean}
+ */
+LongPrototype.equals = function equals(other) {
+    if (!isLong(other))
+        other = fromValue(other);
+    if (this.unsigned !== other.unsigned && (this.high >>> 31) === 1 && (other.high >>> 31) === 1)
+        return false;
+    return this.high === other.high && this.low === other.low;
+};
+
+/**
+ * Tests if this Long's value equals the specified's. This is an alias of {@link Long#equals}.
+ * @function
+ * @param {!Long|number|string} other Other value
+ * @returns {boolean}
+ */
+LongPrototype.eq = LongPrototype.equals;
+
+/**
+ * Tests if this Long's value differs from the specified's.
+ * @param {!Long|number|string} other Other value
+ * @returns {boolean}
+ */
+LongPrototype.notEquals = function notEquals(other) {
+    return !this.eq(/* validates */ other);
+};
+
+/**
+ * Tests if this Long's value differs from the specified's. This is an alias of {@link Long#notEquals}.
+ * @function
+ * @param {!Long|number|string} other Other value
+ * @returns {boolean}
+ */
+LongPrototype.neq = LongPrototype.notEquals;
+
+/**
+ * Tests if this Long's value differs from the specified's. This is an alias of {@link Long#notEquals}.
+ * @function
+ * @param {!Long|number|string} other Other value
+ * @returns {boolean}
+ */
+LongPrototype.ne = LongPrototype.notEquals;
+
+/**
+ * Tests if this Long's value is less than the specified's.
+ * @param {!Long|number|string} other Other value
+ * @returns {boolean}
+ */
+LongPrototype.lessThan = function lessThan(other) {
+    return this.comp(/* validates */ other) < 0;
+};
+
+/**
+ * Tests if this Long's value is less than the specified's. This is an alias of {@link Long#lessThan}.
+ * @function
+ * @param {!Long|number|string} other Other value
+ * @returns {boolean}
+ */
+LongPrototype.lt = LongPrototype.lessThan;
+
+/**
+ * Tests if this Long's value is less than or equal the specified's.
+ * @param {!Long|number|string} other Other value
+ * @returns {boolean}
+ */
+LongPrototype.lessThanOrEqual = function lessThanOrEqual(other) {
+    return this.comp(/* validates */ other) <= 0;
+};
+
+/**
+ * Tests if this Long's value is less than or equal the specified's. This is an alias of {@link Long#lessThanOrEqual}.
+ * @function
+ * @param {!Long|number|string} other Other value
+ * @returns {boolean}
+ */
+LongPrototype.lte = LongPrototype.lessThanOrEqual;
+
+/**
+ * Tests if this Long's value is less than or equal the specified's. This is an alias of {@link Long#lessThanOrEqual}.
+ * @function
+ * @param {!Long|number|string} other Other value
+ * @returns {boolean}
+ */
+LongPrototype.le = LongPrototype.lessThanOrEqual;
+
+/**
+ * Tests if this Long's value is greater than the specified's.
+ * @param {!Long|number|string} other Other value
+ * @returns {boolean}
+ */
+LongPrototype.greaterThan = function greaterThan(other) {
+    return this.comp(/* validates */ other) > 0;
+};
+
+/**
+ * Tests if this Long's value is greater than the specified's. This is an alias of {@link Long#greaterThan}.
+ * @function
+ * @param {!Long|number|string} other Other value
+ * @returns {boolean}
+ */
+LongPrototype.gt = LongPrototype.greaterThan;
+
+/**
+ * Tests if this Long's value is greater than or equal the specified's.
+ * @param {!Long|number|string} other Other value
+ * @returns {boolean}
+ */
+LongPrototype.greaterThanOrEqual = function greaterThanOrEqual(other) {
+    return this.comp(/* validates */ other) >= 0;
+};
+
+/**
+ * Tests if this Long's value is greater than or equal the specified's. This is an alias of {@link Long#greaterThanOrEqual}.
+ * @function
+ * @param {!Long|number|string} other Other value
+ * @returns {boolean}
+ */
+LongPrototype.gte = LongPrototype.greaterThanOrEqual;
+
+/**
+ * Tests if this Long's value is greater than or equal the specified's. This is an alias of {@link Long#greaterThanOrEqual}.
+ * @function
+ * @param {!Long|number|string} other Other value
+ * @returns {boolean}
+ */
+LongPrototype.ge = LongPrototype.greaterThanOrEqual;
+
+/**
+ * Compares this Long's value with the specified's.
+ * @param {!Long|number|string} other Other value
+ * @returns {number} 0 if they are the same, 1 if the this is greater and -1
+ *  if the given one is greater
+ */
+LongPrototype.compare = function compare(other) {
+    if (!isLong(other))
+        other = fromValue(other);
+    if (this.eq(other))
+        return 0;
+    var thisNeg = this.isNegative(),
+        otherNeg = other.isNegative();
+    if (thisNeg && !otherNeg)
+        return -1;
+    if (!thisNeg && otherNeg)
+        return 1;
+    // At this point the sign bits are the same
+    if (!this.unsigned)
+        return this.sub(other).isNegative() ? -1 : 1;
+    // Both are positive if at least one is unsigned
+    return (other.high >>> 0) > (this.high >>> 0) || (other.high === this.high && (other.low >>> 0) > (this.low >>> 0)) ? -1 : 1;
+};
+
+/**
+ * Compares this Long's value with the specified's. This is an alias of {@link Long#compare}.
+ * @function
+ * @param {!Long|number|string} other Other value
+ * @returns {number} 0 if they are the same, 1 if the this is greater and -1
+ *  if the given one is greater
+ */
+LongPrototype.comp = LongPrototype.compare;
+
+/**
+ * Negates this Long's value.
+ * @returns {!Long} Negated Long
+ */
+LongPrototype.negate = function negate() {
+    if (!this.unsigned && this.eq(MIN_VALUE))
+        return MIN_VALUE;
+    return this.not().add(ONE);
+};
+
+/**
+ * Negates this Long's value. This is an alias of {@link Long#negate}.
+ * @function
+ * @returns {!Long} Negated Long
+ */
+LongPrototype.neg = LongPrototype.negate;
+
+/**
+ * Returns the sum of this and the specified Long.
+ * @param {!Long|number|string} addend Addend
+ * @returns {!Long} Sum
+ */
+LongPrototype.add = function add(addend) {
+    if (!isLong(addend))
+        addend = fromValue(addend);
+
+    // Divide each number into 4 chunks of 16 bits, and then sum the chunks.
+
+    var a48 = this.high >>> 16;
+    var a32 = this.high & 0xFFFF;
+    var a16 = this.low >>> 16;
+    var a00 = this.low & 0xFFFF;
+
+    var b48 = addend.high >>> 16;
+    var b32 = addend.high & 0xFFFF;
+    var b16 = addend.low >>> 16;
+    var b00 = addend.low & 0xFFFF;
+
+    var c48 = 0, c32 = 0, c16 = 0, c00 = 0;
+    c00 += a00 + b00;
+    c16 += c00 >>> 16;
+    c00 &= 0xFFFF;
+    c16 += a16 + b16;
+    c32 += c16 >>> 16;
+    c16 &= 0xFFFF;
+    c32 += a32 + b32;
+    c48 += c32 >>> 16;
+    c32 &= 0xFFFF;
+    c48 += a48 + b48;
+    c48 &= 0xFFFF;
+    return fromBits((c16 << 16) | c00, (c48 << 16) | c32, this.unsigned);
+};
+
+/**
+ * Returns the difference of this and the specified Long.
+ * @param {!Long|number|string} subtrahend Subtrahend
+ * @returns {!Long} Difference
+ */
+LongPrototype.subtract = function subtract(subtrahend) {
+    if (!isLong(subtrahend))
+        subtrahend = fromValue(subtrahend);
+    return this.add(subtrahend.neg());
+};
+
+/**
+ * Returns the difference of this and the specified Long. This is an alias of {@link Long#subtract}.
+ * @function
+ * @param {!Long|number|string} subtrahend Subtrahend
+ * @returns {!Long} Difference
+ */
+LongPrototype.sub = LongPrototype.subtract;
+
+/**
+ * Returns the product of this and the specified Long.
+ * @param {!Long|number|string} multiplier Multiplier
+ * @returns {!Long} Product
+ */
+LongPrototype.multiply = function multiply(multiplier) {
+    if (this.isZero())
+        return ZERO;
+    if (!isLong(multiplier))
+        multiplier = fromValue(multiplier);
+
+    // use wasm support if present
+    if (wasm) {
+        var low = wasm.mul(this.low,
+                           this.high,
+                           multiplier.low,
+                           multiplier.high);
+        return fromBits(low, wasm.get_high(), this.unsigned);
+    }
+
+    if (multiplier.isZero())
+        return ZERO;
+    if (this.eq(MIN_VALUE))
+        return multiplier.isOdd() ? MIN_VALUE : ZERO;
+    if (multiplier.eq(MIN_VALUE))
+        return this.isOdd() ? MIN_VALUE : ZERO;
+
+    if (this.isNegative()) {
+        if (multiplier.isNegative())
+            return this.neg().mul(multiplier.neg());
+        else
+            return this.neg().mul(multiplier).neg();
+    } else if (multiplier.isNegative())
+        return this.mul(multiplier.neg()).neg();
+
+    // If both longs are small, use float multiplication
+    if (this.lt(TWO_PWR_24) && multiplier.lt(TWO_PWR_24))
+        return fromNumber(this.toNumber() * multiplier.toNumber(), this.unsigned);
+
+    // Divide each long into 4 chunks of 16 bits, and then add up 4x4 products.
+    // We can skip products that would overflow.
+
+    var a48 = this.high >>> 16;
+    var a32 = this.high & 0xFFFF;
+    var a16 = this.low >>> 16;
+    var a00 = this.low & 0xFFFF;
+
+    var b48 = multiplier.high >>> 16;
+    var b32 = multiplier.high & 0xFFFF;
+    var b16 = multiplier.low >>> 16;
+    var b00 = multiplier.low & 0xFFFF;
+
+    var c48 = 0, c32 = 0, c16 = 0, c00 = 0;
+    c00 += a00 * b00;
+    c16 += c00 >>> 16;
+    c00 &= 0xFFFF;
+    c16 += a16 * b00;
+    c32 += c16 >>> 16;
+    c16 &= 0xFFFF;
+    c16 += a00 * b16;
+    c32 += c16 >>> 16;
+    c16 &= 0xFFFF;
+    c32 += a32 * b00;
+    c48 += c32 >>> 16;
+    c32 &= 0xFFFF;
+    c32 += a16 * b16;
+    c48 += c32 >>> 16;
+    c32 &= 0xFFFF;
+    c32 += a00 * b32;
+    c48 += c32 >>> 16;
+    c32 &= 0xFFFF;
+    c48 += a48 * b00 + a32 * b16 + a16 * b32 + a00 * b48;
+    c48 &= 0xFFFF;
+    return fromBits((c16 << 16) | c00, (c48 << 16) | c32, this.unsigned);
+};
+
+/**
+ * Returns the product of this and the specified Long. This is an alias of {@link Long#multiply}.
+ * @function
+ * @param {!Long|number|string} multiplier Multiplier
+ * @returns {!Long} Product
+ */
+LongPrototype.mul = LongPrototype.multiply;
+
+/**
+ * Returns this Long divided by the specified. The result is signed if this Long is signed or
+ *  unsigned if this Long is unsigned.
+ * @param {!Long|number|string} divisor Divisor
+ * @returns {!Long} Quotient
+ */
+LongPrototype.divide = function divide(divisor) {
+    if (!isLong(divisor))
+        divisor = fromValue(divisor);
+    if (divisor.isZero())
+        throw Error('division by zero');
+
+    // use wasm support if present
+    if (wasm) {
+        // guard against signed division overflow: the largest
+        // negative number / -1 would be 1 larger than the largest
+        // positive number, due to two's complement.
+        if (!this.unsigned &&
+            this.high === -0x80000000 &&
+            divisor.low === -1 && divisor.high === -1) {
+            // be consistent with non-wasm code path
+            return this;
+        }
+        var low = (this.unsigned ? wasm.div_u : wasm.div_s)(
+            this.low,
+            this.high,
+            divisor.low,
+            divisor.high
+        );
+        return fromBits(low, wasm.get_high(), this.unsigned);
+    }
+
+    if (this.isZero())
+        return this.unsigned ? UZERO : ZERO;
+    var approx, rem, res;
+    if (!this.unsigned) {
+        // This section is only relevant for signed longs and is derived from the
+        // closure library as a whole.
+        if (this.eq(MIN_VALUE)) {
+            if (divisor.eq(ONE) || divisor.eq(NEG_ONE))
+                return MIN_VALUE;  // recall that -MIN_VALUE == MIN_VALUE
+            else if (divisor.eq(MIN_VALUE))
+                return ONE;
+            else {
+                // At this point, we have |other| >= 2, so |this/other| < |MIN_VALUE|.
+                var halfThis = this.shr(1);
+                approx = halfThis.div(divisor).shl(1);
+                if (approx.eq(ZERO)) {
+                    return divisor.isNegative() ? ONE : NEG_ONE;
+                } else {
+                    rem = this.sub(divisor.mul(approx));
+                    res = approx.add(rem.div(divisor));
+                    return res;
+                }
+            }
+        } else if (divisor.eq(MIN_VALUE))
+            return this.unsigned ? UZERO : ZERO;
+        if (this.isNegative()) {
+            if (divisor.isNegative())
+                return this.neg().div(divisor.neg());
+            return this.neg().div(divisor).neg();
+        } else if (divisor.isNegative())
+            return this.div(divisor.neg()).neg();
+        res = ZERO;
+    } else {
+        // The algorithm below has not been made for unsigned longs. It's therefore
+        // required to take special care of the MSB prior to running it.
+        if (!divisor.unsigned)
+            divisor = divisor.toUnsigned();
+        if (divisor.gt(this))
+            return UZERO;
+        if (divisor.gt(this.shru(1))) // 15 >>> 1 = 7 ; with divisor = 8 ; true
+            return UONE;
+        res = UZERO;
+    }
+
+    // Repeat the following until the remainder is less than other:  find a
+    // floating-point that approximates remainder / other *from below*, add this
+    // into the result, and subtract it from the remainder.  It is critical that
+    // the approximate value is less than or equal to the real value so that the
+    // remainder never becomes negative.
+    rem = this;
+    while (rem.gte(divisor)) {
+        // Approximate the result of division. This may be a little greater or
+        // smaller than the actual value.
+        approx = Math.max(1, Math.floor(rem.toNumber() / divisor.toNumber()));
+
+        // We will tweak the approximate result by changing it in the 48-th digit or
+        // the smallest non-fractional digit, whichever is larger.
+        var log2 = Math.ceil(Math.log(approx) / Math.LN2),
+            delta = (log2 <= 48) ? 1 : pow_dbl(2, log2 - 48),
+
+        // Decrease the approximation until it is smaller than the remainder.  Note
+        // that if it is too large, the product overflows and is negative.
+            approxRes = fromNumber(approx),
+            approxRem = approxRes.mul(divisor);
+        while (approxRem.isNegative() || approxRem.gt(rem)) {
+            approx -= delta;
+            approxRes = fromNumber(approx, this.unsigned);
+            approxRem = approxRes.mul(divisor);
+        }
+
+        // We know the answer can't be zero... and actually, zero would cause
+        // infinite recursion since we would make no progress.
+        if (approxRes.isZero())
+            approxRes = ONE;
+
+        res = res.add(approxRes);
+        rem = rem.sub(approxRem);
+    }
+    return res;
+};
+
+/**
+ * Returns this Long divided by the specified. This is an alias of {@link Long#divide}.
+ * @function
+ * @param {!Long|number|string} divisor Divisor
+ * @returns {!Long} Quotient
+ */
+LongPrototype.div = LongPrototype.divide;
+
+/**
+ * Returns this Long modulo the specified.
+ * @param {!Long|number|string} divisor Divisor
+ * @returns {!Long} Remainder
+ */
+LongPrototype.modulo = function modulo(divisor) {
+    if (!isLong(divisor))
+        divisor = fromValue(divisor);
+
+    // use wasm support if present
+    if (wasm) {
+        var low = (this.unsigned ? wasm.rem_u : wasm.rem_s)(
+            this.low,
+            this.high,
+            divisor.low,
+            divisor.high
+        );
+        return fromBits(low, wasm.get_high(), this.unsigned);
+    }
+
+    return this.sub(this.div(divisor).mul(divisor));
+};
+
+/**
+ * Returns this Long modulo the specified. This is an alias of {@link Long#modulo}.
+ * @function
+ * @param {!Long|number|string} divisor Divisor
+ * @returns {!Long} Remainder
+ */
+LongPrototype.mod = LongPrototype.modulo;
+
+/**
+ * Returns this Long modulo the specified. This is an alias of {@link Long#modulo}.
+ * @function
+ * @param {!Long|number|string} divisor Divisor
+ * @returns {!Long} Remainder
+ */
+LongPrototype.rem = LongPrototype.modulo;
+
+/**
+ * Returns the bitwise NOT of this Long.
+ * @returns {!Long}
+ */
+LongPrototype.not = function not() {
+    return fromBits(~this.low, ~this.high, this.unsigned);
+};
+
+/**
+ * Returns the bitwise AND of this Long and the specified.
+ * @param {!Long|number|string} other Other Long
+ * @returns {!Long}
+ */
+LongPrototype.and = function and(other) {
+    if (!isLong(other))
+        other = fromValue(other);
+    return fromBits(this.low & other.low, this.high & other.high, this.unsigned);
+};
+
+/**
+ * Returns the bitwise OR of this Long and the specified.
+ * @param {!Long|number|string} other Other Long
+ * @returns {!Long}
+ */
+LongPrototype.or = function or(other) {
+    if (!isLong(other))
+        other = fromValue(other);
+    return fromBits(this.low | other.low, this.high | other.high, this.unsigned);
+};
+
+/**
+ * Returns the bitwise XOR of this Long and the given one.
+ * @param {!Long|number|string} other Other Long
+ * @returns {!Long}
+ */
+LongPrototype.xor = function xor(other) {
+    if (!isLong(other))
+        other = fromValue(other);
+    return fromBits(this.low ^ other.low, this.high ^ other.high, this.unsigned);
+};
+
+/**
+ * Returns this Long with bits shifted to the left by the given amount.
+ * @param {number|!Long} numBits Number of bits
+ * @returns {!Long} Shifted Long
+ */
+LongPrototype.shiftLeft = function shiftLeft(numBits) {
+    if (isLong(numBits))
+        numBits = numBits.toInt();
+    if ((numBits &= 63) === 0)
+        return this;
+    else if (numBits < 32)
+        return fromBits(this.low << numBits, (this.high << numBits) | (this.low >>> (32 - numBits)), this.unsigned);
+    else
+        return fromBits(0, this.low << (numBits - 32), this.unsigned);
+};
+
+/**
+ * Returns this Long with bits shifted to the left by the given amount. This is an alias of {@link Long#shiftLeft}.
+ * @function
+ * @param {number|!Long} numBits Number of bits
+ * @returns {!Long} Shifted Long
+ */
+LongPrototype.shl = LongPrototype.shiftLeft;
+
+/**
+ * Returns this Long with bits arithmetically shifted to the right by the given amount.
+ * @param {number|!Long} numBits Number of bits
+ * @returns {!Long} Shifted Long
+ */
+LongPrototype.shiftRight = function shiftRight(numBits) {
+    if (isLong(numBits))
+        numBits = numBits.toInt();
+    if ((numBits &= 63) === 0)
+        return this;
+    else if (numBits < 32)
+        return fromBits((this.low >>> numBits) | (this.high << (32 - numBits)), this.high >> numBits, this.unsigned);
+    else
+        return fromBits(this.high >> (numBits - 32), this.high >= 0 ? 0 : -1, this.unsigned);
+};
+
+/**
+ * Returns this Long with bits arithmetically shifted to the right by the given amount. This is an alias of {@link Long#shiftRight}.
+ * @function
+ * @param {number|!Long} numBits Number of bits
+ * @returns {!Long} Shifted Long
+ */
+LongPrototype.shr = LongPrototype.shiftRight;
+
+/**
+ * Returns this Long with bits logically shifted to the right by the given amount.
+ * @param {number|!Long} numBits Number of bits
+ * @returns {!Long} Shifted Long
+ */
+LongPrototype.shiftRightUnsigned = function shiftRightUnsigned(numBits) {
+    if (isLong(numBits))
+        numBits = numBits.toInt();
+    numBits &= 63;
+    if (numBits === 0)
+        return this;
+    else {
+        var high = this.high;
+        if (numBits < 32) {
+            var low = this.low;
+            return fromBits((low >>> numBits) | (high << (32 - numBits)), high >>> numBits, this.unsigned);
+        } else if (numBits === 32)
+            return fromBits(high, 0, this.unsigned);
+        else
+            return fromBits(high >>> (numBits - 32), 0, this.unsigned);
+    }
+};
+
+/**
+ * Returns this Long with bits logically shifted to the right by the given amount. This is an alias of {@link Long#shiftRightUnsigned}.
+ * @function
+ * @param {number|!Long} numBits Number of bits
+ * @returns {!Long} Shifted Long
+ */
+LongPrototype.shru = LongPrototype.shiftRightUnsigned;
+
+/**
+ * Returns this Long with bits logically shifted to the right by the given amount. This is an alias of {@link Long#shiftRightUnsigned}.
+ * @function
+ * @param {number|!Long} numBits Number of bits
+ * @returns {!Long} Shifted Long
+ */
+LongPrototype.shr_u = LongPrototype.shiftRightUnsigned;
+
+/**
+ * Converts this Long to signed.
+ * @returns {!Long} Signed long
+ */
+LongPrototype.toSigned = function toSigned() {
+    if (!this.unsigned)
+        return this;
+    return fromBits(this.low, this.high, false);
+};
+
+/**
+ * Converts this Long to unsigned.
+ * @returns {!Long} Unsigned long
+ */
+LongPrototype.toUnsigned = function toUnsigned() {
+    if (this.unsigned)
+        return this;
+    return fromBits(this.low, this.high, true);
+};
+
+/**
+ * Converts this Long to its byte representation.
+ * @param {boolean=} le Whether little or big endian, defaults to big endian
+ * @returns {!Array.<number>} Byte representation
+ */
+LongPrototype.toBytes = function toBytes(le) {
+    return le ? this.toBytesLE() : this.toBytesBE();
+};
+
+/**
+ * Converts this Long to its little endian byte representation.
+ * @returns {!Array.<number>} Little endian byte representation
+ */
+LongPrototype.toBytesLE = function toBytesLE() {
+    var hi = this.high,
+        lo = this.low;
+    return [
+        lo        & 0xff,
+        lo >>>  8 & 0xff,
+        lo >>> 16 & 0xff,
+        lo >>> 24       ,
+        hi        & 0xff,
+        hi >>>  8 & 0xff,
+        hi >>> 16 & 0xff,
+        hi >>> 24
+    ];
+};
+
+/**
+ * Converts this Long to its big endian byte representation.
+ * @returns {!Array.<number>} Big endian byte representation
+ */
+LongPrototype.toBytesBE = function toBytesBE() {
+    var hi = this.high,
+        lo = this.low;
+    return [
+        hi >>> 24       ,
+        hi >>> 16 & 0xff,
+        hi >>>  8 & 0xff,
+        hi        & 0xff,
+        lo >>> 24       ,
+        lo >>> 16 & 0xff,
+        lo >>>  8 & 0xff,
+        lo        & 0xff
+    ];
+};
+
+/**
+ * Creates a Long from its byte representation.
+ * @param {!Array.<number>} bytes Byte representation
+ * @param {boolean=} unsigned Whether unsigned or not, defaults to signed
+ * @param {boolean=} le Whether little or big endian, defaults to big endian
+ * @returns {Long} The corresponding Long value
+ */
+Long.fromBytes = function fromBytes(bytes, unsigned, le) {
+    return le ? Long.fromBytesLE(bytes, unsigned) : Long.fromBytesBE(bytes, unsigned);
+};
+
+/**
+ * Creates a Long from its little endian byte representation.
+ * @param {!Array.<number>} bytes Little endian byte representation
+ * @param {boolean=} unsigned Whether unsigned or not, defaults to signed
+ * @returns {Long} The corresponding Long value
+ */
+Long.fromBytesLE = function fromBytesLE(bytes, unsigned) {
+    return new Long(
+        bytes[0]       |
+        bytes[1] <<  8 |
+        bytes[2] << 16 |
+        bytes[3] << 24,
+        bytes[4]       |
+        bytes[5] <<  8 |
+        bytes[6] << 16 |
+        bytes[7] << 24,
+        unsigned
+    );
+};
+
+/**
+ * Creates a Long from its big endian byte representation.
+ * @param {!Array.<number>} bytes Big endian byte representation
+ * @param {boolean=} unsigned Whether unsigned or not, defaults to signed
+ * @returns {Long} The corresponding Long value
+ */
+Long.fromBytesBE = function fromBytesBE(bytes, unsigned) {
+    return new Long(
+        bytes[4] << 24 |
+        bytes[5] << 16 |
+        bytes[6] <<  8 |
+        bytes[7],
+        bytes[0] << 24 |
+        bytes[1] << 16 |
+        bytes[2] <<  8 |
+        bytes[3],
+        unsigned
+    );
+};
+
+},{}],509:[function(require,module,exports){
 "use strict"
 
 var compile = require("cwise-compiler")
@@ -113914,7 +115854,7 @@ exports.equals = compile({
 
 
 
-},{"cwise-compiler":420}],507:[function(require,module,exports){
+},{"cwise-compiler":422}],510:[function(require,module,exports){
 "use strict"
 
 var ndarray = require("ndarray")
@@ -113937,10 +115877,10 @@ module.exports = function convert(arr, result) {
   return result
 }
 
-},{"./doConvert.js":508,"ndarray":509}],508:[function(require,module,exports){
+},{"./doConvert.js":511,"ndarray":512}],511:[function(require,module,exports){
 module.exports=require('cwise-compiler')({"args":["array","scalar","index"],"pre":{"body":"{}","args":[],"thisVars":[],"localVars":[]},"body":{"body":"{\nvar _inline_1_v=_inline_1_arg1_,_inline_1_i\nfor(_inline_1_i=0;_inline_1_i<_inline_1_arg2_.length-1;++_inline_1_i) {\n_inline_1_v=_inline_1_v[_inline_1_arg2_[_inline_1_i]]\n}\n_inline_1_arg0_=_inline_1_v[_inline_1_arg2_[_inline_1_arg2_.length-1]]\n}","args":[{"name":"_inline_1_arg0_","lvalue":true,"rvalue":false,"count":1},{"name":"_inline_1_arg1_","lvalue":false,"rvalue":true,"count":1},{"name":"_inline_1_arg2_","lvalue":false,"rvalue":true,"count":4}],"thisVars":[],"localVars":["_inline_1_i","_inline_1_v"]},"post":{"body":"{}","args":[],"thisVars":[],"localVars":[]},"funcName":"convert","blockSize":64})
 
-},{"cwise-compiler":420}],509:[function(require,module,exports){
+},{"cwise-compiler":422}],512:[function(require,module,exports){
 var iota = require("iota-array")
 var isBuffer = require("is-buffer")
 
@@ -114291,7 +116231,7 @@ function wrappedNDArrayCtor(data, shape, stride, offset) {
 
 module.exports = wrappedNDArrayCtor
 
-},{"iota-array":504,"is-buffer":505}],510:[function(require,module,exports){
+},{"iota-array":506,"is-buffer":507}],513:[function(require,module,exports){
 // (c) Dean McNamee <dean@gmail.com>, 2013.
 //
 // https://github.com/deanm/omggif
@@ -115100,7 +117040,3453 @@ function GifReaderLZWOutputIndexStream(code_stream, p, output, output_length) {
 // CommonJS.
 try { exports.GifWriter = GifWriter; exports.GifReader = GifReader } catch(e) {}
 
-},{}],511:[function(require,module,exports){
+},{}],514:[function(require,module,exports){
+(function (process,Buffer){(function (){
+/*! osc.js 2.4.4, Copyright 2023 Colin Clark | github.com/colinbdclark/osc.js */
+
+/*
+ * osc.js: An Open Sound Control library for JavaScript that works in both the browser and Node.js
+ *
+ * Copyright 2014-2016, Colin Clark
+ * Licensed under the MIT and GPL 3 licenses.
+ */
+
+/* global require, module, process, Buffer, Long, util */
+
+var osc = osc || {};
+
+(function () {
+
+    "use strict";
+
+    osc.SECS_70YRS = 2208988800;
+    osc.TWO_32 = 4294967296;
+
+    osc.defaults = {
+        metadata: false,
+        unpackSingleArgs: true
+    };
+
+    // Unsupported, non-API property.
+    osc.isCommonJS = typeof module !== "undefined" && module.exports ? true : false;
+
+    // Unsupported, non-API property.
+    osc.isNode = osc.isCommonJS && typeof window === "undefined";
+
+    // Unsupported, non-API property.
+    osc.isElectron = typeof process !== "undefined" &&
+        process.versions && process.versions.electron ? true : false;
+
+    // Unsupported, non-API property.
+    osc.isBufferEnv = osc.isNode || osc.isElectron;
+
+    // Unsupported, non-API function.
+    osc.isArray = function (obj) {
+        return obj && Object.prototype.toString.call(obj) === "[object Array]";
+    };
+
+    // Unsupported, non-API function.
+    osc.isTypedArrayView = function (obj) {
+        return obj.buffer && obj.buffer instanceof ArrayBuffer;
+    };
+
+    // Unsupported, non-API function.
+    osc.isBuffer = function (obj) {
+        return osc.isBufferEnv && obj instanceof Buffer;
+    };
+
+    // Unsupported, non-API member.
+    osc.Long = typeof Long !== "undefined" ? Long :
+        osc.isNode ? require("long") : undefined;
+
+    // Unsupported, non-API member. Can be removed when supported versions
+    // of Node.js expose TextDecoder as a global, as in the browser.
+    osc.TextDecoder = typeof TextDecoder !== "undefined" ? new TextDecoder("utf-8") :
+        typeof util !== "undefined" && typeof (util.TextDecoder !== "undefined") ? new util.TextDecoder("utf-8") : undefined;
+
+    osc.TextEncoder = typeof TextEncoder !== "undefined" ? new TextEncoder("utf-8") :
+        typeof util !== "undefined" && typeof (util.TextEncoder !== "undefined") ? new util.TextEncoder("utf-8") : undefined;
+
+    /**
+     * Wraps the specified object in a DataView.
+     *
+     * @param {Array-like} obj the object to wrap in a DataView instance
+     * @return {DataView} the DataView object
+     */
+    // Unsupported, non-API function.
+    osc.dataView = function (obj, offset, length) {
+        if (obj.buffer) {
+            return new DataView(obj.buffer, offset, length);
+        }
+
+        if (obj instanceof ArrayBuffer) {
+            return new DataView(obj, offset, length);
+        }
+
+        return new DataView(new Uint8Array(obj), offset, length);
+    };
+
+    /**
+     * Takes an ArrayBuffer, TypedArray, DataView, Buffer, or array-like object
+     * and returns a Uint8Array view of it.
+     *
+     * Throws an error if the object isn't suitably array-like.
+     *
+     * @param {Array-like or Array-wrapping} obj an array-like or array-wrapping object
+     * @returns {Uint8Array} a typed array of octets
+     */
+    // Unsupported, non-API function.
+    osc.byteArray = function (obj) {
+        if (obj instanceof Uint8Array) {
+            return obj;
+        }
+
+        var buf = obj.buffer ? obj.buffer : obj;
+
+        if (!(buf instanceof ArrayBuffer) && (typeof buf.length === "undefined" || typeof buf === "string")) {
+            throw new Error("Can't wrap a non-array-like object as Uint8Array. Object was: " +
+                JSON.stringify(obj, null, 2));
+        }
+
+
+        // TODO gh-39: This is a potentially unsafe algorithm;
+        // if we're getting anything other than a TypedArrayView (such as a DataView),
+        // we really need to determine the range of the view it is viewing.
+        return new Uint8Array(buf);
+    };
+
+    /**
+     * Takes an ArrayBuffer, TypedArray, DataView, or array-like object
+     * and returns a native buffer object
+     * (i.e. in Node.js, a Buffer object and in the browser, a Uint8Array).
+     *
+     * Throws an error if the object isn't suitably array-like.
+     *
+     * @param {Array-like or Array-wrapping} obj an array-like or array-wrapping object
+     * @returns {Buffer|Uint8Array} a buffer object
+     */
+    // Unsupported, non-API function.
+    osc.nativeBuffer = function (obj) {
+        if (osc.isBufferEnv) {
+            return osc.isBuffer(obj) ? obj :
+                Buffer.from(obj.buffer ? obj : new Uint8Array(obj));
+        }
+
+        return osc.isTypedArrayView(obj) ? obj : new Uint8Array(obj);
+    };
+
+    // Unsupported, non-API function
+    osc.copyByteArray = function (source, target, offset) {
+        if (osc.isTypedArrayView(source) && osc.isTypedArrayView(target)) {
+            target.set(source, offset);
+        } else {
+            var start = offset === undefined ? 0 : offset,
+                len = Math.min(target.length - offset, source.length);
+
+            for (var i = 0, j = start; i < len; i++, j++) {
+                target[j] = source[i];
+            }
+        }
+
+        return target;
+    };
+
+    /**
+     * Reads an OSC-formatted string.
+     *
+     * @param {DataView} dv a DataView containing the raw bytes of the OSC string
+     * @param {Object} offsetState an offsetState object used to store the current offset index
+     * @return {String} the JavaScript String that was read
+     */
+    osc.readString = function (dv, offsetState) {
+        var charCodes = [],
+            idx = offsetState.idx;
+
+        for (; idx < dv.byteLength; idx++) {
+            var charCode = dv.getUint8(idx);
+            if (charCode !== 0) {
+                charCodes.push(charCode);
+            } else {
+                idx++;
+                break;
+            }
+        }
+
+        // Round to the nearest 4-byte block.
+        idx = (idx + 3) & ~0x03;
+        offsetState.idx = idx;
+
+        var decoder = osc.isBufferEnv ? osc.readString.withBuffer :
+            osc.TextDecoder ? osc.readString.withTextDecoder : osc.readString.raw;
+
+        return decoder(charCodes);
+    };
+
+    osc.readString.raw = function (charCodes) {
+        // If no Buffer or TextDecoder, resort to fromCharCode
+        // This does not properly decode multi-byte Unicode characters.
+        var str = "";
+        var sliceSize = 10000;
+
+        // Processing the array in chunks so as not to exceed argument
+        // limit, see https://bugs.webkit.org/show_bug.cgi?id=80797
+        for (var i = 0; i < charCodes.length; i += sliceSize) {
+            str += String.fromCharCode.apply(null, charCodes.slice(i, i + sliceSize));
+        }
+
+        return str;
+    };
+
+    osc.readString.withTextDecoder = function (charCodes) {
+        var data = new Int8Array(charCodes);
+        return osc.TextDecoder.decode(data);
+    };
+
+    osc.readString.withBuffer = function (charCodes) {
+        return Buffer.from(charCodes).toString("utf-8");
+    };
+
+    /**
+     * Writes a JavaScript string as an OSC-formatted string.
+     *
+     * @param {String} str the string to write
+     * @return {Uint8Array} a buffer containing the OSC-formatted string
+     */
+    osc.writeString = function (str) {
+
+        var encoder = osc.isBufferEnv ? osc.writeString.withBuffer :
+            osc.TextEncoder ? osc.writeString.withTextEncoder : null,
+            terminated = str + "\u0000",
+            encodedStr;
+
+        if (encoder) {
+            encodedStr = encoder(terminated);
+        }
+
+        var len = encoder ? encodedStr.length : terminated.length,
+            paddedLen = (len + 3) & ~0x03,
+            arr = new Uint8Array(paddedLen);
+
+        for (var i = 0; i < len - 1; i++) {
+            var charCode = encoder ? encodedStr[i] : terminated.charCodeAt(i);
+            arr[i] = charCode;
+        }
+
+        return arr;
+    };
+
+    osc.writeString.withTextEncoder = function (str) {
+        return osc.TextEncoder.encode(str);
+    };
+
+    osc.writeString.withBuffer = function (str) {
+        return Buffer.from(str);
+    };
+
+    // Unsupported, non-API function.
+    osc.readPrimitive = function (dv, readerName, numBytes, offsetState) {
+        var val = dv[readerName](offsetState.idx, false);
+        offsetState.idx += numBytes;
+
+        return val;
+    };
+
+    // Unsupported, non-API function.
+    osc.writePrimitive = function (val, dv, writerName, numBytes, offset) {
+        offset = offset === undefined ? 0 : offset;
+
+        var arr;
+        if (!dv) {
+            arr = new Uint8Array(numBytes);
+            dv = new DataView(arr.buffer);
+        } else {
+            arr = new Uint8Array(dv.buffer);
+        }
+
+        dv[writerName](offset, val, false);
+
+        return arr;
+    };
+
+    /**
+     * Reads an OSC int32 ("i") value.
+     *
+     * @param {DataView} dv a DataView containing the raw bytes
+     * @param {Object} offsetState an offsetState object used to store the current offset index into dv
+     * @return {Number} the number that was read
+     */
+    osc.readInt32 = function (dv, offsetState) {
+        return osc.readPrimitive(dv, "getInt32", 4, offsetState);
+    };
+
+    /**
+     * Writes an OSC int32 ("i") value.
+     *
+     * @param {Number} val the number to write
+     * @param {DataView} [dv] a DataView instance to write the number into
+     * @param {Number} [offset] an offset into dv
+     */
+    osc.writeInt32 = function (val, dv, offset) {
+        return osc.writePrimitive(val, dv, "setInt32", 4, offset);
+    };
+
+    /**
+     * Reads an OSC int64 ("h") value.
+     *
+     * @param {DataView} dv a DataView containing the raw bytes
+     * @param {Object} offsetState an offsetState object used to store the current offset index into dv
+     * @return {Number} the number that was read
+     */
+    osc.readInt64 = function (dv, offsetState) {
+        var high = osc.readPrimitive(dv, "getInt32", 4, offsetState),
+            low = osc.readPrimitive(dv, "getInt32", 4, offsetState);
+
+        if (osc.Long) {
+            return new osc.Long(low, high);
+        } else {
+            return {
+                high: high,
+                low: low,
+                unsigned: false
+            };
+        }
+    };
+
+    /**
+     * Writes an OSC int64 ("h") value.
+     *
+     * @param {Number} val the number to write
+     * @param {DataView} [dv] a DataView instance to write the number into
+     * @param {Number} [offset] an offset into dv
+     */
+    osc.writeInt64 = function (val, dv, offset) {
+        var arr = new Uint8Array(8);
+        arr.set(osc.writePrimitive(val.high, dv, "setInt32", 4, offset), 0);
+        arr.set(osc.writePrimitive(val.low,  dv, "setInt32", 4, offset + 4), 4);
+        return arr;
+    };
+
+    /**
+     * Reads an OSC float32 ("f") value.
+     *
+     * @param {DataView} dv a DataView containing the raw bytes
+     * @param {Object} offsetState an offsetState object used to store the current offset index into dv
+     * @return {Number} the number that was read
+     */
+    osc.readFloat32 = function (dv, offsetState) {
+        return osc.readPrimitive(dv, "getFloat32", 4, offsetState);
+    };
+
+    /**
+     * Writes an OSC float32 ("f") value.
+     *
+     * @param {Number} val the number to write
+     * @param {DataView} [dv] a DataView instance to write the number into
+     * @param {Number} [offset] an offset into dv
+     */
+    osc.writeFloat32 = function (val, dv, offset) {
+        return osc.writePrimitive(val, dv, "setFloat32", 4, offset);
+    };
+
+    /**
+     * Reads an OSC float64 ("d") value.
+     *
+     * @param {DataView} dv a DataView containing the raw bytes
+     * @param {Object} offsetState an offsetState object used to store the current offset index into dv
+     * @return {Number} the number that was read
+     */
+    osc.readFloat64 = function (dv, offsetState) {
+        return osc.readPrimitive(dv, "getFloat64", 8, offsetState);
+    };
+
+    /**
+     * Writes an OSC float64 ("d") value.
+     *
+     * @param {Number} val the number to write
+     * @param {DataView} [dv] a DataView instance to write the number into
+     * @param {Number} [offset] an offset into dv
+     */
+    osc.writeFloat64 = function (val, dv, offset) {
+        return osc.writePrimitive(val, dv, "setFloat64", 8, offset);
+    };
+
+    /**
+     * Reads an OSC 32-bit ASCII character ("c") value.
+     *
+     * @param {DataView} dv a DataView containing the raw bytes
+     * @param {Object} offsetState an offsetState object used to store the current offset index into dv
+     * @return {String} a string containing the read character
+     */
+    osc.readChar32 = function (dv, offsetState) {
+        var charCode = osc.readPrimitive(dv, "getUint32", 4, offsetState);
+        return String.fromCharCode(charCode);
+    };
+
+    /**
+     * Writes an OSC 32-bit ASCII character ("c") value.
+     *
+     * @param {String} str the string from which the first character will be written
+     * @param {DataView} [dv] a DataView instance to write the character into
+     * @param {Number} [offset] an offset into dv
+     * @return {String} a string containing the read character
+     */
+    osc.writeChar32 = function (str, dv, offset) {
+        var charCode = str.charCodeAt(0);
+        if (charCode === undefined || charCode < -1) {
+            return undefined;
+        }
+
+        return osc.writePrimitive(charCode, dv, "setUint32", 4, offset);
+    };
+
+    /**
+     * Reads an OSC blob ("b") (i.e. a Uint8Array).
+     *
+     * @param {DataView} dv a DataView instance to read from
+     * @param {Object} offsetState an offsetState object used to store the current offset index into dv
+     * @return {Uint8Array} the data that was read
+     */
+    osc.readBlob = function (dv, offsetState) {
+        var len = osc.readInt32(dv, offsetState),
+            paddedLen = (len + 3) & ~0x03,
+            blob = new Uint8Array(dv.buffer, offsetState.idx, len);
+
+        offsetState.idx += paddedLen;
+
+        return blob;
+    };
+
+    /**
+     * Writes a raw collection of bytes to a new ArrayBuffer.
+     *
+     * @param {Array-like} data a collection of octets
+     * @return {ArrayBuffer} a buffer containing the OSC-formatted blob
+     */
+    osc.writeBlob = function (data) {
+        data = osc.byteArray(data);
+
+        var len = data.byteLength,
+            paddedLen = (len + 3) & ~0x03,
+            offset = 4, // Extra 4 bytes is for the size.
+            blobLen = paddedLen + offset,
+            arr = new Uint8Array(blobLen),
+            dv = new DataView(arr.buffer);
+
+        // Write the size.
+        osc.writeInt32(len, dv);
+
+        // Since we're writing to a real ArrayBuffer,
+        // we don't need to pad the remaining bytes.
+        arr.set(data, offset);
+
+        return arr;
+    };
+
+    /**
+     * Reads an OSC 4-byte MIDI message.
+     *
+     * @param {DataView} dv the DataView instance to read from
+     * @param {Object} offsetState an offsetState object used to store the current offset index into dv
+     * @return {Uint8Array} an array containing (in order) the port ID, status, data1 and data1 bytes
+     */
+    osc.readMIDIBytes = function (dv, offsetState) {
+        var midi = new Uint8Array(dv.buffer, offsetState.idx, 4);
+        offsetState.idx += 4;
+
+        return midi;
+    };
+
+    /**
+     * Writes an OSC 4-byte MIDI message.
+     *
+     * @param {Array-like} bytes a 4-element array consisting of the port ID, status, data1 and data1 bytes
+     * @return {Uint8Array} the written message
+     */
+    osc.writeMIDIBytes = function (bytes) {
+        bytes = osc.byteArray(bytes);
+
+        var arr = new Uint8Array(4);
+        arr.set(bytes);
+
+        return arr;
+    };
+
+    /**
+     * Reads an OSC RGBA colour value.
+     *
+     * @param {DataView} dv the DataView instance to read from
+     * @param {Object} offsetState an offsetState object used to store the current offset index into dv
+     * @return {Object} a colour object containing r, g, b, and a properties
+     */
+    osc.readColor = function (dv, offsetState) {
+        var bytes = new Uint8Array(dv.buffer, offsetState.idx, 4),
+            alpha = bytes[3] / 255;
+
+        offsetState.idx += 4;
+
+        return {
+            r: bytes[0],
+            g: bytes[1],
+            b: bytes[2],
+            a: alpha
+        };
+    };
+
+    /**
+     * Writes an OSC RGBA colour value.
+     *
+     * @param {Object} color a colour object containing r, g, b, and a properties
+     * @return {Uint8Array} a byte array containing the written color
+     */
+    osc.writeColor = function (color) {
+        var alpha = Math.round(color.a * 255),
+            arr = new Uint8Array([color.r, color.g, color.b, alpha]);
+
+        return arr;
+    };
+
+    /**
+     * Reads an OSC true ("T") value by directly returning the JavaScript Boolean "true".
+     */
+    osc.readTrue = function () {
+        return true;
+    };
+
+    /**
+     * Reads an OSC false ("F") value by directly returning the JavaScript Boolean "false".
+     */
+    osc.readFalse = function () {
+        return false;
+    };
+
+    /**
+     * Reads an OSC nil ("N") value by directly returning the JavaScript "null" value.
+     */
+    osc.readNull = function () {
+        return null;
+    };
+
+    /**
+     * Reads an OSC impulse/bang/infinitum ("I") value by directly returning 1.0.
+     */
+    osc.readImpulse = function () {
+        return 1.0;
+    };
+
+    /**
+     * Reads an OSC time tag ("t").
+     *
+     * @param {DataView} dv the DataView instance to read from
+     * @param {Object} offsetState an offset state object containing the current index into dv
+     * @param {Object} a time tag object containing both the raw NTP as well as the converted native (i.e. JS/UNIX) time
+     */
+    osc.readTimeTag = function (dv, offsetState) {
+        var secs1900 = osc.readPrimitive(dv, "getUint32", 4, offsetState),
+            frac = osc.readPrimitive(dv, "getUint32", 4, offsetState),
+            native = (secs1900 === 0 && frac === 1) ? Date.now() : osc.ntpToJSTime(secs1900, frac);
+
+        return {
+            raw: [secs1900, frac],
+            native: native
+        };
+    };
+
+    /**
+     * Writes an OSC time tag ("t").
+     *
+     * Takes, as its argument, a time tag object containing either a "raw" or "native property."
+     * The raw timestamp must conform to the NTP standard representation, consisting of two unsigned int32
+     * values. The first represents the number of seconds since January 1, 1900; the second, fractions of a second.
+     * "Native" JavaScript timestamps are specified as a Number representing milliseconds since January 1, 1970.
+     *
+     * @param {Object} timeTag time tag object containing either a native JS timestamp (in ms) or a NTP timestamp pair
+     * @return {Uint8Array} raw bytes for the written time tag
+     */
+    osc.writeTimeTag = function (timeTag) {
+        var raw = timeTag.raw ? timeTag.raw : osc.jsToNTPTime(timeTag.native),
+            arr = new Uint8Array(8), // Two Unit32s.
+            dv = new DataView(arr.buffer);
+
+        osc.writeInt32(raw[0], dv, 0);
+        osc.writeInt32(raw[1], dv, 4);
+
+        return arr;
+    };
+
+    /**
+     * Produces a time tag containing a raw NTP timestamp
+     * relative to now by the specified number of seconds.
+     *
+     * @param {Number} secs the number of seconds relative to now (i.e. + for the future, - for the past)
+     * @param {Number} now the number of milliseconds since epoch to use as the current time. Defaults to Date.now()
+     * @return {Object} the time tag
+     */
+    osc.timeTag = function (secs, now) {
+        secs = secs || 0;
+        now = now || Date.now();
+
+        var nowSecs = now / 1000,
+            nowWhole = Math.floor(nowSecs),
+            nowFracs = nowSecs - nowWhole,
+            secsWhole = Math.floor(secs),
+            secsFracs = secs - secsWhole,
+            fracs = nowFracs + secsFracs;
+
+        if (fracs > 1) {
+            var fracsWhole = Math.floor(fracs),
+                fracsFracs = fracs - fracsWhole;
+
+            secsWhole += fracsWhole;
+            fracs = fracsFracs;
+        }
+
+        var ntpSecs = nowWhole + secsWhole + osc.SECS_70YRS,
+            ntpFracs = Math.round(osc.TWO_32 * fracs);
+
+        return {
+            raw: [ntpSecs, ntpFracs]
+        };
+    };
+
+    /**
+     * Converts OSC's standard time tag representation (which is the NTP format)
+     * into the JavaScript/UNIX format in milliseconds.
+     *
+     * @param {Number} secs1900 the number of seconds since 1900
+     * @param {Number} frac the number of fractions of a second (between 0 and 2^32)
+     * @return {Number} a JavaScript-compatible timestamp in milliseconds
+     */
+    osc.ntpToJSTime = function (secs1900, frac) {
+        var secs1970 = secs1900 - osc.SECS_70YRS,
+            decimals = frac / osc.TWO_32,
+            msTime = (secs1970 + decimals) * 1000;
+
+        return msTime;
+    };
+
+    osc.jsToNTPTime = function (jsTime) {
+        var secs = jsTime / 1000,
+            secsWhole = Math.floor(secs),
+            secsFrac = secs - secsWhole,
+            ntpSecs = secsWhole + osc.SECS_70YRS,
+            ntpFracs = Math.round(osc.TWO_32 * secsFrac);
+
+        return [ntpSecs, ntpFracs];
+    };
+
+    /**
+     * Reads the argument portion of an OSC message.
+     *
+     * @param {DataView} dv a DataView instance to read from
+     * @param {Object} offsetState the offsetState object that stores the current offset into dv
+     * @param {Object} [options] read options
+     * @return {Array} an array of the OSC arguments that were read
+     */
+    osc.readArguments = function (dv, options, offsetState) {
+        var typeTagString = osc.readString(dv, offsetState);
+        if (typeTagString.indexOf(",") !== 0) {
+            // Despite what the OSC 1.0 spec says,
+            // it just doesn't make sense to handle messages without type tags.
+            // scsynth appears to read such messages as if they have a single
+            // Uint8 argument. sclang throws an error if the type tag is omitted.
+            throw new Error("A malformed type tag string was found while reading " +
+                "the arguments of an OSC message. String was: " +
+                typeTagString, " at offset: " + offsetState.idx);
+        }
+
+        var argTypes = typeTagString.substring(1).split(""),
+            args = [];
+
+        osc.readArgumentsIntoArray(args, argTypes, typeTagString, dv, options, offsetState);
+
+        return args;
+    };
+
+    // Unsupported, non-API function.
+    osc.readArgument = function (argType, typeTagString, dv, options, offsetState) {
+        var typeSpec = osc.argumentTypes[argType];
+        if (!typeSpec) {
+            throw new Error("'" + argType + "' is not a valid OSC type tag. Type tag string was: " + typeTagString);
+        }
+
+        var argReader = typeSpec.reader,
+            arg = osc[argReader](dv, offsetState);
+
+        if (options.metadata) {
+            arg = {
+                type: argType,
+                value: arg
+            };
+        }
+
+        return arg;
+    };
+
+    // Unsupported, non-API function.
+    osc.readArgumentsIntoArray = function (arr, argTypes, typeTagString, dv, options, offsetState) {
+        var i = 0;
+
+        while (i < argTypes.length) {
+            var argType = argTypes[i],
+                arg;
+
+            if (argType === "[") {
+                var fromArrayOpen = argTypes.slice(i + 1),
+                    endArrayIdx = fromArrayOpen.indexOf("]");
+
+                if (endArrayIdx < 0) {
+                    throw new Error("Invalid argument type tag: an open array type tag ('[') was found " +
+                        "without a matching close array tag ('[]'). Type tag was: " + typeTagString);
+                }
+
+                var typesInArray = fromArrayOpen.slice(0, endArrayIdx);
+                arg = osc.readArgumentsIntoArray([], typesInArray, typeTagString, dv, options, offsetState);
+                i += endArrayIdx + 2;
+            } else {
+                arg = osc.readArgument(argType, typeTagString, dv, options, offsetState);
+                i++;
+            }
+
+            arr.push(arg);
+        }
+
+        return arr;
+    };
+
+    /**
+     * Writes the specified arguments.
+     *
+     * @param {Array} args an array of arguments
+     * @param {Object} options options for writing
+     * @return {Uint8Array} a buffer containing the OSC-formatted argument type tag and values
+     */
+    osc.writeArguments = function (args, options) {
+        var argCollection = osc.collectArguments(args, options);
+        return osc.joinParts(argCollection);
+    };
+
+    // Unsupported, non-API function.
+    osc.joinParts = function (dataCollection) {
+        var buf = new Uint8Array(dataCollection.byteLength),
+            parts = dataCollection.parts,
+            offset = 0;
+
+        for (var i = 0; i < parts.length; i++) {
+            var part = parts[i];
+            osc.copyByteArray(part, buf, offset);
+            offset += part.length;
+        }
+
+        return buf;
+    };
+
+    // Unsupported, non-API function.
+    osc.addDataPart = function (dataPart, dataCollection) {
+        dataCollection.parts.push(dataPart);
+        dataCollection.byteLength += dataPart.length;
+    };
+
+    osc.writeArrayArguments = function (args, dataCollection) {
+        var typeTag = "[";
+
+        for (var i = 0; i < args.length; i++) {
+            var arg = args[i];
+            typeTag += osc.writeArgument(arg, dataCollection);
+        }
+
+        typeTag += "]";
+
+        return typeTag;
+    };
+
+    osc.writeArgument = function (arg, dataCollection) {
+        if (osc.isArray(arg)) {
+            return osc.writeArrayArguments(arg, dataCollection);
+        }
+
+        var type = arg.type,
+            writer = osc.argumentTypes[type].writer;
+
+        if (writer) {
+            var data = osc[writer](arg.value);
+            osc.addDataPart(data, dataCollection);
+        }
+
+        return arg.type;
+    };
+
+    // Unsupported, non-API function.
+    osc.collectArguments = function (args, options, dataCollection) {
+        if (!osc.isArray(args)) {
+            args = typeof args === "undefined" ? [] : [args];
+        }
+
+        dataCollection = dataCollection || {
+            byteLength: 0,
+            parts: []
+        };
+
+        if (!options.metadata) {
+            args = osc.annotateArguments(args);
+        }
+
+        var typeTagString = ",",
+            currPartIdx = dataCollection.parts.length;
+
+        for (var i = 0; i < args.length; i++) {
+            var arg = args[i];
+            typeTagString += osc.writeArgument(arg, dataCollection);
+        }
+
+        var typeData = osc.writeString(typeTagString);
+        dataCollection.byteLength += typeData.byteLength;
+        dataCollection.parts.splice(currPartIdx, 0, typeData);
+
+        return dataCollection;
+    };
+
+    /**
+     * Reads an OSC message.
+     *
+     * @param {Array-like} data an array of bytes to read from
+     * @param {Object} [options] read options
+     * @param {Object} [offsetState] an offsetState object that stores the current offset into dv
+     * @return {Object} the OSC message, formatted as a JavaScript object containing "address" and "args" properties
+     */
+    osc.readMessage = function (data, options, offsetState) {
+        options = options || osc.defaults;
+
+        var dv = osc.dataView(data, data.byteOffset, data.byteLength);
+        offsetState = offsetState || {
+            idx: 0
+        };
+
+        var address = osc.readString(dv, offsetState);
+        return osc.readMessageContents(address, dv, options, offsetState);
+    };
+
+    // Unsupported, non-API function.
+    osc.readMessageContents = function (address, dv, options, offsetState) {
+        if (address.indexOf("/") !== 0) {
+            throw new Error("A malformed OSC address was found while reading " +
+                "an OSC message. String was: " + address);
+        }
+
+        var args = osc.readArguments(dv, options, offsetState);
+
+        return {
+            address: address,
+            args: args.length === 1 && options.unpackSingleArgs ? args[0] : args
+        };
+    };
+
+    // Unsupported, non-API function.
+    osc.collectMessageParts = function (msg, options, dataCollection) {
+        dataCollection = dataCollection || {
+            byteLength: 0,
+            parts: []
+        };
+
+        osc.addDataPart(osc.writeString(msg.address), dataCollection);
+        return osc.collectArguments(msg.args, options, dataCollection);
+    };
+
+    /**
+     * Writes an OSC message.
+     *
+     * @param {Object} msg a message object containing "address" and "args" properties
+     * @param {Object} [options] write options
+     * @return {Uint8Array} an array of bytes containing the OSC message
+     */
+    osc.writeMessage = function (msg, options) {
+        options = options || osc.defaults;
+
+        if (!osc.isValidMessage(msg)) {
+            throw new Error("An OSC message must contain a valid address. Message was: " +
+                JSON.stringify(msg, null, 2));
+        }
+
+        var msgCollection = osc.collectMessageParts(msg, options);
+        return osc.joinParts(msgCollection);
+    };
+
+    osc.isValidMessage = function (msg) {
+        return msg.address && msg.address.indexOf("/") === 0;
+    };
+
+    /**
+     * Reads an OSC bundle.
+     *
+     * @param {DataView} dv the DataView instance to read from
+     * @param {Object} [options] read optoins
+     * @param {Object} [offsetState] an offsetState object that stores the current offset into dv
+     * @return {Object} the bundle or message object that was read
+     */
+    osc.readBundle = function (dv, options, offsetState) {
+        return osc.readPacket(dv, options, offsetState);
+    };
+
+    // Unsupported, non-API function.
+    osc.collectBundlePackets = function (bundle, options, dataCollection) {
+        dataCollection = dataCollection || {
+            byteLength: 0,
+            parts: []
+        };
+
+        osc.addDataPart(osc.writeString("#bundle"), dataCollection);
+        osc.addDataPart(osc.writeTimeTag(bundle.timeTag), dataCollection);
+
+        for (var i = 0; i < bundle.packets.length; i++) {
+            var packet = bundle.packets[i],
+                collector = packet.address ? osc.collectMessageParts : osc.collectBundlePackets,
+                packetCollection = collector(packet, options);
+
+            dataCollection.byteLength += packetCollection.byteLength;
+            osc.addDataPart(osc.writeInt32(packetCollection.byteLength), dataCollection);
+            dataCollection.parts = dataCollection.parts.concat(packetCollection.parts);
+        }
+
+        return dataCollection;
+    };
+
+    /**
+     * Writes an OSC bundle.
+     *
+     * @param {Object} a bundle object containing "timeTag" and "packets" properties
+     * @param {object} [options] write options
+     * @return {Uint8Array} an array of bytes containing the message
+     */
+    osc.writeBundle = function (bundle, options) {
+        if (!osc.isValidBundle(bundle)) {
+            throw new Error("An OSC bundle must contain 'timeTag' and 'packets' properties. " +
+                "Bundle was: " + JSON.stringify(bundle, null, 2));
+        }
+
+        options = options || osc.defaults;
+        var bundleCollection = osc.collectBundlePackets(bundle, options);
+
+        return osc.joinParts(bundleCollection);
+    };
+
+    osc.isValidBundle = function (bundle) {
+        return bundle.timeTag !== undefined && bundle.packets !== undefined;
+    };
+
+    // Unsupported, non-API function.
+    osc.readBundleContents = function (dv, options, offsetState, len) {
+        var timeTag = osc.readTimeTag(dv, offsetState),
+            packets = [];
+
+        while (offsetState.idx < len) {
+            var packetSize = osc.readInt32(dv, offsetState),
+                packetLen = offsetState.idx + packetSize,
+                packet = osc.readPacket(dv, options, offsetState, packetLen);
+
+            packets.push(packet);
+        }
+
+        return {
+            timeTag: timeTag,
+            packets: packets
+        };
+    };
+
+    /**
+     * Reads an OSC packet, which may consist of either a bundle or a message.
+     *
+     * @param {Array-like} data an array of bytes to read from
+     * @param {Object} [options] read options
+     * @return {Object} a bundle or message object
+     */
+    osc.readPacket = function (data, options, offsetState, len) {
+        var dv = osc.dataView(data, data.byteOffset, data.byteLength);
+
+        len = len === undefined ? dv.byteLength : len;
+        offsetState = offsetState || {
+            idx: 0
+        };
+
+        var header = osc.readString(dv, offsetState),
+            firstChar = header[0];
+
+        if (firstChar === "#") {
+            return osc.readBundleContents(dv, options, offsetState, len);
+        } else if (firstChar === "/") {
+            return osc.readMessageContents(header, dv, options, offsetState);
+        }
+
+        throw new Error("The header of an OSC packet didn't contain an OSC address or a #bundle string." +
+            " Header was: " + header);
+    };
+
+    /**
+     * Writes an OSC packet, which may consist of either of a bundle or a message.
+     *
+     * @param {Object} a bundle or message object
+     * @param {Object} [options] write options
+     * @return {Uint8Array} an array of bytes containing the message
+     */
+    osc.writePacket = function (packet, options) {
+        if (osc.isValidMessage(packet)) {
+            return osc.writeMessage(packet, options);
+        } else if (osc.isValidBundle(packet)) {
+            return osc.writeBundle(packet, options);
+        } else {
+            throw new Error("The specified packet was not recognized as a valid OSC message or bundle." +
+                " Packet was: " + JSON.stringify(packet, null, 2));
+        }
+    };
+
+    // Unsupported, non-API.
+    osc.argumentTypes = {
+        i: {
+            reader: "readInt32",
+            writer: "writeInt32"
+        },
+        h: {
+            reader: "readInt64",
+            writer: "writeInt64"
+        },
+        f: {
+            reader: "readFloat32",
+            writer: "writeFloat32"
+        },
+        s: {
+            reader: "readString",
+            writer: "writeString"
+        },
+        S: {
+            reader: "readString",
+            writer: "writeString"
+        },
+        b: {
+            reader: "readBlob",
+            writer: "writeBlob"
+        },
+        t: {
+            reader: "readTimeTag",
+            writer: "writeTimeTag"
+        },
+        T: {
+            reader: "readTrue"
+        },
+        F: {
+            reader: "readFalse"
+        },
+        N: {
+            reader: "readNull"
+        },
+        I: {
+            reader: "readImpulse"
+        },
+        d: {
+            reader: "readFloat64",
+            writer: "writeFloat64"
+        },
+        c: {
+            reader: "readChar32",
+            writer: "writeChar32"
+        },
+        r: {
+            reader: "readColor",
+            writer: "writeColor"
+        },
+        m: {
+            reader: "readMIDIBytes",
+            writer: "writeMIDIBytes"
+        },
+        // [] are special cased within read/writeArguments()
+    };
+
+    // Unsupported, non-API function.
+    osc.inferTypeForArgument = function (arg) {
+        var type = typeof arg;
+
+        // TODO: This is freaking hideous.
+        switch (type) {
+            case "boolean":
+                return arg ? "T" : "F";
+            case "string":
+                return "s";
+            case "number":
+                return "f";
+            case "undefined":
+                return "N";
+            case "object":
+                if (arg === null) {
+                    return "N";
+                } else if (arg instanceof Uint8Array ||
+                    arg instanceof ArrayBuffer) {
+                    return "b";
+                } else if (typeof arg.high === "number" && typeof arg.low === "number") {
+                    return "h";
+                }
+                break;
+        }
+
+        throw new Error("Can't infer OSC argument type for value: " +
+            JSON.stringify(arg, null, 2));
+    };
+
+    // Unsupported, non-API function.
+    osc.annotateArguments = function (args) {
+        var annotated = [];
+
+        for (var i = 0; i < args.length; i++) {
+            var arg = args[i],
+                msgArg;
+
+            if (typeof (arg) === "object" && arg.type && arg.value !== undefined) {
+                // We've got an explicitly typed argument.
+                msgArg = arg;
+            } else if (osc.isArray(arg)) {
+                // We've got an array of arguments,
+                // so they each need to be inferred and expanded.
+                msgArg = osc.annotateArguments(arg);
+            } else {
+                var oscType = osc.inferTypeForArgument(arg);
+                msgArg = {
+                    type: oscType,
+                    value: arg
+                };
+            }
+
+            annotated.push(msgArg);
+        }
+
+        return annotated;
+    };
+
+    if (osc.isCommonJS) {
+        module.exports = osc;
+    }
+}());
+;
+!function(t,i){"object"==typeof exports&&"object"==typeof module?module.exports=i():"function"==typeof define&&define.amd?define([],i):"object"==typeof exports?exports.Long=i():t.Long=i()}("undefined"!=typeof self?self:this,function(){return function(t){function i(e){if(n[e])return n[e].exports;var r=n[e]={i:e,l:!1,exports:{}};return t[e].call(r.exports,r,r.exports,i),r.l=!0,r.exports}var n={};return i.m=t,i.c=n,i.d=function(t,n,e){i.o(t,n)||Object.defineProperty(t,n,{configurable:!1,enumerable:!0,get:e})},i.n=function(t){var n=t&&t.__esModule?function(){return t.default}:function(){return t};return i.d(n,"a",n),n},i.o=function(t,i){return Object.prototype.hasOwnProperty.call(t,i)},i.p="",i(i.s=0)}([function(t,i){function n(t,i,n){this.low=0|t,this.high=0|i,this.unsigned=!!n}function e(t){return!0===(t&&t.__isLong__)}function r(t,i){var n,e,r;return i?(t>>>=0,(r=0<=t&&t<256)&&(e=l[t])?e:(n=h(t,(0|t)<0?-1:0,!0),r&&(l[t]=n),n)):(t|=0,(r=-128<=t&&t<128)&&(e=f[t])?e:(n=h(t,t<0?-1:0,!1),r&&(f[t]=n),n))}function s(t,i){if(isNaN(t))return i?p:m;if(i){if(t<0)return p;if(t>=c)return q}else{if(t<=-v)return _;if(t+1>=v)return E}return t<0?s(-t,i).neg():h(t%d|0,t/d|0,i)}function h(t,i,e){return new n(t,i,e)}function u(t,i,n){if(0===t.length)throw Error("empty string");if("NaN"===t||"Infinity"===t||"+Infinity"===t||"-Infinity"===t)return m;if("number"==typeof i?(n=i,i=!1):i=!!i,(n=n||10)<2||36<n)throw RangeError("radix");var e;if((e=t.indexOf("-"))>0)throw Error("interior hyphen");if(0===e)return u(t.substring(1),i,n).neg();for(var r=s(a(n,8)),h=m,o=0;o<t.length;o+=8){var g=Math.min(8,t.length-o),f=parseInt(t.substring(o,o+g),n);if(g<8){var l=s(a(n,g));h=h.mul(l).add(s(f))}else h=h.mul(r),h=h.add(s(f))}return h.unsigned=i,h}function o(t,i){return"number"==typeof t?s(t,i):"string"==typeof t?u(t,i):h(t.low,t.high,"boolean"==typeof i?i:t.unsigned)}t.exports=n;var g=null;try{g=new WebAssembly.Instance(new WebAssembly.Module(new Uint8Array([0,97,115,109,1,0,0,0,1,13,2,96,0,1,127,96,4,127,127,127,127,1,127,3,7,6,0,1,1,1,1,1,6,6,1,127,1,65,0,11,7,50,6,3,109,117,108,0,1,5,100,105,118,95,115,0,2,5,100,105,118,95,117,0,3,5,114,101,109,95,115,0,4,5,114,101,109,95,117,0,5,8,103,101,116,95,104,105,103,104,0,0,10,191,1,6,4,0,35,0,11,36,1,1,126,32,0,173,32,1,173,66,32,134,132,32,2,173,32,3,173,66,32,134,132,126,34,4,66,32,135,167,36,0,32,4,167,11,36,1,1,126,32,0,173,32,1,173,66,32,134,132,32,2,173,32,3,173,66,32,134,132,127,34,4,66,32,135,167,36,0,32,4,167,11,36,1,1,126,32,0,173,32,1,173,66,32,134,132,32,2,173,32,3,173,66,32,134,132,128,34,4,66,32,135,167,36,0,32,4,167,11,36,1,1,126,32,0,173,32,1,173,66,32,134,132,32,2,173,32,3,173,66,32,134,132,129,34,4,66,32,135,167,36,0,32,4,167,11,36,1,1,126,32,0,173,32,1,173,66,32,134,132,32,2,173,32,3,173,66,32,134,132,130,34,4,66,32,135,167,36,0,32,4,167,11])),{}).exports}catch(t){}n.prototype.__isLong__,Object.defineProperty(n.prototype,"__isLong__",{value:!0}),n.isLong=e;var f={},l={};n.fromInt=r,n.fromNumber=s,n.fromBits=h;var a=Math.pow;n.fromString=u,n.fromValue=o;var d=4294967296,c=d*d,v=c/2,w=r(1<<24),m=r(0);n.ZERO=m;var p=r(0,!0);n.UZERO=p;var y=r(1);n.ONE=y;var b=r(1,!0);n.UONE=b;var N=r(-1);n.NEG_ONE=N;var E=h(-1,2147483647,!1);n.MAX_VALUE=E;var q=h(-1,-1,!0);n.MAX_UNSIGNED_VALUE=q;var _=h(0,-2147483648,!1);n.MIN_VALUE=_;var B=n.prototype;B.toInt=function(){return this.unsigned?this.low>>>0:this.low},B.toNumber=function(){return this.unsigned?(this.high>>>0)*d+(this.low>>>0):this.high*d+(this.low>>>0)},B.toString=function(t){if((t=t||10)<2||36<t)throw RangeError("radix");if(this.isZero())return"0";if(this.isNegative()){if(this.eq(_)){var i=s(t),n=this.div(i),e=n.mul(i).sub(this);return n.toString(t)+e.toInt().toString(t)}return"-"+this.neg().toString(t)}for(var r=s(a(t,6),this.unsigned),h=this,u="";;){var o=h.div(r),g=h.sub(o.mul(r)).toInt()>>>0,f=g.toString(t);if(h=o,h.isZero())return f+u;for(;f.length<6;)f="0"+f;u=""+f+u}},B.getHighBits=function(){return this.high},B.getHighBitsUnsigned=function(){return this.high>>>0},B.getLowBits=function(){return this.low},B.getLowBitsUnsigned=function(){return this.low>>>0},B.getNumBitsAbs=function(){if(this.isNegative())return this.eq(_)?64:this.neg().getNumBitsAbs();for(var t=0!=this.high?this.high:this.low,i=31;i>0&&0==(t&1<<i);i--);return 0!=this.high?i+33:i+1},B.isZero=function(){return 0===this.high&&0===this.low},B.eqz=B.isZero,B.isNegative=function(){return!this.unsigned&&this.high<0},B.isPositive=function(){return this.unsigned||this.high>=0},B.isOdd=function(){return 1==(1&this.low)},B.isEven=function(){return 0==(1&this.low)},B.equals=function(t){return e(t)||(t=o(t)),(this.unsigned===t.unsigned||this.high>>>31!=1||t.high>>>31!=1)&&(this.high===t.high&&this.low===t.low)},B.eq=B.equals,B.notEquals=function(t){return!this.eq(t)},B.neq=B.notEquals,B.ne=B.notEquals,B.lessThan=function(t){return this.comp(t)<0},B.lt=B.lessThan,B.lessThanOrEqual=function(t){return this.comp(t)<=0},B.lte=B.lessThanOrEqual,B.le=B.lessThanOrEqual,B.greaterThan=function(t){return this.comp(t)>0},B.gt=B.greaterThan,B.greaterThanOrEqual=function(t){return this.comp(t)>=0},B.gte=B.greaterThanOrEqual,B.ge=B.greaterThanOrEqual,B.compare=function(t){if(e(t)||(t=o(t)),this.eq(t))return 0;var i=this.isNegative(),n=t.isNegative();return i&&!n?-1:!i&&n?1:this.unsigned?t.high>>>0>this.high>>>0||t.high===this.high&&t.low>>>0>this.low>>>0?-1:1:this.sub(t).isNegative()?-1:1},B.comp=B.compare,B.negate=function(){return!this.unsigned&&this.eq(_)?_:this.not().add(y)},B.neg=B.negate,B.add=function(t){e(t)||(t=o(t));var i=this.high>>>16,n=65535&this.high,r=this.low>>>16,s=65535&this.low,u=t.high>>>16,g=65535&t.high,f=t.low>>>16,l=65535&t.low,a=0,d=0,c=0,v=0;return v+=s+l,c+=v>>>16,v&=65535,c+=r+f,d+=c>>>16,c&=65535,d+=n+g,a+=d>>>16,d&=65535,a+=i+u,a&=65535,h(c<<16|v,a<<16|d,this.unsigned)},B.subtract=function(t){return e(t)||(t=o(t)),this.add(t.neg())},B.sub=B.subtract,B.multiply=function(t){if(this.isZero())return m;if(e(t)||(t=o(t)),g){return h(g.mul(this.low,this.high,t.low,t.high),g.get_high(),this.unsigned)}if(t.isZero())return m;if(this.eq(_))return t.isOdd()?_:m;if(t.eq(_))return this.isOdd()?_:m;if(this.isNegative())return t.isNegative()?this.neg().mul(t.neg()):this.neg().mul(t).neg();if(t.isNegative())return this.mul(t.neg()).neg();if(this.lt(w)&&t.lt(w))return s(this.toNumber()*t.toNumber(),this.unsigned);var i=this.high>>>16,n=65535&this.high,r=this.low>>>16,u=65535&this.low,f=t.high>>>16,l=65535&t.high,a=t.low>>>16,d=65535&t.low,c=0,v=0,p=0,y=0;return y+=u*d,p+=y>>>16,y&=65535,p+=r*d,v+=p>>>16,p&=65535,p+=u*a,v+=p>>>16,p&=65535,v+=n*d,c+=v>>>16,v&=65535,v+=r*a,c+=v>>>16,v&=65535,v+=u*l,c+=v>>>16,v&=65535,c+=i*d+n*a+r*l+u*f,c&=65535,h(p<<16|y,c<<16|v,this.unsigned)},B.mul=B.multiply,B.divide=function(t){if(e(t)||(t=o(t)),t.isZero())throw Error("division by zero");if(g){if(!this.unsigned&&-2147483648===this.high&&-1===t.low&&-1===t.high)return this;return h((this.unsigned?g.div_u:g.div_s)(this.low,this.high,t.low,t.high),g.get_high(),this.unsigned)}if(this.isZero())return this.unsigned?p:m;var i,n,r;if(this.unsigned){if(t.unsigned||(t=t.toUnsigned()),t.gt(this))return p;if(t.gt(this.shru(1)))return b;r=p}else{if(this.eq(_)){if(t.eq(y)||t.eq(N))return _;if(t.eq(_))return y;return i=this.shr(1).div(t).shl(1),i.eq(m)?t.isNegative()?y:N:(n=this.sub(t.mul(i)),r=i.add(n.div(t)))}if(t.eq(_))return this.unsigned?p:m;if(this.isNegative())return t.isNegative()?this.neg().div(t.neg()):this.neg().div(t).neg();if(t.isNegative())return this.div(t.neg()).neg();r=m}for(n=this;n.gte(t);){i=Math.max(1,Math.floor(n.toNumber()/t.toNumber()));for(var u=Math.ceil(Math.log(i)/Math.LN2),f=u<=48?1:a(2,u-48),l=s(i),d=l.mul(t);d.isNegative()||d.gt(n);)i-=f,l=s(i,this.unsigned),d=l.mul(t);l.isZero()&&(l=y),r=r.add(l),n=n.sub(d)}return r},B.div=B.divide,B.modulo=function(t){if(e(t)||(t=o(t)),g){return h((this.unsigned?g.rem_u:g.rem_s)(this.low,this.high,t.low,t.high),g.get_high(),this.unsigned)}return this.sub(this.div(t).mul(t))},B.mod=B.modulo,B.rem=B.modulo,B.not=function(){return h(~this.low,~this.high,this.unsigned)},B.and=function(t){return e(t)||(t=o(t)),h(this.low&t.low,this.high&t.high,this.unsigned)},B.or=function(t){return e(t)||(t=o(t)),h(this.low|t.low,this.high|t.high,this.unsigned)},B.xor=function(t){return e(t)||(t=o(t)),h(this.low^t.low,this.high^t.high,this.unsigned)},B.shiftLeft=function(t){return e(t)&&(t=t.toInt()),0==(t&=63)?this:t<32?h(this.low<<t,this.high<<t|this.low>>>32-t,this.unsigned):h(0,this.low<<t-32,this.unsigned)},B.shl=B.shiftLeft,B.shiftRight=function(t){return e(t)&&(t=t.toInt()),0==(t&=63)?this:t<32?h(this.low>>>t|this.high<<32-t,this.high>>t,this.unsigned):h(this.high>>t-32,this.high>=0?0:-1,this.unsigned)},B.shr=B.shiftRight,B.shiftRightUnsigned=function(t){if(e(t)&&(t=t.toInt()),0===(t&=63))return this;var i=this.high;if(t<32){return h(this.low>>>t|i<<32-t,i>>>t,this.unsigned)}return 32===t?h(i,0,this.unsigned):h(i>>>t-32,0,this.unsigned)},B.shru=B.shiftRightUnsigned,B.shr_u=B.shiftRightUnsigned,B.toSigned=function(){return this.unsigned?h(this.low,this.high,!1):this},B.toUnsigned=function(){return this.unsigned?this:h(this.low,this.high,!0)},B.toBytes=function(t){return t?this.toBytesLE():this.toBytesBE()},B.toBytesLE=function(){var t=this.high,i=this.low;return[255&i,i>>>8&255,i>>>16&255,i>>>24,255&t,t>>>8&255,t>>>16&255,t>>>24]},B.toBytesBE=function(){var t=this.high,i=this.low;return[t>>>24,t>>>16&255,t>>>8&255,255&t,i>>>24,i>>>16&255,i>>>8&255,255&i]},n.fromBytes=function(t,i,e){return e?n.fromBytesLE(t,i):n.fromBytesBE(t,i)},n.fromBytesLE=function(t,i){return new n(t[0]|t[1]<<8|t[2]<<16|t[3]<<24,t[4]|t[5]<<8|t[6]<<16|t[7]<<24,i)},n.fromBytesBE=function(t,i){return new n(t[4]<<24|t[5]<<16|t[6]<<8|t[7],t[0]<<24|t[1]<<16|t[2]<<8|t[3],i)}}])});
+
+/*
+ * slip.js: A plain JavaScript SLIP implementation that works in both the browser and Node.js
+ *
+ * Copyright 2014, Colin Clark
+ * Licensed under the MIT and GPL 3 licenses.
+ */
+
+/*global exports, define*/
+(function (root, factory) {
+    "use strict";
+
+    if (typeof exports === "object") {
+        // We're in a CommonJS-style loader.
+        root.slip = exports;
+        factory(exports);
+    } else if (typeof define === "function" && define.amd) {
+        // We're in an AMD-style loader.
+        define(["exports"], function (exports) {
+            root.slip = exports;
+            return (root.slip, factory(exports));
+        });
+    } else {
+        // Plain old browser.
+        root.slip = {};
+        factory(root.slip);
+    }
+}(this, function (exports) {
+
+    "use strict";
+
+    var slip = exports;
+
+    slip.END = 192;
+    slip.ESC = 219;
+    slip.ESC_END = 220;
+    slip.ESC_ESC = 221;
+
+    slip.byteArray = function (data, offset, length) {
+        return data instanceof ArrayBuffer ? new Uint8Array(data, offset, length) : data;
+    };
+
+    slip.expandByteArray = function (arr) {
+        var expanded = new Uint8Array(arr.length * 2);
+        expanded.set(arr);
+
+        return expanded;
+    };
+
+    slip.sliceByteArray = function (arr, start, end) {
+        var sliced = arr.buffer.slice ? arr.buffer.slice(start, end) : arr.subarray(start, end);
+        return new Uint8Array(sliced);
+    };
+
+    /**
+     * SLIP encodes a byte array.
+     *
+     * @param {Array-like} data a Uint8Array, Node.js Buffer, ArrayBuffer, or [] containing raw bytes
+     * @param {Object} options encoder options
+     * @return {Uint8Array} the encoded copy of the data
+     */
+    slip.encode = function (data, o) {
+        o = o || {};
+        o.bufferPadding = o.bufferPadding || 4; // Will be rounded to the nearest 4 bytes.
+        data = slip.byteArray(data, o.offset, o.byteLength);
+
+        var bufLen = (data.length + o.bufferPadding + 3) & ~0x03,
+            encoded = new Uint8Array(bufLen),
+            j = 1;
+
+        encoded[0] = slip.END;
+
+        for (var i = 0; i < data.length; i++) {
+            // We always need enough space for two value bytes plus a trailing END.
+            if (j > encoded.length - 3) {
+                encoded = slip.expandByteArray(encoded);
+            }
+
+            var val = data[i];
+            if (val === slip.END) {
+                encoded[j++] = slip.ESC;
+                val = slip.ESC_END;
+            } else if (val === slip.ESC) {
+                encoded[j++] = slip.ESC;
+                val = slip.ESC_ESC;
+            }
+
+            encoded[j++] = val;
+        }
+
+        encoded[j] = slip.END;
+        return slip.sliceByteArray(encoded, 0, j + 1);
+    };
+
+    /**
+     * Creates a new SLIP Decoder.
+     * @constructor
+     *
+     * @param {Function} onMessage a callback function that will be invoked when a message has been fully decoded
+     * @param {Number} maxBufferSize the maximum size of a incoming message; larger messages will throw an error
+     */
+    slip.Decoder = function (o) {
+        o = typeof o !== "function" ? o || {} : {
+            onMessage: o
+        };
+
+        this.maxMessageSize = o.maxMessageSize || 10485760; // Defaults to 10 MB.
+        this.bufferSize = o.bufferSize || 1024; // Message buffer defaults to 1 KB.
+        this.msgBuffer = new Uint8Array(this.bufferSize);
+        this.msgBufferIdx = 0;
+        this.onMessage = o.onMessage;
+        this.onError = o.onError;
+        this.escape = false;
+    };
+
+    var p = slip.Decoder.prototype;
+
+    /**
+     * Decodes a SLIP data packet.
+     * The onMessage callback will be invoked when a complete message has been decoded.
+     *
+     * @param {Array-like} data an incoming stream of bytes
+     */
+    p.decode = function (data) {
+        data = slip.byteArray(data);
+
+        var msg;
+        for (var i = 0; i < data.length; i++) {
+            var val = data[i];
+
+            if (this.escape) {
+                if (val === slip.ESC_ESC) {
+                    val = slip.ESC;
+                } else if (val === slip.ESC_END) {
+                    val = slip.END;
+                }
+            } else {
+                if (val === slip.ESC) {
+                    this.escape = true;
+                    continue;
+                }
+
+                if (val === slip.END) {
+                    msg = this.handleEnd();
+                    continue;
+                }
+            }
+
+            var more = this.addByte(val);
+            if (!more) {
+                this.handleMessageMaxError();
+            }
+        }
+
+        return msg;
+    };
+
+    p.handleMessageMaxError = function () {
+        if (this.onError) {
+            this.onError(this.msgBuffer.subarray(0),
+                "The message is too large; the maximum message size is " +
+                this.maxMessageSize / 1024 + "KB. Use a larger maxMessageSize if necessary.");
+        }
+
+        // Reset everything and carry on.
+        this.msgBufferIdx = 0;
+        this.escape = false;
+    };
+
+    // Unsupported, non-API method.
+    p.addByte = function (val) {
+        if (this.msgBufferIdx > this.msgBuffer.length - 1) {
+            this.msgBuffer = slip.expandByteArray(this.msgBuffer);
+        }
+
+        this.msgBuffer[this.msgBufferIdx++] = val;
+        this.escape = false;
+
+        return this.msgBuffer.length < this.maxMessageSize;
+    };
+
+    // Unsupported, non-API method.
+    p.handleEnd = function () {
+        if (this.msgBufferIdx === 0) {
+            return; // Toss opening END byte and carry on.
+        }
+
+        var msg = slip.sliceByteArray(this.msgBuffer, 0, this.msgBufferIdx);
+        if (this.onMessage) {
+            this.onMessage(msg);
+        }
+
+        // Clear our pointer into the message buffer.
+        this.msgBufferIdx = 0;
+
+        return msg;
+    };
+
+    return slip;
+}));
+;
+/*!
+ * EventEmitter v5.2.9 - git.io/ee
+ * Unlicense - http://unlicense.org/
+ * Oliver Caldwell - https://oli.me.uk/
+ * @preserve
+ */
+
+;(function (exports) {
+    'use strict';
+
+    /**
+     * Class for managing events.
+     * Can be extended to provide event functionality in other classes.
+     *
+     * @class EventEmitter Manages event registering and emitting.
+     */
+    function EventEmitter() {}
+
+    // Shortcuts to improve speed and size
+    var proto = EventEmitter.prototype;
+    var originalGlobalValue = exports.EventEmitter;
+
+    /**
+     * Finds the index of the listener for the event in its storage array.
+     *
+     * @param {Function[]} listeners Array of listeners to search through.
+     * @param {Function} listener Method to look for.
+     * @return {Number} Index of the specified listener, -1 if not found
+     * @api private
+     */
+    function indexOfListener(listeners, listener) {
+        var i = listeners.length;
+        while (i--) {
+            if (listeners[i].listener === listener) {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
+    /**
+     * Alias a method while keeping the context correct, to allow for overwriting of target method.
+     *
+     * @param {String} name The name of the target method.
+     * @return {Function} The aliased method
+     * @api private
+     */
+    function alias(name) {
+        return function aliasClosure() {
+            return this[name].apply(this, arguments);
+        };
+    }
+
+    /**
+     * Returns the listener array for the specified event.
+     * Will initialise the event object and listener arrays if required.
+     * Will return an object if you use a regex search. The object contains keys for each matched event. So /ba[rz]/ might return an object containing bar and baz. But only if you have either defined them with defineEvent or added some listeners to them.
+     * Each property in the object response is an array of listener functions.
+     *
+     * @param {String|RegExp} evt Name of the event to return the listeners from.
+     * @return {Function[]|Object} All listener functions for the event.
+     */
+    proto.getListeners = function getListeners(evt) {
+        var events = this._getEvents();
+        var response;
+        var key;
+
+        // Return a concatenated array of all matching events if
+        // the selector is a regular expression.
+        if (evt instanceof RegExp) {
+            response = {};
+            for (key in events) {
+                if (events.hasOwnProperty(key) && evt.test(key)) {
+                    response[key] = events[key];
+                }
+            }
+        }
+        else {
+            response = events[evt] || (events[evt] = []);
+        }
+
+        return response;
+    };
+
+    /**
+     * Takes a list of listener objects and flattens it into a list of listener functions.
+     *
+     * @param {Object[]} listeners Raw listener objects.
+     * @return {Function[]} Just the listener functions.
+     */
+    proto.flattenListeners = function flattenListeners(listeners) {
+        var flatListeners = [];
+        var i;
+
+        for (i = 0; i < listeners.length; i += 1) {
+            flatListeners.push(listeners[i].listener);
+        }
+
+        return flatListeners;
+    };
+
+    /**
+     * Fetches the requested listeners via getListeners but will always return the results inside an object. This is mainly for internal use but others may find it useful.
+     *
+     * @param {String|RegExp} evt Name of the event to return the listeners from.
+     * @return {Object} All listener functions for an event in an object.
+     */
+    proto.getListenersAsObject = function getListenersAsObject(evt) {
+        var listeners = this.getListeners(evt);
+        var response;
+
+        if (listeners instanceof Array) {
+            response = {};
+            response[evt] = listeners;
+        }
+
+        return response || listeners;
+    };
+
+    function isValidListener (listener) {
+        if (typeof listener === 'function' || listener instanceof RegExp) {
+            return true
+        } else if (listener && typeof listener === 'object') {
+            return isValidListener(listener.listener)
+        } else {
+            return false
+        }
+    }
+
+    /**
+     * Adds a listener function to the specified event.
+     * The listener will not be added if it is a duplicate.
+     * If the listener returns true then it will be removed after it is called.
+     * If you pass a regular expression as the event name then the listener will be added to all events that match it.
+     *
+     * @param {String|RegExp} evt Name of the event to attach the listener to.
+     * @param {Function} listener Method to be called when the event is emitted. If the function returns true then it will be removed after calling.
+     * @return {Object} Current instance of EventEmitter for chaining.
+     */
+    proto.addListener = function addListener(evt, listener) {
+        if (!isValidListener(listener)) {
+            throw new TypeError('listener must be a function');
+        }
+
+        var listeners = this.getListenersAsObject(evt);
+        var listenerIsWrapped = typeof listener === 'object';
+        var key;
+
+        for (key in listeners) {
+            if (listeners.hasOwnProperty(key) && indexOfListener(listeners[key], listener) === -1) {
+                listeners[key].push(listenerIsWrapped ? listener : {
+                    listener: listener,
+                    once: false
+                });
+            }
+        }
+
+        return this;
+    };
+
+    /**
+     * Alias of addListener
+     */
+    proto.on = alias('addListener');
+
+    /**
+     * Semi-alias of addListener. It will add a listener that will be
+     * automatically removed after its first execution.
+     *
+     * @param {String|RegExp} evt Name of the event to attach the listener to.
+     * @param {Function} listener Method to be called when the event is emitted. If the function returns true then it will be removed after calling.
+     * @return {Object} Current instance of EventEmitter for chaining.
+     */
+    proto.addOnceListener = function addOnceListener(evt, listener) {
+        return this.addListener(evt, {
+            listener: listener,
+            once: true
+        });
+    };
+
+    /**
+     * Alias of addOnceListener.
+     */
+    proto.once = alias('addOnceListener');
+
+    /**
+     * Defines an event name. This is required if you want to use a regex to add a listener to multiple events at once. If you don't do this then how do you expect it to know what event to add to? Should it just add to every possible match for a regex? No. That is scary and bad.
+     * You need to tell it what event names should be matched by a regex.
+     *
+     * @param {String} evt Name of the event to create.
+     * @return {Object} Current instance of EventEmitter for chaining.
+     */
+    proto.defineEvent = function defineEvent(evt) {
+        this.getListeners(evt);
+        return this;
+    };
+
+    /**
+     * Uses defineEvent to define multiple events.
+     *
+     * @param {String[]} evts An array of event names to define.
+     * @return {Object} Current instance of EventEmitter for chaining.
+     */
+    proto.defineEvents = function defineEvents(evts) {
+        for (var i = 0; i < evts.length; i += 1) {
+            this.defineEvent(evts[i]);
+        }
+        return this;
+    };
+
+    /**
+     * Removes a listener function from the specified event.
+     * When passed a regular expression as the event name, it will remove the listener from all events that match it.
+     *
+     * @param {String|RegExp} evt Name of the event to remove the listener from.
+     * @param {Function} listener Method to remove from the event.
+     * @return {Object} Current instance of EventEmitter for chaining.
+     */
+    proto.removeListener = function removeListener(evt, listener) {
+        var listeners = this.getListenersAsObject(evt);
+        var index;
+        var key;
+
+        for (key in listeners) {
+            if (listeners.hasOwnProperty(key)) {
+                index = indexOfListener(listeners[key], listener);
+
+                if (index !== -1) {
+                    listeners[key].splice(index, 1);
+                }
+            }
+        }
+
+        return this;
+    };
+
+    /**
+     * Alias of removeListener
+     */
+    proto.off = alias('removeListener');
+
+    /**
+     * Adds listeners in bulk using the manipulateListeners method.
+     * If you pass an object as the first argument you can add to multiple events at once. The object should contain key value pairs of events and listeners or listener arrays. You can also pass it an event name and an array of listeners to be added.
+     * You can also pass it a regular expression to add the array of listeners to all events that match it.
+     * Yeah, this function does quite a bit. That's probably a bad thing.
+     *
+     * @param {String|Object|RegExp} evt An event name if you will pass an array of listeners next. An object if you wish to add to multiple events at once.
+     * @param {Function[]} [listeners] An optional array of listener functions to add.
+     * @return {Object} Current instance of EventEmitter for chaining.
+     */
+    proto.addListeners = function addListeners(evt, listeners) {
+        // Pass through to manipulateListeners
+        return this.manipulateListeners(false, evt, listeners);
+    };
+
+    /**
+     * Removes listeners in bulk using the manipulateListeners method.
+     * If you pass an object as the first argument you can remove from multiple events at once. The object should contain key value pairs of events and listeners or listener arrays.
+     * You can also pass it an event name and an array of listeners to be removed.
+     * You can also pass it a regular expression to remove the listeners from all events that match it.
+     *
+     * @param {String|Object|RegExp} evt An event name if you will pass an array of listeners next. An object if you wish to remove from multiple events at once.
+     * @param {Function[]} [listeners] An optional array of listener functions to remove.
+     * @return {Object} Current instance of EventEmitter for chaining.
+     */
+    proto.removeListeners = function removeListeners(evt, listeners) {
+        // Pass through to manipulateListeners
+        return this.manipulateListeners(true, evt, listeners);
+    };
+
+    /**
+     * Edits listeners in bulk. The addListeners and removeListeners methods both use this to do their job. You should really use those instead, this is a little lower level.
+     * The first argument will determine if the listeners are removed (true) or added (false).
+     * If you pass an object as the second argument you can add/remove from multiple events at once. The object should contain key value pairs of events and listeners or listener arrays.
+     * You can also pass it an event name and an array of listeners to be added/removed.
+     * You can also pass it a regular expression to manipulate the listeners of all events that match it.
+     *
+     * @param {Boolean} remove True if you want to remove listeners, false if you want to add.
+     * @param {String|Object|RegExp} evt An event name if you will pass an array of listeners next. An object if you wish to add/remove from multiple events at once.
+     * @param {Function[]} [listeners] An optional array of listener functions to add/remove.
+     * @return {Object} Current instance of EventEmitter for chaining.
+     */
+    proto.manipulateListeners = function manipulateListeners(remove, evt, listeners) {
+        var i;
+        var value;
+        var single = remove ? this.removeListener : this.addListener;
+        var multiple = remove ? this.removeListeners : this.addListeners;
+
+        // If evt is an object then pass each of its properties to this method
+        if (typeof evt === 'object' && !(evt instanceof RegExp)) {
+            for (i in evt) {
+                if (evt.hasOwnProperty(i) && (value = evt[i])) {
+                    // Pass the single listener straight through to the singular method
+                    if (typeof value === 'function') {
+                        single.call(this, i, value);
+                    }
+                    else {
+                        // Otherwise pass back to the multiple function
+                        multiple.call(this, i, value);
+                    }
+                }
+            }
+        }
+        else {
+            // So evt must be a string
+            // And listeners must be an array of listeners
+            // Loop over it and pass each one to the multiple method
+            i = listeners.length;
+            while (i--) {
+                single.call(this, evt, listeners[i]);
+            }
+        }
+
+        return this;
+    };
+
+    /**
+     * Removes all listeners from a specified event.
+     * If you do not specify an event then all listeners will be removed.
+     * That means every event will be emptied.
+     * You can also pass a regex to remove all events that match it.
+     *
+     * @param {String|RegExp} [evt] Optional name of the event to remove all listeners for. Will remove from every event if not passed.
+     * @return {Object} Current instance of EventEmitter for chaining.
+     */
+    proto.removeEvent = function removeEvent(evt) {
+        var type = typeof evt;
+        var events = this._getEvents();
+        var key;
+
+        // Remove different things depending on the state of evt
+        if (type === 'string') {
+            // Remove all listeners for the specified event
+            delete events[evt];
+        }
+        else if (evt instanceof RegExp) {
+            // Remove all events matching the regex.
+            for (key in events) {
+                if (events.hasOwnProperty(key) && evt.test(key)) {
+                    delete events[key];
+                }
+            }
+        }
+        else {
+            // Remove all listeners in all events
+            delete this._events;
+        }
+
+        return this;
+    };
+
+    /**
+     * Alias of removeEvent.
+     *
+     * Added to mirror the node API.
+     */
+    proto.removeAllListeners = alias('removeEvent');
+
+    /**
+     * Emits an event of your choice.
+     * When emitted, every listener attached to that event will be executed.
+     * If you pass the optional argument array then those arguments will be passed to every listener upon execution.
+     * Because it uses `apply`, your array of arguments will be passed as if you wrote them out separately.
+     * So they will not arrive within the array on the other side, they will be separate.
+     * You can also pass a regular expression to emit to all events that match it.
+     *
+     * @param {String|RegExp} evt Name of the event to emit and execute listeners for.
+     * @param {Array} [args] Optional array of arguments to be passed to each listener.
+     * @return {Object} Current instance of EventEmitter for chaining.
+     */
+    proto.emitEvent = function emitEvent(evt, args) {
+        var listenersMap = this.getListenersAsObject(evt);
+        var listeners;
+        var listener;
+        var i;
+        var key;
+        var response;
+
+        for (key in listenersMap) {
+            if (listenersMap.hasOwnProperty(key)) {
+                listeners = listenersMap[key].slice(0);
+
+                for (i = 0; i < listeners.length; i++) {
+                    // If the listener returns true then it shall be removed from the event
+                    // The function is executed either with a basic call or an apply if there is an args array
+                    listener = listeners[i];
+
+                    if (listener.once === true) {
+                        this.removeListener(evt, listener.listener);
+                    }
+
+                    response = listener.listener.apply(this, args || []);
+
+                    if (response === this._getOnceReturnValue()) {
+                        this.removeListener(evt, listener.listener);
+                    }
+                }
+            }
+        }
+
+        return this;
+    };
+
+    /**
+     * Alias of emitEvent
+     */
+    proto.trigger = alias('emitEvent');
+
+    /**
+     * Subtly different from emitEvent in that it will pass its arguments on to the listeners, as opposed to taking a single array of arguments to pass on.
+     * As with emitEvent, you can pass a regex in place of the event name to emit to all events that match it.
+     *
+     * @param {String|RegExp} evt Name of the event to emit and execute listeners for.
+     * @param {...*} Optional additional arguments to be passed to each listener.
+     * @return {Object} Current instance of EventEmitter for chaining.
+     */
+    proto.emit = function emit(evt) {
+        var args = Array.prototype.slice.call(arguments, 1);
+        return this.emitEvent(evt, args);
+    };
+
+    /**
+     * Sets the current value to check against when executing listeners. If a
+     * listeners return value matches the one set here then it will be removed
+     * after execution. This value defaults to true.
+     *
+     * @param {*} value The new value to check for when executing listeners.
+     * @return {Object} Current instance of EventEmitter for chaining.
+     */
+    proto.setOnceReturnValue = function setOnceReturnValue(value) {
+        this._onceReturnValue = value;
+        return this;
+    };
+
+    /**
+     * Fetches the current value to check against when executing listeners. If
+     * the listeners return value matches this one then it should be removed
+     * automatically. It will return true by default.
+     *
+     * @return {*|Boolean} The current value to check for or the default, true.
+     * @api private
+     */
+    proto._getOnceReturnValue = function _getOnceReturnValue() {
+        if (this.hasOwnProperty('_onceReturnValue')) {
+            return this._onceReturnValue;
+        }
+        else {
+            return true;
+        }
+    };
+
+    /**
+     * Fetches the events object and creates one if required.
+     *
+     * @return {Object} The events storage object.
+     * @api private
+     */
+    proto._getEvents = function _getEvents() {
+        return this._events || (this._events = {});
+    };
+
+    /**
+     * Reverts the global {@link EventEmitter} to its previous value and returns a reference to this version.
+     *
+     * @return {Function} Non conflicting EventEmitter class.
+     */
+    EventEmitter.noConflict = function noConflict() {
+        exports.EventEmitter = originalGlobalValue;
+        return EventEmitter;
+    };
+
+    // Expose the class either via AMD, CommonJS or the global object
+    if (typeof define === 'function' && define.amd) {
+        define(function () {
+            return EventEmitter;
+        });
+    }
+    else if (typeof module === 'object' && module.exports){
+        module.exports = EventEmitter;
+    }
+    else {
+        exports.EventEmitter = EventEmitter;
+    }
+}(typeof window !== 'undefined' ? window : this || {}));
+;
+/*
+ * osc.js: An Open Sound Control library for JavaScript that works in both the browser and Node.js
+ *
+ * Cross-platform base transport library for osc.js.
+ *
+ * Copyright 2014-2016, Colin Clark
+ * Licensed under the MIT and GPL 3 licenses.
+ */
+
+/* global require, module */
+
+var osc = osc || require("./osc.js"),
+    slip = slip || require("slip"),
+    EventEmitter = EventEmitter || require("events").EventEmitter;
+
+(function () {
+
+    "use strict";
+
+    osc.supportsSerial = false;
+
+    // Unsupported, non-API function.
+    osc.firePacketEvents = function (port, packet, timeTag, packetInfo) {
+        if (packet.address) {
+            port.emit("message", packet, timeTag, packetInfo);
+        } else {
+            osc.fireBundleEvents(port, packet, timeTag, packetInfo);
+        }
+    };
+
+    // Unsupported, non-API function.
+    osc.fireBundleEvents = function (port, bundle, timeTag, packetInfo) {
+        port.emit("bundle", bundle, timeTag, packetInfo);
+        for (var i = 0; i < bundle.packets.length; i++) {
+            var packet = bundle.packets[i];
+            osc.firePacketEvents(port, packet, bundle.timeTag, packetInfo);
+        }
+    };
+
+    osc.fireClosedPortSendError = function (port, msg) {
+        msg = msg || "Can't send packets on a closed osc.Port object. Please open (or reopen) this Port by calling open().";
+
+        port.emit("error", msg);
+    };
+
+    osc.Port = function (options) {
+        this.options = options || {};
+        this.on("data", this.decodeOSC.bind(this));
+    };
+
+    var p = osc.Port.prototype = Object.create(EventEmitter.prototype);
+    p.constructor = osc.Port;
+
+    p.send = function (oscPacket) {
+        var args = Array.prototype.slice.call(arguments),
+            encoded = this.encodeOSC(oscPacket),
+            buf = osc.nativeBuffer(encoded);
+
+        args[0] = buf;
+        this.sendRaw.apply(this, args);
+    };
+
+    p.encodeOSC = function (packet) {
+        // TODO gh-39: This is unsafe; we should only access the underlying
+        // buffer within the range of its view.
+        packet = packet.buffer ? packet.buffer : packet;
+        var encoded;
+
+        try {
+            encoded = osc.writePacket(packet, this.options);
+        } catch (err) {
+            this.emit("error", err);
+        }
+
+        return encoded;
+    };
+
+    p.decodeOSC = function (data, packetInfo) {
+        data = osc.byteArray(data);
+        this.emit("raw", data, packetInfo);
+
+        try {
+            var packet = osc.readPacket(data, this.options);
+            this.emit("osc", packet, packetInfo);
+            osc.firePacketEvents(this, packet, undefined, packetInfo);
+        } catch (err) {
+            this.emit("error", err);
+        }
+    };
+
+
+    osc.SLIPPort = function (options) {
+        var that = this;
+        var o = this.options = options || {};
+        o.useSLIP = o.useSLIP === undefined ? true : o.useSLIP;
+
+        this.decoder = new slip.Decoder({
+            onMessage: this.decodeOSC.bind(this),
+            onError: function (err) {
+                that.emit("error", err);
+            }
+        });
+
+        var decodeHandler = o.useSLIP ? this.decodeSLIPData : this.decodeOSC;
+        this.on("data", decodeHandler.bind(this));
+    };
+
+    p = osc.SLIPPort.prototype = Object.create(osc.Port.prototype);
+    p.constructor = osc.SLIPPort;
+
+    p.encodeOSC = function (packet) {
+        // TODO gh-39: This is unsafe; we should only access the underlying
+        // buffer within the range of its view.
+        packet = packet.buffer ? packet.buffer : packet;
+        var framed;
+
+        try {
+            var encoded = osc.writePacket(packet, this.options);
+            framed = slip.encode(encoded);
+        } catch (err) {
+            this.emit("error", err);
+        }
+
+        return framed;
+    };
+
+    p.decodeSLIPData = function (data, packetInfo) {
+        // TODO: Get packetInfo through SLIP decoder.
+        this.decoder.decode(data, packetInfo);
+    };
+
+
+    // Unsupported, non-API function.
+    osc.relay = function (from, to, eventName, sendFnName, transformFn, sendArgs) {
+        eventName = eventName || "message";
+        sendFnName = sendFnName || "send";
+        transformFn = transformFn || function () {};
+        sendArgs = sendArgs ? [null].concat(sendArgs) : [];
+
+        var listener = function (data) {
+            sendArgs[0] = data;
+            data = transformFn(data);
+            to[sendFnName].apply(to, sendArgs);
+        };
+
+        from.on(eventName, listener);
+
+        return {
+            eventName: eventName,
+            listener: listener
+        };
+    };
+
+    // Unsupported, non-API function.
+    osc.relayPorts = function (from, to, o) {
+        var eventName = o.raw ? "raw" : "osc",
+            sendFnName = o.raw ? "sendRaw" : "send";
+
+        return osc.relay(from, to, eventName, sendFnName, o.transform);
+    };
+
+    // Unsupported, non-API function.
+    osc.stopRelaying = function (from, relaySpec) {
+        from.removeListener(relaySpec.eventName, relaySpec.listener);
+    };
+
+
+    /**
+     * A Relay connects two sources of OSC data together,
+     * relaying all OSC messages received by each port to the other.
+     * @constructor
+     *
+     * @param {osc.Port} port1 the first port to relay
+     * @param {osc.Port} port2 the second port to relay
+     * @param {Object} options the configuration options for this relay
+     */
+    osc.Relay = function (port1, port2, options) {
+        var o = this.options = options || {};
+        o.raw = false;
+
+        this.port1 = port1;
+        this.port2 = port2;
+
+        this.listen();
+    };
+
+    p = osc.Relay.prototype = Object.create(EventEmitter.prototype);
+    p.constructor = osc.Relay;
+
+    p.open = function () {
+        this.port1.open();
+        this.port2.open();
+    };
+
+    p.listen = function () {
+        if (this.port1Spec && this.port2Spec) {
+            this.close();
+        }
+
+        this.port1Spec = osc.relayPorts(this.port1, this.port2, this.options);
+        this.port2Spec = osc.relayPorts(this.port2, this.port1, this.options);
+
+        // Bind port close listeners to ensure that the relay
+        // will stop forwarding messages if one of its ports close.
+        // Users are still responsible for closing the underlying ports
+        // if necessary.
+        var closeListener = this.close.bind(this);
+        this.port1.on("close", closeListener);
+        this.port2.on("close", closeListener);
+    };
+
+    p.close = function () {
+        osc.stopRelaying(this.port1, this.port1Spec);
+        osc.stopRelaying(this.port2, this.port2Spec);
+        this.emit("close", this.port1, this.port2);
+    };
+
+
+    // If we're in a require-compatible environment, export ourselves.
+    if (typeof module !== "undefined" && module.exports) {
+        module.exports = osc;
+    }
+}());
+;
+/*
+ * osc.js: An Open Sound Control library for JavaScript that works in both the browser and Node.js
+ *
+ * Cross-Platform Web Socket client transport for osc.js.
+ *
+ * Copyright 2014-2016, Colin Clark
+ * Licensed under the MIT and GPL 3 licenses.
+ */
+
+/*global WebSocket, require*/
+
+var osc = osc || require("./osc.js");
+
+(function () {
+
+    "use strict";
+
+    osc.WebSocket = typeof WebSocket !== "undefined" ? WebSocket : require ("ws");
+
+    osc.WebSocketPort = function (options) {
+        osc.Port.call(this, options);
+        this.on("open", this.listen.bind(this));
+
+        this.socket = options.socket;
+        if (this.socket) {
+            if (this.socket.readyState === 1) {
+                osc.WebSocketPort.setupSocketForBinary(this.socket);
+                this.emit("open", this.socket);
+            } else {
+                this.open();
+            }
+        }
+    };
+
+    var p = osc.WebSocketPort.prototype = Object.create(osc.Port.prototype);
+    p.constructor = osc.WebSocketPort;
+
+    p.open = function () {
+        if (!this.socket || this.socket.readyState > 1) {
+            this.socket = new osc.WebSocket(this.options.url);
+        }
+
+        osc.WebSocketPort.setupSocketForBinary(this.socket);
+
+        var that = this;
+        this.socket.onopen = function () {
+            that.emit("open", that.socket);
+        };
+
+        this.socket.onerror = function (err) {
+            that.emit("error", err);
+        };
+    };
+
+    p.listen = function () {
+        var that = this;
+        this.socket.onmessage = function (e) {
+            that.emit("data", e.data, e);
+        };
+
+        this.socket.onclose = function (e) {
+            that.emit("close", e);
+        };
+
+        that.emit("ready");
+    };
+
+    p.sendRaw = function (encoded) {
+        if (!this.socket || this.socket.readyState !== 1) {
+            osc.fireClosedPortSendError(this);
+            return;
+        }
+
+        this.socket.send(encoded);
+    };
+
+    p.close = function (code, reason) {
+        this.socket.close(code, reason);
+    };
+
+    osc.WebSocketPort.setupSocketForBinary = function (socket) {
+        socket.binaryType = osc.isNode ? "nodebuffer" : "arraybuffer";
+    };
+
+}());
+
+}).call(this)}).call(this,require('_process'),require("buffer").Buffer)
+},{"./osc.js":515,"_process":193,"buffer":143,"events":153,"long":508,"slip":516,"ws":520}],515:[function(require,module,exports){
+(function (process,Buffer){(function (){
+/*! osc.js 2.4.4, Copyright 2023 Colin Clark | github.com/colinbdclark/osc.js */
+
+/*
+ * osc.js: An Open Sound Control library for JavaScript that works in both the browser and Node.js
+ *
+ * Copyright 2014-2016, Colin Clark
+ * Licensed under the MIT and GPL 3 licenses.
+ */
+
+/* global require, module, process, Buffer, Long, util */
+
+var osc = osc || {};
+
+(function () {
+
+    "use strict";
+
+    osc.SECS_70YRS = 2208988800;
+    osc.TWO_32 = 4294967296;
+
+    osc.defaults = {
+        metadata: false,
+        unpackSingleArgs: true
+    };
+
+    // Unsupported, non-API property.
+    osc.isCommonJS = typeof module !== "undefined" && module.exports ? true : false;
+
+    // Unsupported, non-API property.
+    osc.isNode = osc.isCommonJS && typeof window === "undefined";
+
+    // Unsupported, non-API property.
+    osc.isElectron = typeof process !== "undefined" &&
+        process.versions && process.versions.electron ? true : false;
+
+    // Unsupported, non-API property.
+    osc.isBufferEnv = osc.isNode || osc.isElectron;
+
+    // Unsupported, non-API function.
+    osc.isArray = function (obj) {
+        return obj && Object.prototype.toString.call(obj) === "[object Array]";
+    };
+
+    // Unsupported, non-API function.
+    osc.isTypedArrayView = function (obj) {
+        return obj.buffer && obj.buffer instanceof ArrayBuffer;
+    };
+
+    // Unsupported, non-API function.
+    osc.isBuffer = function (obj) {
+        return osc.isBufferEnv && obj instanceof Buffer;
+    };
+
+    // Unsupported, non-API member.
+    osc.Long = typeof Long !== "undefined" ? Long :
+        osc.isNode ? require("long") : undefined;
+
+    // Unsupported, non-API member. Can be removed when supported versions
+    // of Node.js expose TextDecoder as a global, as in the browser.
+    osc.TextDecoder = typeof TextDecoder !== "undefined" ? new TextDecoder("utf-8") :
+        typeof util !== "undefined" && typeof (util.TextDecoder !== "undefined") ? new util.TextDecoder("utf-8") : undefined;
+
+    osc.TextEncoder = typeof TextEncoder !== "undefined" ? new TextEncoder("utf-8") :
+        typeof util !== "undefined" && typeof (util.TextEncoder !== "undefined") ? new util.TextEncoder("utf-8") : undefined;
+
+    /**
+     * Wraps the specified object in a DataView.
+     *
+     * @param {Array-like} obj the object to wrap in a DataView instance
+     * @return {DataView} the DataView object
+     */
+    // Unsupported, non-API function.
+    osc.dataView = function (obj, offset, length) {
+        if (obj.buffer) {
+            return new DataView(obj.buffer, offset, length);
+        }
+
+        if (obj instanceof ArrayBuffer) {
+            return new DataView(obj, offset, length);
+        }
+
+        return new DataView(new Uint8Array(obj), offset, length);
+    };
+
+    /**
+     * Takes an ArrayBuffer, TypedArray, DataView, Buffer, or array-like object
+     * and returns a Uint8Array view of it.
+     *
+     * Throws an error if the object isn't suitably array-like.
+     *
+     * @param {Array-like or Array-wrapping} obj an array-like or array-wrapping object
+     * @returns {Uint8Array} a typed array of octets
+     */
+    // Unsupported, non-API function.
+    osc.byteArray = function (obj) {
+        if (obj instanceof Uint8Array) {
+            return obj;
+        }
+
+        var buf = obj.buffer ? obj.buffer : obj;
+
+        if (!(buf instanceof ArrayBuffer) && (typeof buf.length === "undefined" || typeof buf === "string")) {
+            throw new Error("Can't wrap a non-array-like object as Uint8Array. Object was: " +
+                JSON.stringify(obj, null, 2));
+        }
+
+
+        // TODO gh-39: This is a potentially unsafe algorithm;
+        // if we're getting anything other than a TypedArrayView (such as a DataView),
+        // we really need to determine the range of the view it is viewing.
+        return new Uint8Array(buf);
+    };
+
+    /**
+     * Takes an ArrayBuffer, TypedArray, DataView, or array-like object
+     * and returns a native buffer object
+     * (i.e. in Node.js, a Buffer object and in the browser, a Uint8Array).
+     *
+     * Throws an error if the object isn't suitably array-like.
+     *
+     * @param {Array-like or Array-wrapping} obj an array-like or array-wrapping object
+     * @returns {Buffer|Uint8Array} a buffer object
+     */
+    // Unsupported, non-API function.
+    osc.nativeBuffer = function (obj) {
+        if (osc.isBufferEnv) {
+            return osc.isBuffer(obj) ? obj :
+                Buffer.from(obj.buffer ? obj : new Uint8Array(obj));
+        }
+
+        return osc.isTypedArrayView(obj) ? obj : new Uint8Array(obj);
+    };
+
+    // Unsupported, non-API function
+    osc.copyByteArray = function (source, target, offset) {
+        if (osc.isTypedArrayView(source) && osc.isTypedArrayView(target)) {
+            target.set(source, offset);
+        } else {
+            var start = offset === undefined ? 0 : offset,
+                len = Math.min(target.length - offset, source.length);
+
+            for (var i = 0, j = start; i < len; i++, j++) {
+                target[j] = source[i];
+            }
+        }
+
+        return target;
+    };
+
+    /**
+     * Reads an OSC-formatted string.
+     *
+     * @param {DataView} dv a DataView containing the raw bytes of the OSC string
+     * @param {Object} offsetState an offsetState object used to store the current offset index
+     * @return {String} the JavaScript String that was read
+     */
+    osc.readString = function (dv, offsetState) {
+        var charCodes = [],
+            idx = offsetState.idx;
+
+        for (; idx < dv.byteLength; idx++) {
+            var charCode = dv.getUint8(idx);
+            if (charCode !== 0) {
+                charCodes.push(charCode);
+            } else {
+                idx++;
+                break;
+            }
+        }
+
+        // Round to the nearest 4-byte block.
+        idx = (idx + 3) & ~0x03;
+        offsetState.idx = idx;
+
+        var decoder = osc.isBufferEnv ? osc.readString.withBuffer :
+            osc.TextDecoder ? osc.readString.withTextDecoder : osc.readString.raw;
+
+        return decoder(charCodes);
+    };
+
+    osc.readString.raw = function (charCodes) {
+        // If no Buffer or TextDecoder, resort to fromCharCode
+        // This does not properly decode multi-byte Unicode characters.
+        var str = "";
+        var sliceSize = 10000;
+
+        // Processing the array in chunks so as not to exceed argument
+        // limit, see https://bugs.webkit.org/show_bug.cgi?id=80797
+        for (var i = 0; i < charCodes.length; i += sliceSize) {
+            str += String.fromCharCode.apply(null, charCodes.slice(i, i + sliceSize));
+        }
+
+        return str;
+    };
+
+    osc.readString.withTextDecoder = function (charCodes) {
+        var data = new Int8Array(charCodes);
+        return osc.TextDecoder.decode(data);
+    };
+
+    osc.readString.withBuffer = function (charCodes) {
+        return Buffer.from(charCodes).toString("utf-8");
+    };
+
+    /**
+     * Writes a JavaScript string as an OSC-formatted string.
+     *
+     * @param {String} str the string to write
+     * @return {Uint8Array} a buffer containing the OSC-formatted string
+     */
+    osc.writeString = function (str) {
+
+        var encoder = osc.isBufferEnv ? osc.writeString.withBuffer :
+            osc.TextEncoder ? osc.writeString.withTextEncoder : null,
+            terminated = str + "\u0000",
+            encodedStr;
+
+        if (encoder) {
+            encodedStr = encoder(terminated);
+        }
+
+        var len = encoder ? encodedStr.length : terminated.length,
+            paddedLen = (len + 3) & ~0x03,
+            arr = new Uint8Array(paddedLen);
+
+        for (var i = 0; i < len - 1; i++) {
+            var charCode = encoder ? encodedStr[i] : terminated.charCodeAt(i);
+            arr[i] = charCode;
+        }
+
+        return arr;
+    };
+
+    osc.writeString.withTextEncoder = function (str) {
+        return osc.TextEncoder.encode(str);
+    };
+
+    osc.writeString.withBuffer = function (str) {
+        return Buffer.from(str);
+    };
+
+    // Unsupported, non-API function.
+    osc.readPrimitive = function (dv, readerName, numBytes, offsetState) {
+        var val = dv[readerName](offsetState.idx, false);
+        offsetState.idx += numBytes;
+
+        return val;
+    };
+
+    // Unsupported, non-API function.
+    osc.writePrimitive = function (val, dv, writerName, numBytes, offset) {
+        offset = offset === undefined ? 0 : offset;
+
+        var arr;
+        if (!dv) {
+            arr = new Uint8Array(numBytes);
+            dv = new DataView(arr.buffer);
+        } else {
+            arr = new Uint8Array(dv.buffer);
+        }
+
+        dv[writerName](offset, val, false);
+
+        return arr;
+    };
+
+    /**
+     * Reads an OSC int32 ("i") value.
+     *
+     * @param {DataView} dv a DataView containing the raw bytes
+     * @param {Object} offsetState an offsetState object used to store the current offset index into dv
+     * @return {Number} the number that was read
+     */
+    osc.readInt32 = function (dv, offsetState) {
+        return osc.readPrimitive(dv, "getInt32", 4, offsetState);
+    };
+
+    /**
+     * Writes an OSC int32 ("i") value.
+     *
+     * @param {Number} val the number to write
+     * @param {DataView} [dv] a DataView instance to write the number into
+     * @param {Number} [offset] an offset into dv
+     */
+    osc.writeInt32 = function (val, dv, offset) {
+        return osc.writePrimitive(val, dv, "setInt32", 4, offset);
+    };
+
+    /**
+     * Reads an OSC int64 ("h") value.
+     *
+     * @param {DataView} dv a DataView containing the raw bytes
+     * @param {Object} offsetState an offsetState object used to store the current offset index into dv
+     * @return {Number} the number that was read
+     */
+    osc.readInt64 = function (dv, offsetState) {
+        var high = osc.readPrimitive(dv, "getInt32", 4, offsetState),
+            low = osc.readPrimitive(dv, "getInt32", 4, offsetState);
+
+        if (osc.Long) {
+            return new osc.Long(low, high);
+        } else {
+            return {
+                high: high,
+                low: low,
+                unsigned: false
+            };
+        }
+    };
+
+    /**
+     * Writes an OSC int64 ("h") value.
+     *
+     * @param {Number} val the number to write
+     * @param {DataView} [dv] a DataView instance to write the number into
+     * @param {Number} [offset] an offset into dv
+     */
+    osc.writeInt64 = function (val, dv, offset) {
+        var arr = new Uint8Array(8);
+        arr.set(osc.writePrimitive(val.high, dv, "setInt32", 4, offset), 0);
+        arr.set(osc.writePrimitive(val.low,  dv, "setInt32", 4, offset + 4), 4);
+        return arr;
+    };
+
+    /**
+     * Reads an OSC float32 ("f") value.
+     *
+     * @param {DataView} dv a DataView containing the raw bytes
+     * @param {Object} offsetState an offsetState object used to store the current offset index into dv
+     * @return {Number} the number that was read
+     */
+    osc.readFloat32 = function (dv, offsetState) {
+        return osc.readPrimitive(dv, "getFloat32", 4, offsetState);
+    };
+
+    /**
+     * Writes an OSC float32 ("f") value.
+     *
+     * @param {Number} val the number to write
+     * @param {DataView} [dv] a DataView instance to write the number into
+     * @param {Number} [offset] an offset into dv
+     */
+    osc.writeFloat32 = function (val, dv, offset) {
+        return osc.writePrimitive(val, dv, "setFloat32", 4, offset);
+    };
+
+    /**
+     * Reads an OSC float64 ("d") value.
+     *
+     * @param {DataView} dv a DataView containing the raw bytes
+     * @param {Object} offsetState an offsetState object used to store the current offset index into dv
+     * @return {Number} the number that was read
+     */
+    osc.readFloat64 = function (dv, offsetState) {
+        return osc.readPrimitive(dv, "getFloat64", 8, offsetState);
+    };
+
+    /**
+     * Writes an OSC float64 ("d") value.
+     *
+     * @param {Number} val the number to write
+     * @param {DataView} [dv] a DataView instance to write the number into
+     * @param {Number} [offset] an offset into dv
+     */
+    osc.writeFloat64 = function (val, dv, offset) {
+        return osc.writePrimitive(val, dv, "setFloat64", 8, offset);
+    };
+
+    /**
+     * Reads an OSC 32-bit ASCII character ("c") value.
+     *
+     * @param {DataView} dv a DataView containing the raw bytes
+     * @param {Object} offsetState an offsetState object used to store the current offset index into dv
+     * @return {String} a string containing the read character
+     */
+    osc.readChar32 = function (dv, offsetState) {
+        var charCode = osc.readPrimitive(dv, "getUint32", 4, offsetState);
+        return String.fromCharCode(charCode);
+    };
+
+    /**
+     * Writes an OSC 32-bit ASCII character ("c") value.
+     *
+     * @param {String} str the string from which the first character will be written
+     * @param {DataView} [dv] a DataView instance to write the character into
+     * @param {Number} [offset] an offset into dv
+     * @return {String} a string containing the read character
+     */
+    osc.writeChar32 = function (str, dv, offset) {
+        var charCode = str.charCodeAt(0);
+        if (charCode === undefined || charCode < -1) {
+            return undefined;
+        }
+
+        return osc.writePrimitive(charCode, dv, "setUint32", 4, offset);
+    };
+
+    /**
+     * Reads an OSC blob ("b") (i.e. a Uint8Array).
+     *
+     * @param {DataView} dv a DataView instance to read from
+     * @param {Object} offsetState an offsetState object used to store the current offset index into dv
+     * @return {Uint8Array} the data that was read
+     */
+    osc.readBlob = function (dv, offsetState) {
+        var len = osc.readInt32(dv, offsetState),
+            paddedLen = (len + 3) & ~0x03,
+            blob = new Uint8Array(dv.buffer, offsetState.idx, len);
+
+        offsetState.idx += paddedLen;
+
+        return blob;
+    };
+
+    /**
+     * Writes a raw collection of bytes to a new ArrayBuffer.
+     *
+     * @param {Array-like} data a collection of octets
+     * @return {ArrayBuffer} a buffer containing the OSC-formatted blob
+     */
+    osc.writeBlob = function (data) {
+        data = osc.byteArray(data);
+
+        var len = data.byteLength,
+            paddedLen = (len + 3) & ~0x03,
+            offset = 4, // Extra 4 bytes is for the size.
+            blobLen = paddedLen + offset,
+            arr = new Uint8Array(blobLen),
+            dv = new DataView(arr.buffer);
+
+        // Write the size.
+        osc.writeInt32(len, dv);
+
+        // Since we're writing to a real ArrayBuffer,
+        // we don't need to pad the remaining bytes.
+        arr.set(data, offset);
+
+        return arr;
+    };
+
+    /**
+     * Reads an OSC 4-byte MIDI message.
+     *
+     * @param {DataView} dv the DataView instance to read from
+     * @param {Object} offsetState an offsetState object used to store the current offset index into dv
+     * @return {Uint8Array} an array containing (in order) the port ID, status, data1 and data1 bytes
+     */
+    osc.readMIDIBytes = function (dv, offsetState) {
+        var midi = new Uint8Array(dv.buffer, offsetState.idx, 4);
+        offsetState.idx += 4;
+
+        return midi;
+    };
+
+    /**
+     * Writes an OSC 4-byte MIDI message.
+     *
+     * @param {Array-like} bytes a 4-element array consisting of the port ID, status, data1 and data1 bytes
+     * @return {Uint8Array} the written message
+     */
+    osc.writeMIDIBytes = function (bytes) {
+        bytes = osc.byteArray(bytes);
+
+        var arr = new Uint8Array(4);
+        arr.set(bytes);
+
+        return arr;
+    };
+
+    /**
+     * Reads an OSC RGBA colour value.
+     *
+     * @param {DataView} dv the DataView instance to read from
+     * @param {Object} offsetState an offsetState object used to store the current offset index into dv
+     * @return {Object} a colour object containing r, g, b, and a properties
+     */
+    osc.readColor = function (dv, offsetState) {
+        var bytes = new Uint8Array(dv.buffer, offsetState.idx, 4),
+            alpha = bytes[3] / 255;
+
+        offsetState.idx += 4;
+
+        return {
+            r: bytes[0],
+            g: bytes[1],
+            b: bytes[2],
+            a: alpha
+        };
+    };
+
+    /**
+     * Writes an OSC RGBA colour value.
+     *
+     * @param {Object} color a colour object containing r, g, b, and a properties
+     * @return {Uint8Array} a byte array containing the written color
+     */
+    osc.writeColor = function (color) {
+        var alpha = Math.round(color.a * 255),
+            arr = new Uint8Array([color.r, color.g, color.b, alpha]);
+
+        return arr;
+    };
+
+    /**
+     * Reads an OSC true ("T") value by directly returning the JavaScript Boolean "true".
+     */
+    osc.readTrue = function () {
+        return true;
+    };
+
+    /**
+     * Reads an OSC false ("F") value by directly returning the JavaScript Boolean "false".
+     */
+    osc.readFalse = function () {
+        return false;
+    };
+
+    /**
+     * Reads an OSC nil ("N") value by directly returning the JavaScript "null" value.
+     */
+    osc.readNull = function () {
+        return null;
+    };
+
+    /**
+     * Reads an OSC impulse/bang/infinitum ("I") value by directly returning 1.0.
+     */
+    osc.readImpulse = function () {
+        return 1.0;
+    };
+
+    /**
+     * Reads an OSC time tag ("t").
+     *
+     * @param {DataView} dv the DataView instance to read from
+     * @param {Object} offsetState an offset state object containing the current index into dv
+     * @param {Object} a time tag object containing both the raw NTP as well as the converted native (i.e. JS/UNIX) time
+     */
+    osc.readTimeTag = function (dv, offsetState) {
+        var secs1900 = osc.readPrimitive(dv, "getUint32", 4, offsetState),
+            frac = osc.readPrimitive(dv, "getUint32", 4, offsetState),
+            native = (secs1900 === 0 && frac === 1) ? Date.now() : osc.ntpToJSTime(secs1900, frac);
+
+        return {
+            raw: [secs1900, frac],
+            native: native
+        };
+    };
+
+    /**
+     * Writes an OSC time tag ("t").
+     *
+     * Takes, as its argument, a time tag object containing either a "raw" or "native property."
+     * The raw timestamp must conform to the NTP standard representation, consisting of two unsigned int32
+     * values. The first represents the number of seconds since January 1, 1900; the second, fractions of a second.
+     * "Native" JavaScript timestamps are specified as a Number representing milliseconds since January 1, 1970.
+     *
+     * @param {Object} timeTag time tag object containing either a native JS timestamp (in ms) or a NTP timestamp pair
+     * @return {Uint8Array} raw bytes for the written time tag
+     */
+    osc.writeTimeTag = function (timeTag) {
+        var raw = timeTag.raw ? timeTag.raw : osc.jsToNTPTime(timeTag.native),
+            arr = new Uint8Array(8), // Two Unit32s.
+            dv = new DataView(arr.buffer);
+
+        osc.writeInt32(raw[0], dv, 0);
+        osc.writeInt32(raw[1], dv, 4);
+
+        return arr;
+    };
+
+    /**
+     * Produces a time tag containing a raw NTP timestamp
+     * relative to now by the specified number of seconds.
+     *
+     * @param {Number} secs the number of seconds relative to now (i.e. + for the future, - for the past)
+     * @param {Number} now the number of milliseconds since epoch to use as the current time. Defaults to Date.now()
+     * @return {Object} the time tag
+     */
+    osc.timeTag = function (secs, now) {
+        secs = secs || 0;
+        now = now || Date.now();
+
+        var nowSecs = now / 1000,
+            nowWhole = Math.floor(nowSecs),
+            nowFracs = nowSecs - nowWhole,
+            secsWhole = Math.floor(secs),
+            secsFracs = secs - secsWhole,
+            fracs = nowFracs + secsFracs;
+
+        if (fracs > 1) {
+            var fracsWhole = Math.floor(fracs),
+                fracsFracs = fracs - fracsWhole;
+
+            secsWhole += fracsWhole;
+            fracs = fracsFracs;
+        }
+
+        var ntpSecs = nowWhole + secsWhole + osc.SECS_70YRS,
+            ntpFracs = Math.round(osc.TWO_32 * fracs);
+
+        return {
+            raw: [ntpSecs, ntpFracs]
+        };
+    };
+
+    /**
+     * Converts OSC's standard time tag representation (which is the NTP format)
+     * into the JavaScript/UNIX format in milliseconds.
+     *
+     * @param {Number} secs1900 the number of seconds since 1900
+     * @param {Number} frac the number of fractions of a second (between 0 and 2^32)
+     * @return {Number} a JavaScript-compatible timestamp in milliseconds
+     */
+    osc.ntpToJSTime = function (secs1900, frac) {
+        var secs1970 = secs1900 - osc.SECS_70YRS,
+            decimals = frac / osc.TWO_32,
+            msTime = (secs1970 + decimals) * 1000;
+
+        return msTime;
+    };
+
+    osc.jsToNTPTime = function (jsTime) {
+        var secs = jsTime / 1000,
+            secsWhole = Math.floor(secs),
+            secsFrac = secs - secsWhole,
+            ntpSecs = secsWhole + osc.SECS_70YRS,
+            ntpFracs = Math.round(osc.TWO_32 * secsFrac);
+
+        return [ntpSecs, ntpFracs];
+    };
+
+    /**
+     * Reads the argument portion of an OSC message.
+     *
+     * @param {DataView} dv a DataView instance to read from
+     * @param {Object} offsetState the offsetState object that stores the current offset into dv
+     * @param {Object} [options] read options
+     * @return {Array} an array of the OSC arguments that were read
+     */
+    osc.readArguments = function (dv, options, offsetState) {
+        var typeTagString = osc.readString(dv, offsetState);
+        if (typeTagString.indexOf(",") !== 0) {
+            // Despite what the OSC 1.0 spec says,
+            // it just doesn't make sense to handle messages without type tags.
+            // scsynth appears to read such messages as if they have a single
+            // Uint8 argument. sclang throws an error if the type tag is omitted.
+            throw new Error("A malformed type tag string was found while reading " +
+                "the arguments of an OSC message. String was: " +
+                typeTagString, " at offset: " + offsetState.idx);
+        }
+
+        var argTypes = typeTagString.substring(1).split(""),
+            args = [];
+
+        osc.readArgumentsIntoArray(args, argTypes, typeTagString, dv, options, offsetState);
+
+        return args;
+    };
+
+    // Unsupported, non-API function.
+    osc.readArgument = function (argType, typeTagString, dv, options, offsetState) {
+        var typeSpec = osc.argumentTypes[argType];
+        if (!typeSpec) {
+            throw new Error("'" + argType + "' is not a valid OSC type tag. Type tag string was: " + typeTagString);
+        }
+
+        var argReader = typeSpec.reader,
+            arg = osc[argReader](dv, offsetState);
+
+        if (options.metadata) {
+            arg = {
+                type: argType,
+                value: arg
+            };
+        }
+
+        return arg;
+    };
+
+    // Unsupported, non-API function.
+    osc.readArgumentsIntoArray = function (arr, argTypes, typeTagString, dv, options, offsetState) {
+        var i = 0;
+
+        while (i < argTypes.length) {
+            var argType = argTypes[i],
+                arg;
+
+            if (argType === "[") {
+                var fromArrayOpen = argTypes.slice(i + 1),
+                    endArrayIdx = fromArrayOpen.indexOf("]");
+
+                if (endArrayIdx < 0) {
+                    throw new Error("Invalid argument type tag: an open array type tag ('[') was found " +
+                        "without a matching close array tag ('[]'). Type tag was: " + typeTagString);
+                }
+
+                var typesInArray = fromArrayOpen.slice(0, endArrayIdx);
+                arg = osc.readArgumentsIntoArray([], typesInArray, typeTagString, dv, options, offsetState);
+                i += endArrayIdx + 2;
+            } else {
+                arg = osc.readArgument(argType, typeTagString, dv, options, offsetState);
+                i++;
+            }
+
+            arr.push(arg);
+        }
+
+        return arr;
+    };
+
+    /**
+     * Writes the specified arguments.
+     *
+     * @param {Array} args an array of arguments
+     * @param {Object} options options for writing
+     * @return {Uint8Array} a buffer containing the OSC-formatted argument type tag and values
+     */
+    osc.writeArguments = function (args, options) {
+        var argCollection = osc.collectArguments(args, options);
+        return osc.joinParts(argCollection);
+    };
+
+    // Unsupported, non-API function.
+    osc.joinParts = function (dataCollection) {
+        var buf = new Uint8Array(dataCollection.byteLength),
+            parts = dataCollection.parts,
+            offset = 0;
+
+        for (var i = 0; i < parts.length; i++) {
+            var part = parts[i];
+            osc.copyByteArray(part, buf, offset);
+            offset += part.length;
+        }
+
+        return buf;
+    };
+
+    // Unsupported, non-API function.
+    osc.addDataPart = function (dataPart, dataCollection) {
+        dataCollection.parts.push(dataPart);
+        dataCollection.byteLength += dataPart.length;
+    };
+
+    osc.writeArrayArguments = function (args, dataCollection) {
+        var typeTag = "[";
+
+        for (var i = 0; i < args.length; i++) {
+            var arg = args[i];
+            typeTag += osc.writeArgument(arg, dataCollection);
+        }
+
+        typeTag += "]";
+
+        return typeTag;
+    };
+
+    osc.writeArgument = function (arg, dataCollection) {
+        if (osc.isArray(arg)) {
+            return osc.writeArrayArguments(arg, dataCollection);
+        }
+
+        var type = arg.type,
+            writer = osc.argumentTypes[type].writer;
+
+        if (writer) {
+            var data = osc[writer](arg.value);
+            osc.addDataPart(data, dataCollection);
+        }
+
+        return arg.type;
+    };
+
+    // Unsupported, non-API function.
+    osc.collectArguments = function (args, options, dataCollection) {
+        if (!osc.isArray(args)) {
+            args = typeof args === "undefined" ? [] : [args];
+        }
+
+        dataCollection = dataCollection || {
+            byteLength: 0,
+            parts: []
+        };
+
+        if (!options.metadata) {
+            args = osc.annotateArguments(args);
+        }
+
+        var typeTagString = ",",
+            currPartIdx = dataCollection.parts.length;
+
+        for (var i = 0; i < args.length; i++) {
+            var arg = args[i];
+            typeTagString += osc.writeArgument(arg, dataCollection);
+        }
+
+        var typeData = osc.writeString(typeTagString);
+        dataCollection.byteLength += typeData.byteLength;
+        dataCollection.parts.splice(currPartIdx, 0, typeData);
+
+        return dataCollection;
+    };
+
+    /**
+     * Reads an OSC message.
+     *
+     * @param {Array-like} data an array of bytes to read from
+     * @param {Object} [options] read options
+     * @param {Object} [offsetState] an offsetState object that stores the current offset into dv
+     * @return {Object} the OSC message, formatted as a JavaScript object containing "address" and "args" properties
+     */
+    osc.readMessage = function (data, options, offsetState) {
+        options = options || osc.defaults;
+
+        var dv = osc.dataView(data, data.byteOffset, data.byteLength);
+        offsetState = offsetState || {
+            idx: 0
+        };
+
+        var address = osc.readString(dv, offsetState);
+        return osc.readMessageContents(address, dv, options, offsetState);
+    };
+
+    // Unsupported, non-API function.
+    osc.readMessageContents = function (address, dv, options, offsetState) {
+        if (address.indexOf("/") !== 0) {
+            throw new Error("A malformed OSC address was found while reading " +
+                "an OSC message. String was: " + address);
+        }
+
+        var args = osc.readArguments(dv, options, offsetState);
+
+        return {
+            address: address,
+            args: args.length === 1 && options.unpackSingleArgs ? args[0] : args
+        };
+    };
+
+    // Unsupported, non-API function.
+    osc.collectMessageParts = function (msg, options, dataCollection) {
+        dataCollection = dataCollection || {
+            byteLength: 0,
+            parts: []
+        };
+
+        osc.addDataPart(osc.writeString(msg.address), dataCollection);
+        return osc.collectArguments(msg.args, options, dataCollection);
+    };
+
+    /**
+     * Writes an OSC message.
+     *
+     * @param {Object} msg a message object containing "address" and "args" properties
+     * @param {Object} [options] write options
+     * @return {Uint8Array} an array of bytes containing the OSC message
+     */
+    osc.writeMessage = function (msg, options) {
+        options = options || osc.defaults;
+
+        if (!osc.isValidMessage(msg)) {
+            throw new Error("An OSC message must contain a valid address. Message was: " +
+                JSON.stringify(msg, null, 2));
+        }
+
+        var msgCollection = osc.collectMessageParts(msg, options);
+        return osc.joinParts(msgCollection);
+    };
+
+    osc.isValidMessage = function (msg) {
+        return msg.address && msg.address.indexOf("/") === 0;
+    };
+
+    /**
+     * Reads an OSC bundle.
+     *
+     * @param {DataView} dv the DataView instance to read from
+     * @param {Object} [options] read optoins
+     * @param {Object} [offsetState] an offsetState object that stores the current offset into dv
+     * @return {Object} the bundle or message object that was read
+     */
+    osc.readBundle = function (dv, options, offsetState) {
+        return osc.readPacket(dv, options, offsetState);
+    };
+
+    // Unsupported, non-API function.
+    osc.collectBundlePackets = function (bundle, options, dataCollection) {
+        dataCollection = dataCollection || {
+            byteLength: 0,
+            parts: []
+        };
+
+        osc.addDataPart(osc.writeString("#bundle"), dataCollection);
+        osc.addDataPart(osc.writeTimeTag(bundle.timeTag), dataCollection);
+
+        for (var i = 0; i < bundle.packets.length; i++) {
+            var packet = bundle.packets[i],
+                collector = packet.address ? osc.collectMessageParts : osc.collectBundlePackets,
+                packetCollection = collector(packet, options);
+
+            dataCollection.byteLength += packetCollection.byteLength;
+            osc.addDataPart(osc.writeInt32(packetCollection.byteLength), dataCollection);
+            dataCollection.parts = dataCollection.parts.concat(packetCollection.parts);
+        }
+
+        return dataCollection;
+    };
+
+    /**
+     * Writes an OSC bundle.
+     *
+     * @param {Object} a bundle object containing "timeTag" and "packets" properties
+     * @param {object} [options] write options
+     * @return {Uint8Array} an array of bytes containing the message
+     */
+    osc.writeBundle = function (bundle, options) {
+        if (!osc.isValidBundle(bundle)) {
+            throw new Error("An OSC bundle must contain 'timeTag' and 'packets' properties. " +
+                "Bundle was: " + JSON.stringify(bundle, null, 2));
+        }
+
+        options = options || osc.defaults;
+        var bundleCollection = osc.collectBundlePackets(bundle, options);
+
+        return osc.joinParts(bundleCollection);
+    };
+
+    osc.isValidBundle = function (bundle) {
+        return bundle.timeTag !== undefined && bundle.packets !== undefined;
+    };
+
+    // Unsupported, non-API function.
+    osc.readBundleContents = function (dv, options, offsetState, len) {
+        var timeTag = osc.readTimeTag(dv, offsetState),
+            packets = [];
+
+        while (offsetState.idx < len) {
+            var packetSize = osc.readInt32(dv, offsetState),
+                packetLen = offsetState.idx + packetSize,
+                packet = osc.readPacket(dv, options, offsetState, packetLen);
+
+            packets.push(packet);
+        }
+
+        return {
+            timeTag: timeTag,
+            packets: packets
+        };
+    };
+
+    /**
+     * Reads an OSC packet, which may consist of either a bundle or a message.
+     *
+     * @param {Array-like} data an array of bytes to read from
+     * @param {Object} [options] read options
+     * @return {Object} a bundle or message object
+     */
+    osc.readPacket = function (data, options, offsetState, len) {
+        var dv = osc.dataView(data, data.byteOffset, data.byteLength);
+
+        len = len === undefined ? dv.byteLength : len;
+        offsetState = offsetState || {
+            idx: 0
+        };
+
+        var header = osc.readString(dv, offsetState),
+            firstChar = header[0];
+
+        if (firstChar === "#") {
+            return osc.readBundleContents(dv, options, offsetState, len);
+        } else if (firstChar === "/") {
+            return osc.readMessageContents(header, dv, options, offsetState);
+        }
+
+        throw new Error("The header of an OSC packet didn't contain an OSC address or a #bundle string." +
+            " Header was: " + header);
+    };
+
+    /**
+     * Writes an OSC packet, which may consist of either of a bundle or a message.
+     *
+     * @param {Object} a bundle or message object
+     * @param {Object} [options] write options
+     * @return {Uint8Array} an array of bytes containing the message
+     */
+    osc.writePacket = function (packet, options) {
+        if (osc.isValidMessage(packet)) {
+            return osc.writeMessage(packet, options);
+        } else if (osc.isValidBundle(packet)) {
+            return osc.writeBundle(packet, options);
+        } else {
+            throw new Error("The specified packet was not recognized as a valid OSC message or bundle." +
+                " Packet was: " + JSON.stringify(packet, null, 2));
+        }
+    };
+
+    // Unsupported, non-API.
+    osc.argumentTypes = {
+        i: {
+            reader: "readInt32",
+            writer: "writeInt32"
+        },
+        h: {
+            reader: "readInt64",
+            writer: "writeInt64"
+        },
+        f: {
+            reader: "readFloat32",
+            writer: "writeFloat32"
+        },
+        s: {
+            reader: "readString",
+            writer: "writeString"
+        },
+        S: {
+            reader: "readString",
+            writer: "writeString"
+        },
+        b: {
+            reader: "readBlob",
+            writer: "writeBlob"
+        },
+        t: {
+            reader: "readTimeTag",
+            writer: "writeTimeTag"
+        },
+        T: {
+            reader: "readTrue"
+        },
+        F: {
+            reader: "readFalse"
+        },
+        N: {
+            reader: "readNull"
+        },
+        I: {
+            reader: "readImpulse"
+        },
+        d: {
+            reader: "readFloat64",
+            writer: "writeFloat64"
+        },
+        c: {
+            reader: "readChar32",
+            writer: "writeChar32"
+        },
+        r: {
+            reader: "readColor",
+            writer: "writeColor"
+        },
+        m: {
+            reader: "readMIDIBytes",
+            writer: "writeMIDIBytes"
+        },
+        // [] are special cased within read/writeArguments()
+    };
+
+    // Unsupported, non-API function.
+    osc.inferTypeForArgument = function (arg) {
+        var type = typeof arg;
+
+        // TODO: This is freaking hideous.
+        switch (type) {
+            case "boolean":
+                return arg ? "T" : "F";
+            case "string":
+                return "s";
+            case "number":
+                return "f";
+            case "undefined":
+                return "N";
+            case "object":
+                if (arg === null) {
+                    return "N";
+                } else if (arg instanceof Uint8Array ||
+                    arg instanceof ArrayBuffer) {
+                    return "b";
+                } else if (typeof arg.high === "number" && typeof arg.low === "number") {
+                    return "h";
+                }
+                break;
+        }
+
+        throw new Error("Can't infer OSC argument type for value: " +
+            JSON.stringify(arg, null, 2));
+    };
+
+    // Unsupported, non-API function.
+    osc.annotateArguments = function (args) {
+        var annotated = [];
+
+        for (var i = 0; i < args.length; i++) {
+            var arg = args[i],
+                msgArg;
+
+            if (typeof (arg) === "object" && arg.type && arg.value !== undefined) {
+                // We've got an explicitly typed argument.
+                msgArg = arg;
+            } else if (osc.isArray(arg)) {
+                // We've got an array of arguments,
+                // so they each need to be inferred and expanded.
+                msgArg = osc.annotateArguments(arg);
+            } else {
+                var oscType = osc.inferTypeForArgument(arg);
+                msgArg = {
+                    type: oscType,
+                    value: arg
+                };
+            }
+
+            annotated.push(msgArg);
+        }
+
+        return annotated;
+    };
+
+    if (osc.isCommonJS) {
+        module.exports = osc;
+    }
+}());
+
+}).call(this)}).call(this,require('_process'),require("buffer").Buffer)
+},{"_process":193,"buffer":143,"long":508}],516:[function(require,module,exports){
+/*
+ * slip.js: A plain JavaScript SLIP implementation that works in both the browser and Node.js
+ *
+ * Copyright 2014, Colin Clark
+ * Licensed under the MIT and GPL 3 licenses.
+ */
+
+/*global exports, define*/
+(function (root, factory) {
+    "use strict";
+
+    if (typeof exports === "object") {
+        // We're in a CommonJS-style loader.
+        root.slip = exports;
+        factory(exports);
+    } else if (typeof define === "function" && define.amd) {
+        // We're in an AMD-style loader.
+        define(["exports"], function (exports) {
+            root.slip = exports;
+            return (root.slip, factory(exports));
+        });
+    } else {
+        // Plain old browser.
+        root.slip = {};
+        factory(root.slip);
+    }
+}(this, function (exports) {
+
+    "use strict";
+
+    var slip = exports;
+
+    slip.END = 192;
+    slip.ESC = 219;
+    slip.ESC_END = 220;
+    slip.ESC_ESC = 221;
+
+    slip.byteArray = function (data, offset, length) {
+        return data instanceof ArrayBuffer ? new Uint8Array(data, offset, length) : data;
+    };
+
+    slip.expandByteArray = function (arr) {
+        var expanded = new Uint8Array(arr.length * 2);
+        expanded.set(arr);
+
+        return expanded;
+    };
+
+    slip.sliceByteArray = function (arr, start, end) {
+        var sliced = arr.buffer.slice ? arr.buffer.slice(start, end) : arr.subarray(start, end);
+        return new Uint8Array(sliced);
+    };
+
+    /**
+     * SLIP encodes a byte array.
+     *
+     * @param {Array-like} data a Uint8Array, Node.js Buffer, ArrayBuffer, or [] containing raw bytes
+     * @param {Object} options encoder options
+     * @return {Uint8Array} the encoded copy of the data
+     */
+    slip.encode = function (data, o) {
+        o = o || {};
+        o.bufferPadding = o.bufferPadding || 4; // Will be rounded to the nearest 4 bytes.
+        data = slip.byteArray(data, o.offset, o.byteLength);
+
+        var bufLen = (data.length + o.bufferPadding + 3) & ~0x03,
+            encoded = new Uint8Array(bufLen),
+            j = 1;
+
+        encoded[0] = slip.END;
+
+        for (var i = 0; i < data.length; i++) {
+            // We always need enough space for two value bytes plus a trailing END.
+            if (j > encoded.length - 3) {
+                encoded = slip.expandByteArray(encoded);
+            }
+
+            var val = data[i];
+            if (val === slip.END) {
+                encoded[j++] = slip.ESC;
+                val = slip.ESC_END;
+            } else if (val === slip.ESC) {
+                encoded[j++] = slip.ESC;
+                val = slip.ESC_ESC;
+            }
+
+            encoded[j++] = val;
+        }
+
+        encoded[j] = slip.END;
+        return slip.sliceByteArray(encoded, 0, j + 1);
+    };
+
+    /**
+     * Creates a new SLIP Decoder.
+     * @constructor
+     *
+     * @param {Function} onMessage a callback function that will be invoked when a message has been fully decoded
+     * @param {Number} maxBufferSize the maximum size of a incoming message; larger messages will throw an error
+     */
+    slip.Decoder = function (o) {
+        o = typeof o !== "function" ? o || {} : {
+            onMessage: o
+        };
+
+        this.maxMessageSize = o.maxMessageSize || 10485760; // Defaults to 10 MB.
+        this.bufferSize = o.bufferSize || 1024; // Message buffer defaults to 1 KB.
+        this.msgBuffer = new Uint8Array(this.bufferSize);
+        this.msgBufferIdx = 0;
+        this.onMessage = o.onMessage;
+        this.onError = o.onError;
+        this.escape = false;
+    };
+
+    var p = slip.Decoder.prototype;
+
+    /**
+     * Decodes a SLIP data packet.
+     * The onMessage callback will be invoked when a complete message has been decoded.
+     *
+     * @param {Array-like} data an incoming stream of bytes
+     */
+    p.decode = function (data) {
+        data = slip.byteArray(data);
+
+        var msg;
+        for (var i = 0; i < data.length; i++) {
+            var val = data[i];
+
+            if (this.escape) {
+                if (val === slip.ESC_ESC) {
+                    val = slip.ESC;
+                } else if (val === slip.ESC_END) {
+                    val = slip.END;
+                }
+            } else {
+                if (val === slip.ESC) {
+                    this.escape = true;
+                    continue;
+                }
+
+                if (val === slip.END) {
+                    msg = this.handleEnd();
+                    continue;
+                }
+            }
+
+            var more = this.addByte(val);
+            if (!more) {
+                this.handleMessageMaxError();
+            }
+        }
+
+        return msg;
+    };
+
+    p.handleMessageMaxError = function () {
+        if (this.onError) {
+            this.onError(this.msgBuffer.subarray(0),
+                "The message is too large; the maximum message size is " +
+                this.maxMessageSize / 1024 + "KB. Use a larger maxMessageSize if necessary.");
+        }
+
+        // Reset everything and carry on.
+        this.msgBufferIdx = 0;
+        this.escape = false;
+    };
+
+    // Unsupported, non-API method.
+    p.addByte = function (val) {
+        if (this.msgBufferIdx > this.msgBuffer.length - 1) {
+            this.msgBuffer = slip.expandByteArray(this.msgBuffer);
+        }
+
+        this.msgBuffer[this.msgBufferIdx++] = val;
+        this.escape = false;
+
+        return this.msgBuffer.length < this.maxMessageSize;
+    };
+
+    // Unsupported, non-API method.
+    p.handleEnd = function () {
+        if (this.msgBufferIdx === 0) {
+            return; // Toss opening END byte and carry on.
+        }
+
+        var msg = slip.sliceByteArray(this.msgBuffer, 0, this.msgBufferIdx);
+        if (this.onMessage) {
+            this.onMessage(msg);
+        }
+
+        // Clear our pointer into the message buffer.
+        this.msgBufferIdx = 0;
+
+        return msg;
+    };
+
+    return slip;
+}));
+
+},{}],517:[function(require,module,exports){
 (function (process){(function (){
 var Stream = require('stream')
 
@@ -115212,7 +120598,7 @@ function through (write, end, opts) {
 
 
 }).call(this)}).call(this,require('_process'))
-},{"_process":193,"stream":210}],512:[function(require,module,exports){
+},{"_process":193,"stream":210}],518:[function(require,module,exports){
 (function (global){(function (){
 'use strict'
 
@@ -115467,7 +120853,7 @@ exports.clearCache = function clearCache() {
 }
 
 }).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"bit-twiddle":419,"buffer":143,"dup":424}],513:[function(require,module,exports){
+},{"bit-twiddle":421,"buffer":143,"dup":426}],519:[function(require,module,exports){
 "use strict"
 
 function unique_pred(list, compare) {
@@ -115526,7 +120912,17 @@ function unique(list, compare, sorted) {
 
 module.exports = unique
 
-},{}],514:[function(require,module,exports){
+},{}],520:[function(require,module,exports){
+'use strict';
+
+module.exports = function () {
+  throw new Error(
+    'ws does not work in the browser. Browser clients must use the native ' +
+      'WebSocket object'
+  );
+};
+
+},{}],521:[function(require,module,exports){
 'use strict'
 
 let MemoryHelper = {
